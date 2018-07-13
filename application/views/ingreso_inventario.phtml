@@ -1,0 +1,116 @@
+<div class="col-md-12 col-lg-12 col-sm-12 col-xs-12" ng-controller="ModuleCtrl" style="margin-bottom: 20px;">
+    <div class="col-md-12 col-lg-12 col-sm-12 col-xs-12" >
+        <div class="modal fade" id="finModal">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Finalizar ingreso</h4>
+                    </div>
+                    <div class="modal-body">
+                        <label class="control-label">Comentario del ingreso:</label>
+                        <textarea ng-model="comentario" class="form-control"></textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-danger" data-dismiss="modal">Cancelar</button>
+                        <button class="btn btn-success" ng-click="finalizar()" ng-if="productosSel.length>0&&comentario!=''">Finalizar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <h3 class="text-bold">Productos</h3>
+        <div class="table-responsive">
+            <table class="table table-striped table-bordered table-condensed">
+                <tr>
+                    <th style="width: 15.8%">Código producto</th>
+                    <th style="width: 15.8%">Nombre</th>
+                    <th style="width: 15.8%">Descripción</th>
+                    <th style="width: 15.8%">Marca</th>
+                    <th style="width: 15.8%">Proveedor</th>
+                    <th style="width: 5%">En sucursal</th>
+                    <th style="width: 5%">En inventario</th>
+                    <th style="width: 12.6%">Opciones</th>
+                </tr>
+                <tr>
+                    <td>
+                        <input type="text" ng-model="search.codigo_producto"/>
+                    </td>
+                    <td>
+                        <input type="text" class="form-control" ng-model="search.nombre"/>
+                    </td>
+                    <td>
+                        <input type="text" class="form-control" ng-model="search.descripcion"/>
+                    </td>
+                    <td>
+                        <input type="text" class="form-control" ng-model="search.nombre_marca"/>
+                    </td>
+                    <td>
+                        <input type="text" class="form-control" ng-model="search.proveedor_label"/>
+                    </td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td><button type="button" ng-click="clearFilter()" class="btn btn-sm btn-primary">Limpiar filtro</button></td>
+                </tr>
+            </table>
+            <div style="max-height: 250px; overflow-y: auto" >
+                <table class="table table-striped table-bordered table-condensed table-hover">
+                    <tr ng-repeat="p in productos | filter:search">
+                        <td style="width: 16%" ng-bind="p.codigo_producto"></td>
+                        <td style="width: 16%" ng-bind="p.nombre"></td>
+                        <td style="width: 16%" ng-bind="p.descripcion"></td>
+                        <td style="width: 16%" ng-bind="p.nombre_marca"></td>
+                        <td style="width: 16%" ng-bind="p.proveedor_label"></td>
+                        <td style="width: 5%; font-size: 21px;" class="text-bold" ng-bind="p.stock" ng-class="{'text-success':p.stock>0,'text-danger':p.stock<=0}"></td>
+                        <td style="width: 5%; font-size: 21px;" class="text-bold" ng-bind="p.stock_global" ng-class="{'text-success':p.stock_global>0,'text-danger':p.stock_global<=0}"></td>
+                        <td style="width: 10%">
+                            <button class="btn btn-success btn-sm" ng-click="addProducto(p)">
+                                <span class="glyphicon glyphicon-plus-sign"></span>
+                            </button>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg- col-md-12 col-sm-12 col-xs-12" ng-show="productosSel.length>0">
+        <h3 class="text-bold">Detalle ingreso</h3>
+        <div class="table-responsive">
+            <table class="table table-striped table-bordered table-hover">
+                <tr>
+                    <td colspan="9" style="font-weight: bolder"> TOTAL COSTO ESTIMADO: Q. <span ng-bind="totalCosto" class="text-bold"/></td>
+                </tr>
+                <tr>
+                    <th>Código producto</th>
+                    <th>Nombre</th>
+                    <th>Mínimo</th>
+                    <th>Sucursal</th>
+                    <th>Inventario</th>
+                    <th>Unidades</th>
+                    <th>Costo unidad</th>
+                    <th>Costo producto</th>
+                    <th>&nbsp;</th>
+                </tr>
+                <tr ng-repeat="p in productosSel">
+                    <td ng-bind="p.codigo_producto"></td>
+                    <td ng-bind="p.nombre"></td>
+                    <td style="font-weight: bolder" ng-bind="p.minimo_inventario" ng-class="{'success':p.stock_global>p.minimo_inventario,'danger':p.stock_global<p.minimo_inventario, 'warning':p.stock_global==p.minimo_inventario}"></td>
+                    <td class="text-bolder" ng-bind="p.stock" ng-class="{'text-success':p.stock>0,'text-danger':p.stock<=0}"></td>
+                    <td class="text-bolder" ng-bind="p.stock_global" ng-class="{'text-success':p.stock_global>0,'text-danger':p.stock_global<=0}"></td>
+                    <td>
+                        <input type="text" class="form-control" ng-model="p.unidades" ng-change="doCosto(); doPrecio(p);"/>
+                    </td>
+                    <td>
+                        <input type="text" class="form-control" ng-model="p.costo" ng-change="doCosto(); doPrecio(p);" />
+                    </td>
+                    <th ng-bind="p.costoTotal"></th>
+                    <td>
+                        <button class="btn btn-danger btn-sm" ng-click="removeItem(p)">
+                            <span class="glyphicon glyphicon-remove-sign"></span>
+                        </button>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <button class="btn btn-primary" ng-click="finalizarModal()">Ingresar</button>
+        <button class="btn btn-danger" ng-click="cancelar()">Cancelar</button>
+    </div>
+</div>

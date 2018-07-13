@@ -1,0 +1,35 @@
+<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+    <div class="table-responsive" style="overflow-x: auto">
+        <table class="table table-bordered table-striped table-condensed table-hover">
+            <tr>
+                <?php 
+                foreach($this->columns as $c){
+                    if($c instanceof FastReportColumn){
+                        ?>
+                <th><?php echo $c->name ?></th>
+                        <?php
+                    }
+                }
+                ?>
+            </tr>
+            <?php 
+            foreach($this->resultSet as $p){
+
+                ?>
+            <tr>
+                <?php 
+                foreach($this->columns as $c){
+                    if($c instanceof FastReportColumn){
+                        ?>
+                <td><?php echo $c->serveValue($p) ?></td>
+                        <?php
+                    }
+                }
+                ?>
+            </tr>
+                <?php
+            }
+            ?>
+        </table>
+    </div>
+</div>

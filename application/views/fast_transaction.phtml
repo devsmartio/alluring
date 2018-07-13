@@ -1,0 +1,17 @@
+<div class="col-md-12 col-lg-12 col-sm-12 col-xs-12">
+    <?php 
+    $this->showModule();
+    if(!$this->hasCustomSave){
+        ?>
+    <div class="btn-group col-md-12 col-lg-12 col-xs-12 col-sm-12">
+        <button class="btn btn-success" ng-click="doSave()">
+            <span class="glyphicon glyphicon-floppy-saved"></span>&nbsp;Finalizar
+        </button>
+        <button class="btn btn-danger" ng-click="cancel()">
+            <span class="glyphicon glyphicon-remove"></span>&nbsp;Cancelar
+        </button>
+    </div>
+        <?php
+    }
+    ?>
+</div>

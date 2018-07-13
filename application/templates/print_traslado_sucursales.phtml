@@ -1,0 +1,103 @@
+<?php
+$queryMovimiento = "select 
+  tms.fecha_creacion, concat(e.nombres, ' ', e.apellidos) cajero, tms.id_sucursal_origen, tms.id_sucursal_destino, tms.comentario_envio 
+from trx_movimiento_sucursales tms
+  join empleados e on e.id_empleado = tms.id_empleado_envia where tms.id_movimiento_sucursales=%s";
+$movimientoSucursal = $this->db->queryToArray(sprintf($queryMovimiento, $movimientoId));
+$movimientoSucursal = sanitize_by_keys($movimientoSucursal[0], ['cajero', 'comentario_envio']);
+
+$sucursalDe = "select nombre from sucursales where id_sucursal=%s";
+$sucursalDe = $this->db->queryToArray(sprintf($sucursalDe, $movimientoSucursal['id_sucursal_origen']));
+$sucursalDe = sanitize_by_keys($sucursalDe[0], ['nombre']);
+
+$sucursalA = "select nombre from sucursales where id_sucursal=%s";       
+$sucursalA = $this->db->queryToArray(sprintf($sucursalA, $movimientoSucursal['id_sucursal_destino']));
+$sucursalA = sanitize_by_keys($sucursalA[0], ['nombre']);
+        
+$queryDetMovimiento ="select 
+  tmsd.id_movimiento_sucursales, tmsd.id_producto, tmsd.unidades, p.nombre, m.nombre nombre_marca , p.id_tipo, p.id_proveedor, p.id_subtipo, p.id_marca, p.sku
+from trx_movimiento_sucursales_detalle tmsd 
+  join producto p on tmsd.id_producto = p.id_producto 
+  join marca m on m.id_marca=p.id_producto
+  where id_movimiento_sucursales=%s";
+$detMovSucursal = $this->db->queryToArray(sprintf($queryDetMovimiento, $movimientoId));
+
+?>
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title></title>
+        <style>
+            body {
+                width: 19cm;
+            }
+            td {
+                text-align: center;
+            }
+            .text-left {
+                min-height: 17px;
+                width: 48%;
+                text-align: left;
+                display: inline-block;
+            }
+            .text-right {
+                min-height: 17px;
+                width: 45%;
+                text-align: right;
+                display: inline-block;
+            }
+        </style>
+    </head>
+    <body>
+        <table style="width: 90%; margin:20px auto 0px auto;background-color: #fff" border="1">
+            <tr>
+                <th style='font-size: 21px; text-align: center' colspan="2"><center>TRASLADO DE PRODUCTO</center></th>
+            </tr>
+            <tr>
+                <th style='text-align: left'>Correlativo</th>
+                <td style='text-align: left'><?php echo $movimientoId?></td>
+            </tr>
+            <tr>
+                <th style='text-align: left'>Fecha/Hora</th>
+                <td style='text-align: left'><?php echo DateTime::createFromFormat(SQL_DT_FORMAT, $movimientoSucursal['fecha_creacion'])->format(SHOW_DT_FORMAT) ?></td>
+            </tr>            
+            <tr>
+                <th style='width: 20%; text-align: left'>De sucursal</th>
+                <td style='text-align: left'><?php echo $sucursalDe['nombre'] ?></td>
+            </tr>
+            <tr>
+                <th style='text-align: left'>A sucursal</th>
+                <td style='text-align: left'><?php echo $sucursalA['nombre'] ?></td>
+            </tr>
+            <tr>
+                <th style='width: 20%; text-align: left'>Generado por</th>
+                <td style='text-align: left'><?php echo $movimientoSucursal['cajero'] ?></td>
+            </tr>
+            <tr>
+                <th style='width: 20%; text-align: left'>Comentario</th>
+                <td style='text-align: left'><?php echo $movimientoSucursal['comentario_envio'] ?></td>
+            </tr>                      
+        </table>
+
+        <table style="width: 90%; margin:20px auto 0px auto;background-color: #fff" border="1">
+            <tr>
+                <th style='width: 15%'>Codigo</th>
+                <th style='width: 15%'>Cantidad</th>
+                <th style='width: 70%'>Producto</th>
+            </tr>
+            <?php 
+            foreach($detMovSucursal as $d){
+                ?>
+            <tr>
+                <td valign="top"><?php echo ProductoUtil::getCodigoProducto($d, $this->db)?></td>
+                <td valign="top"><?php echo $d['unidades'] ?></td>
+                <td valign="top"><?php echo $d['nombre_marca'] . " - " .$d['nombre'] ?></td>
+                <?php
+            }
+            ?>
+        </table>        
+        
+    </body>
+</html>        
+

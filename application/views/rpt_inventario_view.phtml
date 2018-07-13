@@ -1,0 +1,37 @@
+<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+    <div class="table-responsive" style="overflow-x: auto">
+        <table class="table table-bordered table-striped table-condensed table-hover">
+            <tr>
+                <th>Nombre producto</th>
+                <th>Cantidad en inventario</th>
+                <th>Mínimo requerido</th>
+                <th>Sucursal</th>
+                <th>Proveedor</th>
+                <th>Descripción</th>
+                <th>Marca</th>
+                <th>Tipo</th>
+                <th>Subtipo</th>
+                <th>Costo</th>
+            </tr>
+            <?php 
+            foreach($this->resultSet as $p){
+
+                ?>
+            <tr>
+                <td><?php echo self_escape_string($p['nombre_producto']) ?></td>
+                <td><?php echo number_format($p['cantidad'], 0) ?></td>
+                <td><?php echo $p['minimo_inventario'] ?></td>
+                <td><?php echo self_escape_string($p['nombre_sucursal']) ?></td>
+                <td><?php echo $p['nombre_proveedor'] ?></td>
+                <td><?php echo self_escape_string($p['descripcion_producto']) ?></td>
+                <td><?php echo self_escape_string($p['nombre_marca']) ?></td>
+                <td><?php echo self_escape_string($p['nombre_tipo']) ?></td>
+                <td><?php echo self_escape_string($p['nombre_subtipo']) ?></td>
+                <td><?php echo self_escape_string($p['costo']) ?></td>
+            </tr>
+                <?php
+            }
+            ?>
+    </table>
+    </div>
+</div>

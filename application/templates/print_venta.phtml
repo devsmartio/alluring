@@ -1,0 +1,279 @@
+<?php
+$queryVenta = "select v.id_venta, v.total, v.credito, CONCAT(e.nombres,' ',e.apellidos) nombre_empleado, s.nombre nombre_sucursal, v.fecha_creacion, CONCAT(c.nombres,' ',c.apellidos) nombre_cliente, IFNULL(c.nit, 'C/F') nit_cliente "
+        . "from trx_venta v "
+        . "join sucursales s on s.id_sucursal=v.id_sucursal "
+        . "join empleados e on e.id_empleado=v.id_empleado "
+        . "join clientes c on c.id_cliente=v.id_cliente "
+        . "where v.id_venta=%s";
+$venta = $this->db->queryToArray(sprintf($queryVenta, $ventaId));
+$venta = sanitize_by_keys($venta[0], ['nombre_empleado', 'nombre_sucursal', 'nombre_cliente']);
+$queryProductos = "select tp.precio_tipo, p.id_subtipo, p.id_tipo, p.id_producto, m.id_marca, tp.unidades cantidad, CONCAT(m.nombre, ' - ', p.nombre) as descripcion, tp.precio_total, p.precio_por_defecto, tp.precio precio_unitario"
+        . " from trx_venta_producto tp "
+        . "join producto p on p.id_producto=tp.id_producto "
+        . "join marca m on m.id_marca=p.id_marca where id_venta=%s";
+$productos = $this->db->queryToArray(sprintf($queryProductos, $ventaId));
+$productos = sanitize_array_by_keys($productos, ['descripcion']);
+for($i=0; count($productos) > $i; $i++){
+    $productos[$i]['descuento'] = '';
+    $descuento = $this->db->query_select('descuentos', sprintf('id_producto=%s and activo = 1 and id_tipo_descuento in (%s, %s, %s)', $productos[$i]['id_producto'], Catalogos::DescuentoTipo_Producto, Catalogos::DescuentoTipo_SegMitadPrecio, Catalogos::DescuentoTipo_DosxUno, Catalogos::DescuentoTipo_3x2));
+    if(count($descuento) > 0){
+        $descuento = $descuento[0];
+        switch($descuento['id_tipo_descuento']){
+            case Catalogos::DescuentoTipo_Producto:
+                $productos[$i]['descuento'] = $descuento["porcentaje_descuento"] . "% de descuento";
+                break;
+            case Catalogos::DescuentoTipo_Marca:
+                $productos[$i]['descuento'] = "Marca con " . $descuento["porcentaje_descuento"] . "% de descuento";
+                break;
+            case Catalogos::DescuentoTipo_Tipo:
+                $productos[$i]['descuento'] = "Tipo de producto con " . $descuento["porcentaje_descuento"] . "% de descuento";
+                break;
+            case Catalogos::DescuentoTipo_SubTipo:
+                $productos[$i]['descuento'] = "Subtipo de producto con " . $descuento["porcentaje_descuento"] . "% de descuento";
+                break;            
+            case Catalogos::DescuentoTipo_SegMitadPrecio:
+                $productos[$i]['descuento'] = "Segundo a mitad de precio";
+                break;
+            case Catalogos::DescuentoTipo_DosxUno:
+                $productos[$i]['descuento'] = "2 por 1";
+                break;
+            case Catalogos::DescuentoTipo_3x2:
+                $productos[$i]['descuento'] = "3 por 2";
+                break;
+        }
+    } else  {
+    $descuento = $this->db->query_select('descuentos', sprintf('id_subtipo=%s and activo = 1 and id_tipo_descuento IN (%s, %s, %s, %s)', $productos[$i]['id_subtipo'], Catalogos::DescuentoTipo_SubTipo, Catalogos::DescuentoTipo_3x2, Catalogos::DescuentoTipo_DosxUno, Catalogos::DescuentoTipo_SegMitadPrecio));
+        if(count($descuento) > 0){
+            $descuento = $descuento[0];
+            switch($descuento['id_tipo_descuento']){
+                case Catalogos::DescuentoTipo_Producto:
+                    $productos[$i]['descuento'] = $descuento["porcentaje_descuento"] . "% de descuento";
+                    break;
+                case Catalogos::DescuentoTipo_Marca:
+                    $productos[$i]['descuento'] = "Marca con " . $descuento["porcentaje_descuento"] . "% de descuento";
+                    break;
+                case Catalogos::DescuentoTipo_Tipo:
+                    $productos[$i]['descuento'] = "Tipo de producto con " . $descuento["porcentaje_descuento"] . "% de descuento";
+                    break;
+                case Catalogos::DescuentoTipo_SubTipo:
+                    $productos[$i]['descuento'] = "Subtipo de producto con " . $descuento["porcentaje_descuento"] . "% de descuento";
+                    break;            
+                case Catalogos::DescuentoTipo_SegMitadPrecio:
+                    $productos[$i]['descuento'] = "Segundo a mitad de precio";
+                    break;
+                case Catalogos::DescuentoTipo_DosxUno:
+                    $productos[$i]['descuento'] = "2 por 1";
+                    break;
+                case Catalogos::DescuentoTipo_3x2:
+                    $productos[$i]['descuento'] = "3 por 2";
+                    break;
+            }
+        } else {                    
+            $descuento = $this->db->query_select('descuentos', sprintf('id_tipo=%s and activo = 1 and id_tipo_descuento IN (%s, %s, %s, %s)', $productos[$i]['id_tipo'], Catalogos::DescuentoTipo_Tipo, Catalogos::DescuentoTipo_3x2, Catalogos::DescuentoTipo_DosxUno, Catalogos::DescuentoTipo_SegMitadPrecio));
+            if(count($descuento) > 0){
+                $descuento = $descuento[0];
+                switch($descuento['id_tipo_descuento']){
+                    case Catalogos::DescuentoTipo_Producto:
+                        $productos[$i]['descuento'] = $descuento["porcentaje_descuento"] . "% de descuento";
+                        break;
+                    case Catalogos::DescuentoTipo_Marca:
+                        $productos[$i]['descuento'] = "Marca con " . $descuento["porcentaje_descuento"] . "% de descuento";
+                        break;
+                    case Catalogos::DescuentoTipo_Tipo:
+                        $productos[$i]['descuento'] = "Tipo de producto con " . $descuento["porcentaje_descuento"] . "% de descuento";
+                        break;
+                    case Catalogos::DescuentoTipo_SubTipo:
+                        $productos[$i]['descuento'] = "Subtipo de producto con " . $descuento["porcentaje_descuento"] . "% de descuento";
+                        break;            
+                    case Catalogos::DescuentoTipo_SegMitadPrecio:
+                        $productos[$i]['descuento'] = "Segundo a mitad de precio";
+                        break;
+                    case Catalogos::DescuentoTipo_DosxUno:
+                        $productos[$i]['descuento'] = "2 por 1";
+                        break;
+                    case Catalogos::DescuentoTipo_3x2:
+                        $productos[$i]['descuento'] = "3 por 2";
+                        break;
+                }
+            } else {
+                $descuento = $this->db->query_select('descuentos', sprintf('id_marca=%s and activo = 1 and id_tipo_descuento IN (%s, %s, %s, %s)', $productos[$i]['id_marca'], Catalogos::DescuentoTipo_Marca, Catalogos::DescuentoTipo_3x2, Catalogos::DescuentoTipo_DosxUno, Catalogos::DescuentoTipo_SegMitadPrecio));                        
+                if(count($descuento) > 0){
+                    $descuento = $descuento[0];
+                    switch($descuento['id_tipo_descuento']){
+                        case Catalogos::DescuentoTipo_Producto:
+                            $productos[$i]['descuento'] = $descuento["porcentaje_descuento"] . "% de descuento";
+                            break;
+                        case Catalogos::DescuentoTipo_Marca:
+                            $productos[$i]['descuento'] = "Marca con " . $descuento["porcentaje_descuento"] . "% de descuento";
+                            break;
+                        case Catalogos::DescuentoTipo_Tipo:
+                            $productos[$i]['descuento'] = "Tipo de producto con " . $descuento["porcentaje_descuento"] . "% de descuento";
+                            break;
+                        case Catalogos::DescuentoTipo_SubTipo:
+                            $productos[$i]['descuento'] = "Subtipo de producto con " . $descuento["porcentaje_descuento"] . "% de descuento";
+                            break;            
+                        case Catalogos::DescuentoTipo_SegMitadPrecio:
+                            $productos[$i]['descuento'] = "Segundo a mitad de precio";
+                            break;
+                        case Catalogos::DescuentoTipo_DosxUno:
+                            $productos[$i]['descuento'] = "2 por 1";
+                            break;
+                        case Catalogos::DescuentoTipo_3x2:
+                            $productos[$i]['descuento'] = "3 por 2";
+                            break;
+                    }
+                }                        
+            }                  
+        }    
+    }
+}
+
+$total = 0;
+$descuento = 0;
+$subtotal = 0;
+?>
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title></title>
+        <style>
+            body {
+                width: 19cm;
+                font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif;
+                font-size: 13px;
+            }
+            td {
+                text-align: center;
+            }
+            .text-left {
+                min-height: 17px;
+                width: 48%;
+                text-align: left;
+                display: inline-block;
+            }
+            .text-right {
+                min-height: 17px;
+                width: 45%;
+                text-align: right;
+                display: inline-block;
+            }
+        </style>
+    </head>
+    <body>
+        <table style="width: 90%; margin:20px auto 0px auto;background-color: #fff" border="0">
+            <tr>
+                <th style='font-size: 21px; text-align: center' colspan="2"><center>KOSMETICOS Y MAS</center></th>
+            </tr>
+            <tr>
+                <th style='width: 20%; text-align: left'>Correlativo</th>
+                <td style='text-align: left'><?php echo $venta['id_venta'] ?></td>
+            </tr>
+            <tr>
+                <th style='width: 20%; text-align: left'>Empleado</th>
+                <td style='text-align: left'><?php echo $venta['nombre_empleado'] ?></td>
+            </tr>
+            <tr>
+                <th style='text-align: left'>Sucursal</th>
+                <td style='text-align: left'><?php echo $venta['nombre_sucursal'] ?></td>
+            </tr>
+            <tr>
+                <th style='text-align: left'>Fecha/Hora</th>
+                <td style='text-align: left'><?php echo DateTime::createFromFormat(SQL_DT_FORMAT, $venta['fecha_creacion'])->format(SHOW_DT_FORMAT) ?></td>
+            </tr>
+        </table>
+        <table style="width: 90%; margin:20px auto 0px auto;background-color: #fff" border="0">
+            <tr>
+                <th style='width: 25%'>Nombre cliente</th>
+                <td style='width: 50%'><?php echo $venta["nombre_cliente"] ?></td>
+                <th style='width: 25%'>NIT</th>
+                <td style='width: 25%'><?php echo $venta["nit_cliente"] ?></td>
+            </tr>
+        </table>
+        <table style="width: 90%; margin:20px auto 0px auto;background-color: #fff" border="1">
+            <tr>
+                <th style='width: 10%'>Cantidad</th>
+                <th style='width: 65%'>Descripción</th>
+                <th style='width: 25%'>Precio Unitario</th>
+                <th style='width: 25%'>Total</th>
+            </tr>
+            <?php 
+            foreach($productos as $p){
+                ?>
+            <tr>
+                <td valign="top"><?php echo $p['cantidad'] ?></td>
+                <td style="font-size: 12px">
+                    <?php 
+                        echo $p['descripcion'];
+                        if($p['descuento'] != '' && ((($p['precio_por_defecto'] * $p['cantidad']) - $p['precio_total']) > 0)){
+                            ?>
+                            <br/>
+                            <?php
+                            echo 'Descuento '; 
+                        }
+                    ?>
+                </td>
+                <td valign="top" >
+                    <?php echo number_format($p['descuento'] != '' ? $p['precio_por_defecto'] : $p['precio_unitario'], 2); ?>
+                    <?php 
+                    if($p['descuento'] != '' && (($p['precio_por_defecto'] * $p['cantidad']) - $p['precio_total'])>0){
+                        ?>
+                        <br/>
+                        <span style="<?php echo ($p['descuento'] != '' ? 'color: #ff9966' : '')?>"><?php echo number_format($p['precio_unitario'], 2); ?></span>
+                        <?php
+                    }
+                    ?>
+                </td>
+                <td valign="top">
+                    <?php
+                    if($p['descuento'] != '' && (($p['precio_por_defecto'] * $p['cantidad']) - $p['precio_total'])>0){
+                        echo number_format(($p['precio_por_defecto'] * $p['cantidad']), 2);
+                        $subtotal += ($p['precio_por_defecto'] * $p['cantidad']);
+                    ?>
+                        <br />
+                    <?php
+                        ?>
+                        <span style="<?php echo ($p['descuento'] != '' ? 'color: #ff9966' : '')?>"><?php echo number_format($p['precio_total'], 2); ?></span>
+                        <?php
+                        $descuento += (($p['precio_por_defecto'] * $p['cantidad']) - $p['precio_total']);
+                    } else {
+                        echo number_format(($p['precio_unitario'] * $p['cantidad']), 2);
+                        $subtotal += ($p['precio_unitario'] * $p['cantidad']);
+                    }
+                    ?>
+                </td>
+            </tr>
+                <?php
+                $total += $p['precio_total'];
+            }
+            ?>
+        </table>
+        <table style="width: 90%; margin:20px auto 0px auto;background-color: #fff" border="0">
+            <tr>
+                <th style='text-align: right'>Subtotal</th>
+                <th style='width: 18%'><?php echo number_format($subtotal, 2) ?></th>
+            </tr>
+            <tr>
+                <td style='text-align: right'>Descuentos</td>
+                <td style='width: 18%'><?php echo number_format($subtotal - $total, 2) ?></td>
+            </tr>
+            <tr>
+                <th style='text-align: right'>TOTAL VENTA</th>
+                <th style='width: 18%'><?php echo number_format($total, 2) ?></th>
+            </tr>
+        </table>
+        <table style="width: 90%; margin:15px auto 0px auto;background-color: #fff" border="1">
+            <tr>
+                <th colspan='4'>FORMA DE PAGO</th>
+            </tr>
+            <tr>
+                <th style='width: 25%'>Contado</th>
+                <td style='width: 25%'><?php  echo ($venta['total'] > $venta['credito'] ? "X" : "")?></td>
+                <th style='width: 25%'>Crédito</th>
+                <td style='width: 25%'><?php  echo ($venta['credito'] > 0 ? "X" : "")?></td>
+            </tr>
+        </table>
+    </body>
+</html>
+
+

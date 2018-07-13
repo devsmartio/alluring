@@ -1,0 +1,78 @@
+<?php
+$query = "select id_cambio_producto, cast(c.fecha_creacion as date) fecha, c.tipo_operacion, pd.nombre nombre_producto_dev, c.cantidad, pe.nombre nombre_producto_ent, c.diferencia, s.nombre nombre_sucursal, concat(e.nombres, ' ', e.apellidos) nombre_empleado "
+        . "from trx_cambio_producto c "
+        . "join producto pd on pd.id_producto=c.id_producto_devuelto "
+        . "join empleados e on e.id_empleado=c.id_empleado "
+        . "join sucursales s on s.id_sucursal=c.id_sucursal "
+        . "left join producto pe on pe.id_producto=c.id_producto_entregado "
+        . "where id_cambio_producto=%s";
+
+$cambio = $this->db->queryToArray(sprintf($query, $id_cambio));
+$cambio = $cambio[0];
+?>
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title></title>
+        <style>
+            body {
+                width: 19cm;
+            }
+            td {
+                text-align: center;
+            }
+            .text-left {
+                min-height: 17px;
+                width: 48%;
+                text-align: left;
+                display: inline-block;
+            }
+            .text-right {
+                min-height: 17px;
+                width: 45%;
+                text-align: right;
+                display: inline-block;
+            }
+        </style>
+    </head>
+    <body>
+        <table style="width: 90%; margin:20px auto 0px auto;background-color: #fff" border="1">
+            <tr>
+                <th style='font-size: 21px; text-align: center' colspan="2"><center>CAMBIO/ANULACIÓN DE PRODUCTO</center></th>
+            </tr>
+            <tr>
+                <th style='text-align: left'>Correlativo</th>
+                <td style='text-align: left'><?php echo $cambio['id_cambio_producto']?></td>
+            </tr>
+            <tr>
+                <th style='text-align: left'>Fecha</th>
+                <td style='text-align: left'><?php echo DateTime::createFromFormat('Y-m-d', $cambio['fecha'])->format('d/m/Y') ?></td>
+            </tr>            
+            <tr>
+                <th style='width: 20%; text-align: left'>Producto devuelto</th>
+                <td style='text-align: left'><?php echo $cambio['nombre_producto_dev'] ?></td>
+            </tr>
+            <tr>
+                <th style='width: 20%; text-align: left'>Cantidad</th>
+                <td style='text-align: left'><?php echo $cambio['cantidad'] ?></td>
+            </tr>
+            <tr>
+                <th style='text-align: left'>Producto Entregado</th>
+                <td style='text-align: left'><?php echo $cambio['nombre_producto_ent'] ?></td>
+            </tr>
+            <tr>
+                <th style='width: 20%; text-align: left'>Diferencia</th>
+                <td style='text-align: left'><?php echo number_format($cambio['diferencia'], 2) ?></td>
+            </tr>
+            <tr>
+                <th style='width: 20%; text-align: left'>Sucursal</th>
+                <td style='text-align: left'><?php echo $cambio['nombre_sucursal'] ?></td>
+            </tr>    
+            <tr>
+                <th style='width: 20%; text-align: left'>Empleado</th>
+                <td style='text-align: left'><?php echo $cambio['nombre_empleado'] ?></td>
+            </tr>
+        </table>
+    </body>
+</html>

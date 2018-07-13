@@ -1,0 +1,20 @@
+{
+  "name": "Siembra",
+  "version": "1.0.0",
+  "authors": [
+    "baci5190 <bryancruz9@gmail.com>"
+  ],
+  "description": "Base de sistema",
+  "main": "applicatoin/main.php",
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "eonasdan-bootstrap-datetimepicker": "^4.17.43"
+  }
+}

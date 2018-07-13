@@ -1,0 +1,25 @@
+<div ng-controller="ModuleCtrl" class="row">
+    <div ng-show="inList&&!inCrear&&!inDetalle" class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+        {{hola}}
+    </div>
+    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" ng-show="!inList&&inCrear&&!inDetalle">
+        <div class="row">
+            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                <button class='btn btn-primary btn-xs' ng-click='regresarALista()'>
+                    <span class='glyphicon glyphicon-arrow-left'></span>&nbsp;Regresar a la lista
+                </button>  
+            </div>
+        </div>
+        
+    </div>
+    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" ng-show="!inList&&!inCrear&&inDetalle">
+        <div class="row">
+            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                <button class='btn btn-primary btn-xs' ng-click='regresarALista()'>
+                    <span class='glyphicon glyphicon-arrow-left'></span>&nbsp;Regresar a la lista
+                </button>  
+            </div>
+        </div>
+        
+    </div>
+</div>

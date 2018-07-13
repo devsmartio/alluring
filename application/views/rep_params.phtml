@@ -1,0 +1,24 @@
+<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+    <form id="reportForm">
+        <div class="col-md-5 col-lg-5 col-sm-12 col-xs-12" ng-show='!inResult'>
+            <?php 
+            $this->showModule();
+            ?>
+            <div class="form-group">
+                <button class="btn btn-primary" ng-click="generate()">
+                    <span class="glyphicon glyphicon-check"></span>&nbsp;Generar
+                </button>
+                <!--button class="btn btn-success" ng-click="startAgain()">
+                    <span class="glyphicon glyphicon-tree-conifer"></span>&nbsp;Limpiar
+                </button-->
+            </div>
+        </div>
+        <button class='btn btn-info btn-sm' ng-click="inResult=false" ng-show='inResult'>
+            <span class='glyphicon glyphicon-backward'></span>&nbsp;Regresar a la búsqueda
+        </button>
+        <button class="btn btn-primary btn-sm" ng-click="generarExcel()" ng-show="inResult">
+            <span class="glyphicon glyphicon-file"></span>&nbsp;Generar Excel
+        </button>
+        <div class='col-xs-12 col-sm-12 col-md-12 col-lg-12' style="margin-top: 10px; overflow-x: auto" ng-bind-html='report' ng-show='inResult'></div>
+    </form>
+</div>
