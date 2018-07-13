@@ -187,8 +187,8 @@ CREATE TABLE `clientes` (
   correo varchar(100) not null,
   id_tipo_precio int(5) not null,
   id_empleado int(20) not null,
-  id_cliente int(20) null,
-  `tiene_credito` bit NOT NULL DEFAULT b'0',
+  id_cliente_referido int(20) null,
+  `tiene_credito` bit(1) NOT NULL DEFAULT b'0',
   `dias_credito` int(11) NULL,
   `factura_nit` varchar(20) DEFAULT NULL,
   `factura_nombre` varchar(50) NULL,
@@ -197,8 +197,7 @@ CREATE TABLE `clientes` (
   catalogo_usuario varchar(100),
   catalogo_password_hash varchar(1000),
   `fecha_creacion` datetime NOT NULL,
-  `usuario_creacion` varchar(50) NOT NULL,
-  `correo` varchar(100) DEFAULT NULL
+  `usuario_creacion` varchar(50) NOT NULL
   
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
@@ -327,7 +326,7 @@ CREATE TABLE `monedas` (
   `id_moneda` int(5) NOT NULL,
   `nombre` varchar(50) NOT NULL,
   `simbolo` varchar(5) NOT NULL,
-  moneda_defecto bit not null DEFAULT b'0',
+  moneda_defecto bit(1) not null DEFAULT b'0',
   `fecha_creacion` datetime NOT NULL,
   `usuario_creacion` varchar(200) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
@@ -446,24 +445,6 @@ CREATE TABLE `proveedor` (
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
-
---
--- Stand-in structure for view `reporte_inventario`
---
-CREATE TABLE `reporte_inventario` (
-`nombre_proveedor` varchar(100)
-,`id_sucursal` int(20)
-,`id_proveedor` int(20)
-,`nombre_producto` varchar(50)
-,`cantidad` decimal(33,2)
-,`minimo_inventario` int(10)
-,`nombre_sucursal` varchar(50)
-,`descripcion_producto` varchar(100)
-,`nombre_marca` varchar(50)
-,`nombre_tipo` varchar(50)
-,`nombre_subtipo` varchar(50)
-,`costo` decimal(10,2)
-);
 
 -- --------------------------------------------------------
 
@@ -641,9 +622,9 @@ INSERT INTO `variables_sistema` (`id_variables_sistema`, `nombre`, `valor`, `fec
 --
 -- Structure for view `reporte_inventario`
 --
-DROP TABLE IF EXISTS `reporte_inventario`;
+ -- DROP TABLE IF EXISTS `reporte_inventario`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `reporte_inventario`  AS  select max(`pr`.`nombre`) AS `nombre_proveedor`,`tr`.`id_sucursal` AS `id_sucursal`,max(`p`.`id_proveedor`) AS `id_proveedor`,max(`p`.`nombre`) AS `nombre_producto`,(sum(`tr`.`haber`) - sum(`tr`.`debe`)) AS `cantidad`,max(`p`.`minimo_inventario`) AS `minimo_inventario`,max(`su`.`nombre`) AS `nombre_sucursal`,max(`p`.`descripcion`) AS `descripcion_producto`,max(`m`.`nombre`) AS `nombre_marca`,max(`t`.`nombre`) AS `nombre_tipo`,max(`s`.`nombre`) AS `nombre_subtipo`,`p`.`costo` AS `costo` from ((((((`trx_transacciones` `tr` join `producto` `p` on((`p`.`id_producto` = `tr`.`id_producto`))) join `proveedor` `pr` on((`pr`.`id_proveedor` = `p`.`id_proveedor`))) join `marca` `m` on((`m`.`id_marca` = `p`.`id_marca`))) join `subtipo` `s` on((`s`.`id_subtipo` = `p`.`id_subtipo`))) join `tipo` `t` on((`p`.`id_tipo` = `t`.`id_tipo`))) join `sucursales` `su` on((`su`.`id_sucursal` = `tr`.`id_sucursal`))) where (`tr`.`id_producto` is not null) group by `tr`.`id_producto`,`tr`.`id_sucursal` ;
+-- CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `reporte_inventario`  AS  select max(`pr`.`nombre`) AS `nombre_proveedor`,`tr`.`id_sucursal` AS `id_sucursal`,max(`p`.`id_proveedor`) AS `id_proveedor`,max(`p`.`nombre`) AS `nombre_producto`,(sum(`tr`.`haber`) - sum(`tr`.`debe`)) AS `cantidad`,max(`p`.`minimo_inventario`) AS `minimo_inventario`,max(`su`.`nombre`) AS `nombre_sucursal`,max(`p`.`descripcion`) AS `descripcion_producto`,max(`m`.`nombre`) AS `nombre_marca`,max(`t`.`nombre`) AS `nombre_tipo`,max(`s`.`nombre`) AS `nombre_subtipo`,`p`.`costo` AS `costo` from ((((((`trx_transacciones` `tr` join `producto` `p` on((`p`.`id_producto` = `tr`.`id_producto`))) join `proveedor` `pr` on((`pr`.`id_proveedor` = `p`.`id_proveedor`))) join `marca` `m` on((`m`.`id_marca` = `p`.`id_marca`))) join `subtipo` `s` on((`s`.`id_subtipo` = `p`.`id_subtipo`))) join `tipo` `t` on((`p`.`id_tipo` = `t`.`id_tipo`))) join `sucursales` `su` on((`su`.`id_sucursal` = `tr`.`id_sucursal`))) where (`tr`.`id_producto` is not null) group by `tr`.`id_producto`,`tr`.`id_sucursal` ;
 
 --
 -- Indexes for dumped tables
@@ -723,8 +704,6 @@ ALTER TABLE `monedas`
 --
 -- Indexes for table `moneda_tipo`
 --
-ALTER TABLE `moneda_tipo`
-  ADD PRIMARY KEY (`id_moneda_tipo`);
 
 --
 -- Indexes for table `movimiento_sucursales_estado`
@@ -855,7 +834,7 @@ ALTER TABLE `variables_sistema`
 -- AUTO_INCREMENT for table `app_modules`
 --
 ALTER TABLE `app_modules`
-  MODIFY `ID` int(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=60;
+  MODIFY `ID` int(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 --
 -- AUTO_INCREMENT for table `app_module_category`
 --
@@ -893,9 +872,6 @@ ALTER TABLE `monedas`
   MODIFY `id_moneda` int(5) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 --
 -- AUTO_INCREMENT for table `moneda_tipo`
---
-ALTER TABLE `moneda_tipo`
-  MODIFY `id_moneda_tipo` int(5) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 --
 -- AUTO_INCREMENT for table `movimiento_sucursales_estado`
 --
@@ -1017,15 +993,9 @@ ALTER TABLE `municipios`
 -- Constraints for table `producto`
 --
 ALTER TABLE `producto`
-  ADD CONSTRAINT `producto_ibfk_1` FOREIGN KEY (`id_subtipo`) REFERENCES `subtipo` (`id_subtipo`),
-  ADD CONSTRAINT `producto_ibfk_2` FOREIGN KEY (`id_tipo`) REFERENCES `tipo` (`id_tipo`),
-  ADD CONSTRAINT `producto_ibfk_3` FOREIGN KEY (`id_marca`) REFERENCES `marca` (`id_marca`);
+  ADD CONSTRAINT `producto_ibfk_2` FOREIGN KEY (`id_tipo`) REFERENCES `tipo` (`id_tipo`);
 
---
--- Constraints for table `tipo`
---
-ALTER TABLE `tipo`
-  ADD CONSTRAINT `tipo_ibfk_1` FOREIGN KEY (`id_categoria`) REFERENCES `categorias` (`id_categoria`);
+
 
 --
 -- Constraints for table `tipo_cambio`
@@ -1082,6 +1052,12 @@ ALTER TABLE `trx_salida_inventario_detalle`
   ADD CONSTRAINT `trx_salida_inventario_detalle_ibfk_2` FOREIGN KEY (`id_producto`) REFERENCES `producto` (`id_producto`),
   ADD CONSTRAINT `trx_salida_inventario_detalle_ibfk_3` FOREIGN KEY (`id_transaccion`) REFERENCES `trx_transacciones` (`id_transaccion`);
 
+create table cuentas (
+	id_cuenta int(20) not null auto_increment primary key,
+    nombre varchar(50)
+);
+
+
 --
 -- Constraints for table `trx_transacciones`
 --
@@ -1095,11 +1071,11 @@ ALTER TABLE `trx_transacciones`
 
 
 alter table clientes add constraint clientes_pais foreign key (id_pais) references paises(id_pais);
-alter table clientes add constraint clientes_departamento foreign key (id_departamento) references departamento(id_departamento);
-alter table clientes add constraint clientes_municipio foreign key (id_municipio) references departamento(id_municipio); 
+alter table clientes add constraint clientes_departamento foreign key (id_departamento) references departamentos(id_departamento);
+alter table clientes add constraint clientes_municipio foreign key (id_municipio) references municipios(id_municipio); 
 alter table clientes add constraint clientes_tipo_precio foreign key (id_tipo_precio) references clientes_tipos_precio(id_tipo_precio); 
 alter table clientes add constraint clientes_empleado foreign key (id_empleado) references empleados(id_empleado); 
-alter table clientes add constraint clientes_cliente_referido foreign key (id_cliente) references clientes(id_cliente); 
+alter table clientes add constraint clientes_cliente_referido foreign key (id_cliente_referido) references clientes(id_cliente); 
 alter table clientes_telefonos add constraint clientes_telefonos_cliente foreign key (id_cliente) references clientes(id_cliente); 
 alter table clientes_bodegas add constraint clientes_bodegas_cliente foreign key (id_cliente) references clientes(id_cliente); 
 alter table clientes_bodegas add constraint clientes_bodegas_bodega foreign key (id_sucursal) references sucursales(id_sucursal);
