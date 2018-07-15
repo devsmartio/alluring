@@ -25,14 +25,18 @@
     <div class='table-responsive'>
         <table class='table table-striped table-bordered' ng-show='noMode'>
             <tr>
-                <td colspan='{{gridCols.length}}'>
-                    Buscar registro: <input type='text' ng-model='filter'/>
-                </td>
-            </tr>
-            <tr>
                 <th ng-repeat='col in gridCols' ng-bind='col.LABEL'></th>
             </tr>
-            <tr ng-class="{info:row.selected}" ng-click='selectRow(row)' ng-repeat='row in rows | filter:filter | orderBy: sortBy'> 
+            <tr>
+                <?php
+                    foreach ($this->gridCols as $key => $value) {
+                ?>
+                        <td><input type='text' ng-model='search.<?php echo $value ?>'/></td>
+                <?php
+                    }
+                ?>
+            </tr>
+            <tr ng-class="{info:row.selected}" ng-click='selectRow(row)' ng-repeat='row in rows | filter:search | orderBy: sortBy'>
                 <td ng-repeat='col in gridCols' ng-bind='row[col.VALOR]'></td>
             </tr>
         </table>
