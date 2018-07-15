@@ -23,7 +23,7 @@ class MantUsuarios extends FastMaintenance{
         }
         $this->fields = array(
             new FastField('Usuario', 'ID', 'text', 'text', true, null, array(), true, null, true, true),
-            new FastField('Nombres', 'FIRST_NAME', 'text', 'text'),
+            new FastField('Nombres', 'FIRST_NAME', 'text', 'text', true, null, array(), true, null, false, false),
             new FastField('Apellidos', 'LAST_NAME', 'text', 'text'),
             new FastField('Perfil', 'FK_PROFILE', 'select', 'int', true, null, $prof),
             new FastField('Nueva Contraseña ("Solo cambiar para reseteo")', 'PASSWORD', 'password', 'text')
@@ -33,6 +33,20 @@ class MantUsuarios extends FastMaintenance{
             'Nombres' => 'FIRST_NAME',
             'Apellidos' => 'LAST_NAME',
         );
+    }
+
+    protected function specialValidation($fields, $r, $mess, $pkFields)
+    {
+        $usuario = new Entity($fields);
+        $id = str_replace("'", "", $usuario->get('ID'));
+        $id = sqlValue(encode_email_address($id), 'text');
+
+        $result = $this->db->queryToArray(sprintf('select FIRST_NAME from app_user where ID=%s', $id));
+        if (count($result) > 0) {
+            $r = 0;
+            $mess = 'El usuario ya existe, favor de corregir y volver a intentar';
+        }
+        return array('r' => $r, 'mess' => $mess);
     }
 	
     protected function specialProcessBeforeInsert($insertData){
