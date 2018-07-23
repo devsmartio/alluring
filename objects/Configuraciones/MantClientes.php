@@ -19,7 +19,7 @@ class MantClientes extends FastMaintenance{
         $this->setTitle('Mantenimiento de clientes');
         
         $this->fields = array(
-            new FastField('Id', 'id_cliente', 'hidden', 'int', TRUE, null, array(), false, null, true),
+            new FastField('Id', 'id_cliente', 'hidden', 'int', TRUE, null, array(), false, false, true),
             new FastField('Identificación', 'id_personal', 'text', 'text', true, null, array(), false),
             new FastField('Nombre', 'nombres', 'text', 'text', true),
             new FastField('Apellidos', 'apellidos', 'text', 'text', true),
@@ -44,26 +44,26 @@ class MantClientes extends FastMaintenance{
     }
     
     protected function specialValidation($fields, $r, $mess, $pkFields) {
-        $cliente = new Entity($fields);
-        if($cliente->get('tiene_credito') == 1 && (!$cliente->existsAndNotEmpty('dias_credito') || $cliente->get('dias_credito') == 0)){
-            $r = 0;
-            $mess = 'Debe indicar los días de crédito aprobados';
-        }
-        $wn ='nit = '.$cliente->get('nit') . ' and id_cliente!=' . $pkFields['id_cliente'];
-        $nit= $this->db->query_select('clientes',$wn);
-        
-        if(count($nit) > 0 && $cliente->get('nit') != "'CF'"){
-            $r = 0;
-            $mess = "El nit ingresado ya existe en el sistema";
-        }
-        
-        $wid ='id_personal = '.$cliente->get('id_personal') . ' and id_cliente!=' . $pkFields['id_cliente'];
-        $cui = $this->db->query_select('clientes',$wid);
-        
-        if(count($cui) > 0){
-            $r = 0;
-            $mess = "El número de identificación ingresado ya existe en el sistema";
-        }        
+//        $cliente = new Entity($fields);
+//        if($cliente->get('tiene_credito') == 1 && (!$cliente->existsAndNotEmpty('dias_credito') || $cliente->get('dias_credito') == 0)){
+//            $r = 0;
+//            $mess = 'Debe indicar los días de crédito aprobados';
+//        }
+//        $wn ='factura_nit = '.$cliente->get('nit') . ' and identificacion!=' . $cliente->get('id_personal');
+//        $nit= $this->db->query_select('clientes',$wn);
+//
+//        if(count($nit) > 0 && $cliente->get('factura_nit') != "'CF'"){
+//            $r = 0;
+//            $mess = "El nit ingresado ya existe en el sistema";
+//        }
+//
+//        $wid ='id_personal = '.$cliente->get('id_personal') . ' and id_cliente!=' . $pkFields['id_cliente'];
+//        $cui = $this->db->query_select('clientes',$wid);
+//
+//        if(count($cui) > 0){
+//            $r = 0;
+//            $mess = "El número de identificación ingresado ya existe en el sistema";
+//        }
         return array('r' => $r, 'mess' => $mess);
     }
     

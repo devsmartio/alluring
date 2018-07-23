@@ -36,7 +36,8 @@ class MantEmpleados extends FastMaintenance {
             new FastField('Nombres', 'nombres', 'text', 'text', true),
             new FastField('Apellidos', 'apellidos', 'text', 'text', true),
             new FastField('Usuario', 'id_usuario', 'select', 'text', TRUE, null, $users),
-            new FastField('Sucursal', 'id_sucursal', 'select', 'int', true, null, $sucs)
+            new FastField('Sucursal', 'id_sucursal', 'select', 'int', true, null, $sucs),
+            new FastField('Es Vendedor?', 'es_vendedor', 'select', 'int', true, null, array('Si' => 1, 'No' => 0), true)
         );
         
         $this->gridCols = array(

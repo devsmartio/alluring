@@ -241,7 +241,7 @@ $last_name = $user['LAST_NAME'];
                 <div class="card">
                     <div class="card-body">
                         <!-- here -->
-                        <div class="col-md-9 col-lg-9" id="moduleCont">
+                        <div class="col-md-12 col-lg-12" id="moduleCont">
                             <div class="panel panel-default" style="min-height:750px;">
                                 <div class="panel-heading">
                                     <h3 class="panel-title"><?php echo $this->mod->myTitle() ?></h3>

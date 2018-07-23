@@ -1,0 +1,501 @@
+<?php
+/**
+ * Created by PhpStorm.
+ * User: eder.herrera
+ * Date: 7/18/2018
+ * Time: 9:03 PM
+ * TrxAdministracionClientes
+ */
+
+class TrxAdministracionClientes extends FastTransaction {
+    protected $onlyEdit;
+    function __construct(){
+        parent::__construct();
+        $this->instanceName = 'TrxAdministracionClientes';
+        $this->table = 'clientes';
+        $this->setTitle('Administracion de Clientes');
+        $this->hasCustomSave = true;
+
+        $this->onlyEdit = false;
+        $this->onlyNew = false;
+        $dsClientes = $this->db->query_select('clientes');
+        $clientes = array();
+        foreach($dsClientes as $p){
+            $clientes[self_escape_string($p['nombres'] . ' '. $p['apellidos'])] = $p['id_cliente'];
+        }
+
+        $this->gridCols = array(
+            'ID' => 'id_cliente',
+            'Nombres' => 'nombres',
+            'Apellidos' => 'apellidos',
+            'Identificacion' => 'identificacion',
+            'Nit' => 'factura_nit',
+            'Departamento' => 'nombre_depto'
+        );
+    }
+
+    protected function showModule() {
+        include VIEWS . "/administracion_clientes.phtml";
+    }
+
+    public function myJavascript()
+    {
+        parent::myJavascript();
+        ?>
+        <script>
+            app.controller('ModuleCtrl', function ($scope, $http, $rootScope, $timeout) {
+                $scope.startAgain = function () {
+                    $scope.goNoMode();
+                    $scope.currentIndex = null;
+                    $scope.lastSelected = {
+                        id_cliente: 0,
+                        nombres: '',
+                        apellidos: '',
+                        direccion: '',
+                        identificacion: '',
+                        id_pais: 0,
+                        id_departamento: 0,
+                        id_municipio: 0,
+                        correo: '',
+                        id_tipo_precio: 0,
+                        id_empleado: 0,
+                        tiene_credito: false,
+                        dias_credito: '0',
+                        id_cliente_referido: 0,
+                        factura_nit: '',
+                        factura_direccion: '',
+                        factura_nombre: '',
+                        observaciones: '',
+                        catalogo_usuario: '',
+                        catalogo_password_hash: ''
+                    };
+
+                    $http.get($scope.ajaxUrl + '&act=getRows').success(function (response) {
+                        $scope.rows = response.data;
+                        $scope.setRowSelected($scope.rows);
+                        $scope.setRowIndex($scope.rows);
+                    });
+                    $http.get($scope.ajaxUrl + '&act=getGridCols').success(function (response) {
+                        $scope.gridCols = response.data;
+                    });
+                    $http.get($scope.ajaxUrl + '&act=getPaises').success(function (response) {
+                        $scope.paises = response.data;
+                    });
+                    $http.get($scope.ajaxUrl + '&act=getDepartamentos').success(function (response) {
+                        $scope.departamentos = response.data;
+                    });
+                    $http.get($scope.ajaxUrl + '&act=getMunicipios').success(function (response) {
+                        $scope.municipios = response.data;
+                    });
+                    $http.get($scope.ajaxUrl + '&act=getTiposCliente').success(function (response) {
+                        $scope.tiposCliente = response.data;
+                    });
+                    $http.get($scope.ajaxUrl + '&act=getVendedores').success(function (response) {
+                        $scope.vendedores = response.data;
+                    });
+                    $http.get($scope.ajaxUrl + '&act=getClientes').success(function (response) {
+                        $scope.clientes = response.data;
+                    });
+
+                    $scope.inList = true;
+                };
+                $scope.goNew = function () {
+                    $scope.lastSelected = new Array();
+                    $scope.Init();
+                    $scope.editMode = false;
+                    $scope.newMode = true;
+                    $scope.noMode = false;
+                };
+                $scope.goNoMode = function () {
+                    $scope.editMode = false;
+                    $scope.newMode = false;
+                    $scope.noMode = true;
+                };
+                $scope.goEdit = function () {
+                    $scope.editMode = true;
+                    $scope.newMode = false;
+                    $scope.noMode = false;
+                };
+                $scope.Init = function () {
+                    $scope.lastSelected.tiene_credito = false;
+                    $scope.lastSelected.dias_credito = 0;
+                };
+
+                $scope.finalizarModal = function () {
+                    if ($scope.productosSel.length == 0) {
+                        $timeout(function () {
+                            $scope.alerts.push({type: 'alert-danger', msg: 'Debe agregar al menos un producto'});
+                        }, 2000);
+                    } else {
+                        $("#finModal").modal();
+                    }
+                };
+
+                $scope.finalizarEditado = function () {
+                    $rootScope.modData = {
+                        id_cliente: $scope.lastSelected.id_cliente,
+                        nombres: $scope.lastSelected.nombres,
+                        apellidos: $scope.lastSelected.apellidos,
+                        direccion: $scope.lastSelected.direccion,
+                        identificacion: $scope.lastSelected.identificacion,
+                        id_pais: $scope.lastSelected.id_pais,
+                        id_departamento: $scope.lastSelected.id_departamento,
+                        id_municipio: $scope.lastSelected.id_municipio,
+                        correo: $scope.lastSelected.correo,
+                        id_tipo_precio: $scope.lastSelected.id_tipo_precio,
+                        id_empleado: $scope.lastSelected.id_empleado,
+                        tiene_credito: $scope.lastSelected.tiene_credito,
+                        dias_credito: $scope.lastSelected.dias_credito,
+                        id_cliente_referido: $scope.lastSelected.id_cliente_referido,
+                        factura_nit: $scope.lastSelected.factura_nit,
+                        factura_nombre: $scope.lastSelected.factura_nombre,
+                        factura_direccion: $scope.lastSelected.factura_direccion,
+                        observaciones: $scope.lastSelected.observaciones,
+                        catalogo_usuario: $scope.lastSelected.catalogo_usuario,
+                        catalogo_password_hash: $scope.lastSelected.catalogo_password_hash,
+                        mod : 2
+                    };
+
+                    $scope.doSave();
+                };
+
+                $scope.finalizar = function () {
+                    $rootScope.modData = {
+                        id_cliente: $scope.lastSelected.id_cliente,
+                        nombres : $scope.lastSelected.nombres,
+                        apellidos : $scope.lastSelected.apellidos,
+                        direccion : $scope.lastSelected.direccion,
+                        identificacion : $scope.lastSelected.identificacion,
+                        id_pais : $scope.lastSelected.id_pais,
+                        id_departamento : $scope.lastSelected.id_departamento,
+                        id_municipio : $scope.lastSelected.id_municipio,
+                        correo : $scope.lastSelected.correo,
+                        id_tipo_precio : $scope.lastSelected.id_tipo_precio,
+                        id_empleado : $scope.lastSelected.id_empleado,
+                        tiene_credito : $scope.lastSelected.tiene_credito,
+                        dias_credito : $scope.lastSelected.dias_credito,
+                        id_cliente_referido : $scope.lastSelected.id_cliente_referido,
+                        factura_nit : $scope.lastSelected.factura_nit,
+                        factura_nombre : $scope.lastSelected.factura_nombre,
+                        factura_direccion : $scope.lastSelected.factura_direccion,
+                        observaciones : $scope.lastSelected.observaciones,
+                        catalogo_usuario : $scope.lastSelected.catalogo_usuario,
+                        catalogo_password_hash : $scope.lastSelected.catalogo_password_hash,
+                        mod : 1
+                    };
+
+                    $scope.doSave();
+                };
+                $scope.doDelete = function() {
+                    if ($scope.editMode) {
+                        if (confirm('¿Confirmas borrar este registro? Si el registro está en uso, la acción no se realizará.')) {
+                            $rootScope.modData = {
+                                id_cliente: $scope.lastSelected.id_cliente,
+                                nombres: $scope.lastSelected.nombres,
+                                apellidos: $scope.lastSelected.apellidos,
+                                direccion: $scope.lastSelected.direccion,
+                                identificacion: $scope.lastSelected.identificacion,
+                                id_pais: $scope.lastSelected.id_pais,
+                                id_departamento: $scope.lastSelected.id_departamento,
+                                id_municipio: $scope.lastSelected.id_municipio,
+                                correo: $scope.lastSelected.correo,
+                                id_tipo_precio: $scope.lastSelected.id_tipo_precio,
+                                id_empleado: $scope.lastSelected.id_empleado,
+                                tiene_credito: $scope.lastSelected.tiene_credito,
+                                dias_credito: $scope.lastSelected.dias_credito,
+                                id_cliente_referido: $scope.lastSelected.id_cliente_referido,
+                                factura_nit: $scope.lastSelected.factura_nit,
+                                factura_nombre: $scope.lastSelected.factura_nombre,
+                                factura_direccion: $scope.lastSelected.factura_direccion,
+                                observaciones: $scope.lastSelected.observaciones,
+                                catalogo_usuario: $scope.lastSelected.catalogo_usuario,
+                                catalogo_password_hash: $scope.lastSelected.catalogo_password_hash,
+                                mod: 3
+                            };
+
+                            $scope.doSave();
+                        }
+                    } else {
+                        $scope.alerts.push({type: 'alert-warning', msg: 'Operación no permitida'});
+                        $scope.startAgain();
+                    }
+                };
+
+                $scope.cancelar = function () {
+                    $scope.cancel();
+                };
+
+                $scope.selectRow = function(row){
+                    $scope.lastSelected = row;
+                    $scope.currentIndex = row.index;
+                    $scope.setRowSelected($scope.rows);
+                    $scope.lastSelected.selected = true;
+                    $scope.goEdit();
+                };
+                $scope.next = function(){
+                    if($scope.currentIndex == ($scope.rows.length - 1)){
+                        $scope.alerts.push({
+                            type: 'alert-info',
+                            msg: 'Ha llegado al último registro'
+                        });
+                    } else {
+                        $scope.selectRow($scope.rows[parseInt($scope.currentIndex + 1)]);
+                    }
+                    $timeout(function(){
+                        $scope.alerts = new Array();
+                    }, 3000);
+                };
+                $scope.prev = function(){
+                    if($scope.currentIndex == 0){
+                        $scope.alerts.push({
+                            type: 'alert-info',
+                            msg: 'Ha llegado al primer registro'
+                        });
+                    } else {
+                        $scope.selectRow($scope.rows[parseInt($scope.currentIndex - 1)]);
+                    }
+                    $timeout(function(){
+                        $scope.alerts = new Array();
+                    }, 2000);
+                };
+
+                $scope.setRowIndex = function(rows){
+                    $index = 0;
+                    $.each(rows, function(e, row){
+                        row.index = $index;
+                        $index++;
+                    });
+                };
+
+                $scope.setRowSelected = function(rows){
+                    $.each(rows, function(e, row){
+                        row.selected = false;
+                    });
+                };
+
+                $scope.startAgain();
+                $rootScope.addCallback(function () {
+                    $('#finModal').modal('hide');
+                    $scope.startAgain();
+                });
+            });
+        </script>
+    <?php
+    }
+
+    public function getRows(){
+        try {
+            $resultSet = $this->db->query_select($this->table);
+            foreach($this->fields as $f){
+                $i = 0;
+                while(count($resultSet) > $i){
+                    if($f instanceof FastField){
+                        if($f->valueType == 'text'){
+                            $resultSet[$i][$f->name] = self_escape_string($resultSet[$i][$f->name]);
+                        }
+                    }
+                    $i++;
+                }
+            }
+            $resultSet = $this->specialProcessBeforeShow($resultSet);
+        } catch(Exception $e){
+            error_log($e->getTraceAsString());
+        }
+        echo json_encode(array('data' => $resultSet));
+    }
+
+    public function getGridCols(){
+        $resultSet = array();
+        foreach($this->gridCols as $colLabel => $colValue){
+            $toAdd = array(
+                'LABEL' => $colLabel,
+                'VALOR' => $colValue
+            );
+            $resultSet[] = $toAdd;
+        }
+        echo json_encode(array('data' => $resultSet));
+    }
+
+    public function specialProcessBeforeShow($resultSet){
+        $departamentos = Collection::get($this->db, 'departamentos');
+
+        for($i = 0; count($resultSet) > $i; $i++){
+            $depto = $departamentos->where(['id_departamento' => $resultSet[$i]['id_departamento']])->single();
+            $resultSet[$i]['nombre_depto'] = $depto['nombre'];
+            $resultSet[$i]['tiene_credito'] = ($resultSet[$i]['tiene_credito'] == '1') ? true : false ;
+        }
+        return sanitize_array_by_keys($resultSet, array('nombre_depto'));
+    }
+
+    public function getPaises(){
+        $resultSet = array();
+
+        $dsPaises = $this->db->query_select('paises');
+        $resultSet[] = array('id_pais' =>'', 'nombre' => '-- Seleccione uno --');
+        foreach($dsPaises as $p){
+            $resultSet[] = array('id_pais' => $p['id_pais'], 'nombre' => $p['nombre']);
+        }
+
+        echo json_encode(array('data' => $resultSet));
+    }
+
+    public function getDepartamentos(){
+        $resultSet = array();
+
+        $dsDepartamentos = $this->db->query_select('departamentos');
+        $resultSet[] = array('id_pais' =>'', 'nombre' => '-- Seleccione uno --');
+
+        foreach($dsDepartamentos as $p){
+            $resultSet[] = array('id_departamento' => $p['id_departamento'], 'nombre' => $p['nombre']);
+        }
+
+        echo json_encode(array('data' => $resultSet));
+    }
+
+    public function getMunicipios(){
+        $resultSet = array();
+
+        $dsDepartamentos = $this->db->query_select('municipios');
+        $resultSet[] = array('id_municipio' =>'', 'nombre' => '-- Seleccione uno --');
+
+        foreach($dsDepartamentos as $p){
+            $resultSet[] = array('id_municipio' => $p['id_municipio'], 'nombre' => $p['nombre']);
+        }
+
+        echo json_encode(array('data' => $resultSet));
+    }
+
+    public function getTiposCliente(){
+        $resultSet = array();
+
+        $dsTipoCliente = $this->db->query_select('clientes_tipos_precio');
+
+        $resultSet[] = array('id_tipo_precio' =>'', 'nombre' => '-- Seleccione uno --');
+
+        foreach($dsTipoCliente as $p){
+            $resultSet[] = array('id_tipo_precio' => $p['id_tipo_precio'], 'nombre' => $p['nombre']);
+        }
+
+        echo json_encode(array('data' => $resultSet));
+    }
+
+    public function getVendedores(){
+        $resultSet = array();
+
+        $dsVendedores = $this->db->query_select('empleados', sprintf("es_vendedor = 1"));
+
+        $resultSet[] = array('id_empleado' =>'', 'nombre' => '-- Seleccione uno --');
+
+        foreach($dsVendedores as $p){
+            $resultSet[] = array('id_empleado' => $p['id_empleado'], 'nombre' => $p['nombres'] . ' ' .$p['apellidos']);
+        }
+
+        echo json_encode(array('data' => $resultSet));
+    }
+
+    public function getClientes(){
+        $resultSet = array();
+
+        $dsClientes = $this->db->query_select('clientes');
+
+        $resultSet[] = array('id_cliente' =>'', 'nombre' => '-- Seleccione uno --');
+
+        foreach($dsClientes as $p){
+            $resultSet[] = array('id_cliente' => $p['id_cliente'], 'nombre' => $p['nombres'] . ' ' . $p['apellidos']);
+        }
+
+        echo json_encode(array('data' => $resultSet));
+    }
+
+    public function dataIsValid($data)
+    {
+
+        if (array_key_exists('correo', $data)) {
+            $correo = str_replace("'", "", $data['correo']);
+            if (!preg_match('/^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/', $correo, $matches)) {
+                $this->r = 0;
+                $this->msg = 'Correo inválido, favor de revisar e intentar de nuevo';
+            }
+        }
+        if (array_key_exists('tiene_credito', $data)) {
+            if ($data['tiene_credito'] && ($data['dias_credito'] == 0 || $data['dias_credito'] == '')) {
+                $this->r = 0;
+                $this->msg = 'Al momento de indicar que posee credito, debe indicar cuantos dias de credito posee el cliente';
+            }
+        }
+        if (array_key_exists('factura_nit', $data) && (!array_key_exists('factura_nombre', $data) || !array_key_exists('factura_direccion', $data))) {
+            $this->r = 0;
+            $this->msg = 'Al momento de ingresar el Nit, debe indicar el nombre y direccion a facturar';
+
+//            if (trim($data['factura_nit']) != '' && (trim($data['factura_nombre']) == '' || trim($data['factura_direccion']) == '')) {
+//                $this->r = 0;
+//                $this->msg = 'Al momento de ingresar el Nit, debe indicar el nombre y direccion a facturar';
+//            }
+        }
+        if (array_key_exists('catalogo_usuario', $data)) {
+            if (trim($data['catalogo_usuario']) != '') {
+
+                $id = str_replace("'", "", trim($data['catalogo_usuario']));
+                $id = sqlValue(encode_email_address($id), 'text');
+
+                $result = $this->db->queryToArray(sprintf('select FIRST_NAME from app_user where ID=%s', $id));
+                if (count($result) > 0) {
+                    $this->r = 0;
+                    $this->msg = 'El usuario ya existe, favor de corregir y volver a intentar';
+                }
+            }
+        }
+
+        if ($this->r == 0) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function doSave($data)
+    {
+        $fecha = new DateTime();
+        $user = AppSecurity::$UserData['data'];
+
+        $cliente = [
+            'nombres' => sqlValue($data['nombres'], 'text'),
+            'apellidos' => sqlValue($data['apellidos'], 'text'),
+            'direccion' => sqlValue($data['direccion'], 'text'),
+            'identificacion' => sqlValue($data['identificacion'], 'text'),
+            'id_pais' => sqlValue($data['id_pais'], 'int'),
+            'id_departamento' => sqlValue($data['id_departamento'], 'number'),
+            'id_municipio' => sqlValue($data['id_municipio'], 'number'),
+            'correo' => sqlValue($data['correo'], 'text'),
+            'id_tipo_precio' => sqlValue($data['id_tipo_precio'], 'number'),
+            'id_empleado' => sqlValue($data['id_empleado'], 'text'),
+            'tiene_credito' => sqlValue(($data['tiene_credito'] == false) ? 0 : 1, 'number'),
+            'dias_credito' => sqlValue($data['dias_credito'], 'number'),
+            'id_cliente_referido' => sqlValue($data['id_cliente_referido'], 'number'),
+            'factura_nit' => sqlValue($data['factura_nit'], 'text'),
+            'factura_nombre' => sqlValue($data['factura_nombre'], 'text'),
+            'factura_direccion' => sqlValue($data['factura_direccion'], 'text'),
+            'observaciones' => sqlValue($data['observaciones'], 'text'),
+            'catalogo_usuario' => sqlValue($data['catalogo_usuario'], 'text'),
+            'catalogo_password_hash' => sqlValue(md5($data['catalogo_password_hash']), 'text'),
+            'fecha_creacion' => sqlValue($fecha->format('Y-m-d H:i:s'), 'date'),
+            'usuario_creacion' => sqlValue(self_escape_string($user['FIRST_NAME']), 'text')
+        ];
+
+        if ($data['mod'] == 1) {
+            $this->db->query_insert('clientes', $cliente);
+
+            $this->msg = 'Cliente ingresado con éxito';
+        } else if ($data['mod'] == 2) {
+            $this->db->query_update('clientes', $cliente, sprintf('id_cliente = %s', $data['id_cliente']));
+
+            $this->msg = 'Cliente actualizado con éxito';
+        } else if ($data['mod'] == 3) {
+            $this->db->query_delete('clientes', sprintf('id_cliente = %s', $data['id_cliente']));
+
+            $this->msg = 'Cliente eliminado con éxito';
+        }
+
+        $this->r = 1;
+    }
+}

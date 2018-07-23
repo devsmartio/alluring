@@ -1083,3 +1083,7 @@ alter table clientes_bodegas add constraint clientes_bodegas_bodega foreign key 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+ALTER TABLE `empleados`
+ADD COLUMN es_vendedor bit(1) NOT NULL DEFAULT b'0';
+ALTER TABLE `clientes` MODIFY id_empleado int(20) NULL;
+alter table `clientes` drop foreign key clientes_cliente_referido;
