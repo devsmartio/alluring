@@ -80,11 +80,14 @@ class TrxAdministracionClientes extends FastTransaction {
                         observaciones: '',
                         catalogo_usuario: '',
                         catalogo_password_hash: '',
-                        telefonos : []
+                        telefonos : [],
+                        bodegas : []
                     };
                     $scope.telefono = '';
                     $scope.telefonoPattern = /^[0-9]{8}$/;
                     $scope.error = '';
+                    $scope.id_sucursal = '';
+                    $scope.error_bodega = '';
 
                     $http.get($scope.ajaxUrl + '&act=getRows').success(function (response) {
                         $scope.rows = response.data;
@@ -112,6 +115,9 @@ class TrxAdministracionClientes extends FastTransaction {
                     $http.get($scope.ajaxUrl + '&act=getClientes').success(function (response) {
                         $scope.clientes = response.data;
                     });
+                    $http.get($scope.ajaxUrl + '&act=getSucursales').success(function (response) {
+                        $scope.sucursales = response.data;
+                    });
 
                     $scope.inList = true;
                 };
@@ -135,6 +141,8 @@ class TrxAdministracionClientes extends FastTransaction {
                 $scope.Init = function () {
                     $scope.lastSelected.tiene_credito = false;
                     $scope.lastSelected.dias_credito = 0;
+                    $scope.lastSelected.telefonos = [];
+                    $scope.lastSelected.bodegas = []
                 };
 
                 $scope.agregarTelefono = function () {
@@ -152,6 +160,25 @@ class TrxAdministracionClientes extends FastTransaction {
                 $scope.borrarTelefono = function (tel) {
                     var index = $scope.lastSelected.telefonos.indexOf(tel);
                     $scope.lastSelected.telefonos.splice(index, 1);
+                };
+
+                $scope.agregarBodega = function () {
+                    if($scope.lastSelected.bodegas.filter(bodega => bodega.id_sucursal == $scope.id_sucursal).length > 0) {
+                        $scope.mantForm.id_sucursal.$setValidity("invalid", false);
+                        $scope.error_bodega = 'La bodega ya fue ingresado';
+                    }else {
+                        var bodega = $scope.sucursales.filter(sucursal => sucursal.id_sucursal == $scope.id_sucursal);
+                        if(bodega.length > 0) {
+                            $scope.lastSelected.bodegas.push(bodega[0]);
+                            $scope.id_sucursal = '';
+                            $scope.error_bodega = '';
+                        }
+                    }
+                };
+
+                $scope.borrarBodega = function (bodega) {
+                    var index = $scope.lastSelected.bodegas.indexOf(bodega);
+                    $scope.lastSelected.bodegas.splice(index, 1);
                 };
 
                 $scope.finalizarEditado = function () {
@@ -177,6 +204,7 @@ class TrxAdministracionClientes extends FastTransaction {
                         catalogo_usuario: ($scope.lastSelected.catalogo_usuario == undefined) ? '' : $scope.lastSelected.catalogo_usuario,
                         catalogo_password_hash: ($scope.lastSelected.catalogo_password_hash == undefined) ? '' : $scope.lastSelected.catalogo_password_hash,
                         telefonos: $scope.lastSelected.telefonos,
+                        bodegas: $scope.lastSelected.bodegas,
                         mod: 2
                     };
 
@@ -206,6 +234,7 @@ class TrxAdministracionClientes extends FastTransaction {
                         catalogo_usuario: ($scope.lastSelected.catalogo_usuario == undefined) ? '' : $scope.lastSelected.catalogo_usuario,
                         catalogo_password_hash: ($scope.lastSelected.catalogo_password_hash == undefined) ? '' : $scope.lastSelected.catalogo_password_hash,
                         telefonos: $scope.lastSelected.telefonos,
+                        bodegas: $scope.lastSelected.bodegas,
                         mod: 1
                     };
 
@@ -236,6 +265,7 @@ class TrxAdministracionClientes extends FastTransaction {
                                 catalogo_usuario: $scope.lastSelected.catalogo_usuario,
                                 catalogo_password_hash: $scope.lastSelected.catalogo_password_hash,
                                 telefonos: $scope.lastSelected.telefonos,
+                                bodegas: $scope.lastSelected.bodegas,
                                 mod: 3
                             };
 
@@ -343,7 +373,7 @@ class TrxAdministracionClientes extends FastTransaction {
 
     public function specialProcessBeforeShow($resultSet){
         $departamentos = Collection::get($this->db, 'departamentos');
-        $dsTelefonos = Collection::get($this->db, 'clientes_telefonos');
+        $dsClientesBodegas = Collection::get($this->db, 'clientes_bodegas');
 
         for($i = 0; count($resultSet) > $i; $i++){
             $depto = $departamentos->where(['id_departamento' => $resultSet[$i]['id_departamento']])->single();
@@ -352,8 +382,12 @@ class TrxAdministracionClientes extends FastTransaction {
             $resultSet[$i]['tiene_credito'] = ($resultSet[$i]['tiene_credito'] == '1') ? true : false ;
 
             $telefonos = $this->db->queryToArray(sprintf('select numero from clientes_telefonos where id_cliente=%s', $resultSet[$i]['id_cliente']));
-
             $resultSet[$i]['telefonos'] = $telefonos;
+
+
+            $bodegas = $this->db->queryToArray(sprintf('SELECT cl.id_sucursal, nombre FROM clientes_bodegas cl LEFT JOIN sucursales s ON s.id_sucursal = cl.id_sucursal WHERE id_cliente=%s;', $resultSet[$i]['id_cliente']));
+
+            $resultSet[$i]['bodegas'] = $bodegas;
         }
         return sanitize_array_by_keys($resultSet, array('nombre_depto'));
     }
@@ -438,13 +472,15 @@ class TrxAdministracionClientes extends FastTransaction {
         echo json_encode(array('data' => $resultSet));
     }
 
-    public function getTelefonos(){
+    public function getSucursales(){
         $resultSet = array();
 
-        $dsTelefonos = $this->db->query_select('clientes_telefonos');
+        $dsSucursales = $this->db->query_select('sucursales');
 
-        foreach($dsTelefonos as $t){
-            $resultSet[] = $t['numero'];
+        $resultSet[] = array('id_sucursal' =>'', 'nombre' => '-- Seleccione uno --');
+
+        foreach($dsSucursales as $s){
+            $resultSet[] = array('id_sucursal' => $s['id_sucursal'], 'nombre' => $s['nombre']);
         }
 
         echo json_encode(array('data' => $resultSet));
@@ -482,19 +518,23 @@ class TrxAdministracionClientes extends FastTransaction {
 //                $this->msg = 'Al momento de ingresar el Nit, debe indicar el nombre y direccion a facturar';
 //            }
         }
-        if (array_key_exists('catalogo_usuario', $data) && $this->r != 0) {
-            if (trim($data['catalogo_usuario']) != '') {
 
-                $id = str_replace("'", "", trim($data['catalogo_usuario']));
-                $id = sqlValue(encode_email_address($id), 'text');
+        if ($data['mod'] == 1 || $data['mod'] == 2 ) {
+            if (array_key_exists('catalogo_usuario', $data) && $this->r != 0) {
+                if (trim($data['catalogo_usuario']) != '') {
 
-                $result = $this->db->queryToArray(sprintf('select FIRST_NAME from app_user where ID=%s', $id));
-                if (count($result) > 0) {
-                    $this->r = 0;
-                    $this->msg = 'El usuario ya existe, favor de corregir y volver a intentar';
+                    $id = str_replace("'", "", trim($data['catalogo_usuario']));
+                    $id = sqlValue(encode_email_address($id), 'text');
+
+                    $result = $this->db->queryToArray(sprintf('select FIRST_NAME from app_user where ID=%s', $id));
+                    if (count($result) > 0) {
+                        $this->r = 0;
+                        $this->msg = 'El usuario ya existe, favor de corregir y volver a intentar';
+                    }
                 }
             }
         }
+
         if ($data['mod'] == 1) {
             if (array_key_exists('identificacion', $data) && $this->r != 0) {
                 if (trim($data['identificacion']) != '') {
@@ -549,12 +589,13 @@ class TrxAdministracionClientes extends FastTransaction {
 
         if ($data['mod'] == 1) {
             $this->db->query_insert('clientes', $cliente);
+            $id_cliente = $this->db->max_id('clientes', 'id_cliente');
 
             if($data['telefonos']){
                 foreach($data['telefonos'] as $tel){
                     $telefono = [
-                        'id_cliente' => sqlValue($cliente['id_cliente'], 'number'),
-                        'numero' => sqlValue($tel.numero, 'number'),
+                        'id_cliente' => sqlValue($id_cliente, 'number'),
+                        'numero' => sqlValue($tel['numero'], 'number'),
                         'fecha_creacion' => sqlValue($fecha->format('Y-m-d H:i:s'), 'date'),
                         'usuario_creacion' => sqlValue(self_escape_string($user['FIRST_NAME']), 'text')
                     ];
@@ -562,8 +603,21 @@ class TrxAdministracionClientes extends FastTransaction {
                 }
             }
 
+            if($data['bodegas']){
+                foreach($data['bodegas'] as $bodega){
+                    $cliente_bodega = [
+                        'id_cliente' => sqlValue($id_cliente, 'number'),
+                        'id_sucursal' => sqlValue($bodega['id_sucursal'], 'id_sucursal'),
+                        'fecha_creacion' => sqlValue($fecha->format('Y-m-d H:i:s'), 'date'),
+                        'usuario_creacion' => sqlValue(self_escape_string($user['FIRST_NAME']), 'text')
+                    ];
+                    $this->db->query_insert('clientes_bodegas', $cliente_bodega);
+                }
+            }
+
             $this->msg = 'Cliente ingresado con éxito';
         } else if ($data['mod'] == 2) {
+
             $this->db->query_update('clientes', $cliente, sprintf('id_cliente = %s', $data['id_cliente']));
 
             $this->db->query_delete('clientes_telefonos', sprintf('id_cliente = %s', $data['id_cliente']));
@@ -580,8 +634,25 @@ class TrxAdministracionClientes extends FastTransaction {
                 }
             }
 
+            $this->db->query_delete('clientes_bodegas', sprintf('id_cliente = %s', $data['id_cliente']));
+
+            if($data['bodegas']){
+                foreach($data['bodegas'] as $bodega){
+                    $cliente_bodega = [
+                        'id_cliente' => sqlValue($data['id_cliente'], 'number'),
+                        'id_sucursal' => sqlValue($bodega['id_sucursal'], 'id_sucursal'),
+                        'fecha_creacion' => sqlValue($fecha->format('Y-m-d H:i:s'), 'date'),
+                        'usuario_creacion' => sqlValue(self_escape_string($user['FIRST_NAME']), 'text')
+                    ];
+                    $this->db->query_insert('clientes_bodegas', $cliente_bodega);
+                }
+            }
+
             $this->msg = 'Cliente actualizado con éxito';
         } else if ($data['mod'] == 3) {
+
+            $this->db->query_delete('clientes_telefonos', sprintf('id_cliente = %s', $data['id_cliente']));
+            $this->db->query_delete('clientes_bodegas', sprintf('id_cliente = %s', $data['id_cliente']));
             $this->db->query_delete('clientes', sprintf('id_cliente = %s', $data['id_cliente']));
 
             $this->msg = 'Cliente eliminado con éxito';
