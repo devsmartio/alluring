@@ -23,6 +23,18 @@ class TrxAdministracionClientes extends FastTransaction {
         foreach($dsClientes as $p){
             $clientes[self_escape_string($p['nombres'] . ' '. $p['apellidos'])] = $p['id_cliente'];
         }
+        $this->requiredFields = array(
+            new FastField('Nombres', 'nombres', 'text', 'text'),
+            new FastField('Apellidos', 'apellidos', 'text', 'text'),
+            new FastField('Direccion', 'direccion', 'text', 'text'),
+            new FastField('Identificacion', 'identificacion', 'text', 'text'),
+            new FastField('Pais', 'id_pais', 'text', 'text'),
+            new FastField('Departamento', 'id_departamento', 'text', 'text'),
+            new FastField('Municipio', 'id_municipio', 'text', 'text'),
+            new FastField('Correo', 'correo', 'text', 'text'),
+            new FastField('Tipo Precio', 'id_tipo_precio', 'text', 'text'),
+            new FastField('Vendedor', 'id_empleado', 'text', 'text')
+        );
 
         $this->gridCols = array(
             'ID' => 'id_cliente',
@@ -67,8 +79,12 @@ class TrxAdministracionClientes extends FastTransaction {
                         factura_nombre: '',
                         observaciones: '',
                         catalogo_usuario: '',
-                        catalogo_password_hash: ''
+                        catalogo_password_hash: '',
+                        telefonos : []
                     };
+                    $scope.telefono = '';
+                    $scope.telefonoPattern = /^[0-9]{8}$/;
+                    $scope.error = '';
 
                     $http.get($scope.ajaxUrl + '&act=getRows').success(function (response) {
                         $scope.rows = response.data;
@@ -121,14 +137,21 @@ class TrxAdministracionClientes extends FastTransaction {
                     $scope.lastSelected.dias_credito = 0;
                 };
 
-                $scope.finalizarModal = function () {
-                    if ($scope.productosSel.length == 0) {
-                        $timeout(function () {
-                            $scope.alerts.push({type: 'alert-danger', msg: 'Debe agregar al menos un producto'});
-                        }, 2000);
-                    } else {
-                        $("#finModal").modal();
+                $scope.agregarTelefono = function () {
+                    if($scope.lastSelected.telefonos.filter(tel => tel.numero == $scope.telefono).length > 0) {
+                        $scope.mantForm.telefono.$setValidity("invalid", false);
+                        $scope.error = 'El teléfono ya fue ingresado';
+                    }else {
+                        var tel = {numero: $scope.telefono};
+                        $scope.lastSelected.telefonos.push(tel);
+                        $scope.telefono = '';
+                        $scope.error = '';
                     }
+                };
+
+                $scope.borrarTelefono = function (tel) {
+                    var index = $scope.lastSelected.telefonos.indexOf(tel);
+                    $scope.lastSelected.telefonos.splice(index, 1);
                 };
 
                 $scope.finalizarEditado = function () {
@@ -146,14 +169,15 @@ class TrxAdministracionClientes extends FastTransaction {
                         id_empleado: $scope.lastSelected.id_empleado,
                         tiene_credito: $scope.lastSelected.tiene_credito,
                         dias_credito: $scope.lastSelected.dias_credito,
-                        id_cliente_referido: $scope.lastSelected.id_cliente_referido,
-                        factura_nit: $scope.lastSelected.factura_nit,
-                        factura_nombre: $scope.lastSelected.factura_nombre,
-                        factura_direccion: $scope.lastSelected.factura_direccion,
-                        observaciones: $scope.lastSelected.observaciones,
-                        catalogo_usuario: $scope.lastSelected.catalogo_usuario,
-                        catalogo_password_hash: $scope.lastSelected.catalogo_password_hash,
-                        mod : 2
+                        id_cliente_referido: ($scope.lastSelected.id_cliente_referido == undefined) ? 0 : $scope.lastSelected.id_cliente_referido,
+                        factura_nit: ($scope.lastSelected.factura_nit == undefined) ? '' : $scope.lastSelected.factura_nit,
+                        factura_nombre: ($scope.lastSelected.factura_nombre == undefined) ? '' : $scope.lastSelected.factura_nombre,
+                        factura_direccion: ($scope.lastSelected.factura_direccion == undefined) ? '' : $scope.lastSelected.factura_direccion,
+                        observaciones: ($scope.lastSelected.observaciones == undefined) ? '' : $scope.lastSelected.observaciones,
+                        catalogo_usuario: ($scope.lastSelected.catalogo_usuario == undefined) ? '' : $scope.lastSelected.catalogo_usuario,
+                        catalogo_password_hash: ($scope.lastSelected.catalogo_password_hash == undefined) ? '' : $scope.lastSelected.catalogo_password_hash,
+                        telefonos: $scope.lastSelected.telefonos,
+                        mod: 2
                     };
 
                     $scope.doSave();
@@ -162,31 +186,32 @@ class TrxAdministracionClientes extends FastTransaction {
                 $scope.finalizar = function () {
                     $rootScope.modData = {
                         id_cliente: $scope.lastSelected.id_cliente,
-                        nombres : $scope.lastSelected.nombres,
-                        apellidos : $scope.lastSelected.apellidos,
-                        direccion : $scope.lastSelected.direccion,
-                        identificacion : $scope.lastSelected.identificacion,
-                        id_pais : $scope.lastSelected.id_pais,
-                        id_departamento : $scope.lastSelected.id_departamento,
-                        id_municipio : $scope.lastSelected.id_municipio,
-                        correo : $scope.lastSelected.correo,
-                        id_tipo_precio : $scope.lastSelected.id_tipo_precio,
-                        id_empleado : $scope.lastSelected.id_empleado,
-                        tiene_credito : $scope.lastSelected.tiene_credito,
-                        dias_credito : $scope.lastSelected.dias_credito,
-                        id_cliente_referido : $scope.lastSelected.id_cliente_referido,
-                        factura_nit : $scope.lastSelected.factura_nit,
-                        factura_nombre : $scope.lastSelected.factura_nombre,
-                        factura_direccion : $scope.lastSelected.factura_direccion,
-                        observaciones : $scope.lastSelected.observaciones,
-                        catalogo_usuario : $scope.lastSelected.catalogo_usuario,
-                        catalogo_password_hash : $scope.lastSelected.catalogo_password_hash,
-                        mod : 1
+                        nombres: $scope.lastSelected.nombres,
+                        apellidos: $scope.lastSelected.apellidos,
+                        direccion: $scope.lastSelected.direccion,
+                        identificacion: $scope.lastSelected.identificacion,
+                        id_pais: $scope.lastSelected.id_pais,
+                        id_departamento: $scope.lastSelected.id_departamento,
+                        id_municipio: $scope.lastSelected.id_municipio,
+                        correo: $scope.lastSelected.correo,
+                        id_tipo_precio: $scope.lastSelected.id_tipo_precio,
+                        id_empleado: $scope.lastSelected.id_empleado,
+                        tiene_credito: $scope.lastSelected.tiene_credito,
+                        dias_credito: $scope.lastSelected.dias_credito,
+                        id_cliente_referido: ($scope.lastSelected.id_cliente_referido == undefined) ? 0 : $scope.lastSelected.id_cliente_referido,
+                        factura_nit: ($scope.lastSelected.factura_nit == undefined) ? '' : $scope.lastSelected.factura_nit,
+                        factura_nombre: ($scope.lastSelected.factura_nombre == undefined) ? '' : $scope.lastSelected.factura_nombre,
+                        factura_direccion: ($scope.lastSelected.factura_direccion == undefined) ? '' : $scope.lastSelected.factura_direccion,
+                        observaciones: ($scope.lastSelected.observaciones == undefined) ? '' : $scope.lastSelected.observaciones,
+                        catalogo_usuario: ($scope.lastSelected.catalogo_usuario == undefined) ? '' : $scope.lastSelected.catalogo_usuario,
+                        catalogo_password_hash: ($scope.lastSelected.catalogo_password_hash == undefined) ? '' : $scope.lastSelected.catalogo_password_hash,
+                        telefonos: $scope.lastSelected.telefonos,
+                        mod: 1
                     };
 
                     $scope.doSave();
                 };
-                $scope.doDelete = function() {
+                $scope.doDelete = function () {
                     if ($scope.editMode) {
                         if (confirm('¿Confirmas borrar este registro? Si el registro está en uso, la acción no se realizará.')) {
                             $rootScope.modData = {
@@ -210,6 +235,7 @@ class TrxAdministracionClientes extends FastTransaction {
                                 observaciones: $scope.lastSelected.observaciones,
                                 catalogo_usuario: $scope.lastSelected.catalogo_usuario,
                                 catalogo_password_hash: $scope.lastSelected.catalogo_password_hash,
+                                telefonos: $scope.lastSelected.telefonos,
                                 mod: 3
                             };
 
@@ -275,7 +301,6 @@ class TrxAdministracionClientes extends FastTransaction {
 
                 $scope.startAgain();
                 $rootScope.addCallback(function () {
-                    $('#finModal').modal('hide');
                     $scope.startAgain();
                 });
             });
@@ -318,11 +343,17 @@ class TrxAdministracionClientes extends FastTransaction {
 
     public function specialProcessBeforeShow($resultSet){
         $departamentos = Collection::get($this->db, 'departamentos');
+        $dsTelefonos = Collection::get($this->db, 'clientes_telefonos');
 
         for($i = 0; count($resultSet) > $i; $i++){
             $depto = $departamentos->where(['id_departamento' => $resultSet[$i]['id_departamento']])->single();
             $resultSet[$i]['nombre_depto'] = $depto['nombre'];
+
             $resultSet[$i]['tiene_credito'] = ($resultSet[$i]['tiene_credito'] == '1') ? true : false ;
+
+            $telefonos = $this->db->queryToArray(sprintf('select numero from clientes_telefonos where id_cliente=%s', $resultSet[$i]['id_cliente']));
+
+            $resultSet[$i]['telefonos'] = $telefonos;
         }
         return sanitize_array_by_keys($resultSet, array('nombre_depto'));
     }
@@ -407,23 +438,42 @@ class TrxAdministracionClientes extends FastTransaction {
         echo json_encode(array('data' => $resultSet));
     }
 
+    public function getTelefonos(){
+        $resultSet = array();
+
+        $dsTelefonos = $this->db->query_select('clientes_telefonos');
+
+        foreach($dsTelefonos as $t){
+            $resultSet[] = $t['numero'];
+        }
+
+        echo json_encode(array('data' => $resultSet));
+    }
+
     public function dataIsValid($data)
     {
+        foreach($this->requiredFields as $f) {
+            if(!array_key_exists($f->name, $data)) {
+                $this->r = 0;
+                $this->msg = sprintf('El campo %s es requerido ', $f->label);
+                break;
+            }
+        }
 
-        if (array_key_exists('correo', $data)) {
+        if (array_key_exists('correo', $data) && $this->r != 0) {
             $correo = str_replace("'", "", $data['correo']);
             if (!preg_match('/^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/', $correo, $matches)) {
                 $this->r = 0;
                 $this->msg = 'Correo inválido, favor de revisar e intentar de nuevo';
             }
         }
-        if (array_key_exists('tiene_credito', $data)) {
+        if (array_key_exists('tiene_credito', $data) && $this->r != 0) {
             if ($data['tiene_credito'] && ($data['dias_credito'] == 0 || $data['dias_credito'] == '')) {
                 $this->r = 0;
                 $this->msg = 'Al momento de indicar que posee credito, debe indicar cuantos dias de credito posee el cliente';
             }
         }
-        if (array_key_exists('factura_nit', $data) && (!array_key_exists('factura_nombre', $data) || !array_key_exists('factura_direccion', $data))) {
+        if (array_key_exists('factura_nit', $data) && $this->r != 0 && (!array_key_exists('factura_nombre', $data) || !array_key_exists('factura_direccion', $data))) {
             $this->r = 0;
             $this->msg = 'Al momento de ingresar el Nit, debe indicar el nombre y direccion a facturar';
 
@@ -432,7 +482,7 @@ class TrxAdministracionClientes extends FastTransaction {
 //                $this->msg = 'Al momento de ingresar el Nit, debe indicar el nombre y direccion a facturar';
 //            }
         }
-        if (array_key_exists('catalogo_usuario', $data)) {
+        if (array_key_exists('catalogo_usuario', $data) && $this->r != 0) {
             if (trim($data['catalogo_usuario']) != '') {
 
                 $id = str_replace("'", "", trim($data['catalogo_usuario']));
@@ -442,6 +492,21 @@ class TrxAdministracionClientes extends FastTransaction {
                 if (count($result) > 0) {
                     $this->r = 0;
                     $this->msg = 'El usuario ya existe, favor de corregir y volver a intentar';
+                }
+            }
+        }
+        if ($data['mod'] == 1) {
+            if (array_key_exists('identificacion', $data) && $this->r != 0) {
+                if (trim($data['identificacion']) != '') {
+
+                    $identificacion = str_replace("'", "", trim($data['identificacion']));
+                    $idPais = str_replace("'", "", trim($data['id_pais']));
+
+                    $result = $this->db->queryToArray(sprintf("SELECT id_cliente FROM clientes WHERE identificacion = %s and id_pais = %s;", $identificacion, $idPais));
+                    if (count($result) > 0) {
+                        $this->r = 0;
+                        $this->msg = 'La identificacion ya existe, favor de corregir y volver a intentar';
+                    }
                 }
             }
         }
@@ -485,9 +550,35 @@ class TrxAdministracionClientes extends FastTransaction {
         if ($data['mod'] == 1) {
             $this->db->query_insert('clientes', $cliente);
 
+            if($data['telefonos']){
+                foreach($data['telefonos'] as $tel){
+                    $telefono = [
+                        'id_cliente' => sqlValue($cliente['id_cliente'], 'number'),
+                        'numero' => sqlValue($tel.numero, 'number'),
+                        'fecha_creacion' => sqlValue($fecha->format('Y-m-d H:i:s'), 'date'),
+                        'usuario_creacion' => sqlValue(self_escape_string($user['FIRST_NAME']), 'text')
+                    ];
+                    $this->db->query_insert('clientes_telefonos', $telefono);
+                }
+            }
+
             $this->msg = 'Cliente ingresado con éxito';
         } else if ($data['mod'] == 2) {
             $this->db->query_update('clientes', $cliente, sprintf('id_cliente = %s', $data['id_cliente']));
+
+            $this->db->query_delete('clientes_telefonos', sprintf('id_cliente = %s', $data['id_cliente']));
+
+            if($data['telefonos']){
+                foreach($data['telefonos'] as $tel){
+                    $telefono = [
+                        'id_cliente' => sqlValue($data['id_cliente'], 'number'),
+                        'numero' => sqlValue($tel['numero'], 'number'),
+                        'fecha_creacion' => sqlValue($fecha->format('Y-m-d H:i:s'), 'date'),
+                        'usuario_creacion' => sqlValue(self_escape_string($user['FIRST_NAME']), 'text')
+                    ];
+                    $this->db->query_insert('clientes_telefonos', $telefono);
+                }
+            }
 
             $this->msg = 'Cliente actualizado con éxito';
         } else if ($data['mod'] == 3) {
