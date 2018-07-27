@@ -1090,3 +1090,6 @@ alter table `clientes` drop foreign key clientes_cliente_referido;
 alter table tipo drop column prefijo;
 alter table tipo drop column id_categoria;
 alter table sucursales add column identificador_excel varchar(100) NULL;
+alter table producto add column precio_venta decimal(10,2) NOT NULL DEFAULT '0.00';
+alter table producto add column imagen varchar(255) NOT NULL;
+alter table producto add column codigo_origen varchar(255) NOT NULL;
