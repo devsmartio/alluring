@@ -49,7 +49,7 @@ $last_name = $user['LAST_NAME'];
             -ms-flex: 1 1 auto;
             flex: 1 1 auto;
             padding: 0rem;
-
+            padding-top: 1rem;
         }
     </style>
     <!--[if lt IE 9]>

@@ -211,6 +211,10 @@ abstract class FastMaintenance extends FastModWrapper{
 	protected function specialProcessBeforeInsert($insertData){
             return $insertData;
 	}
+
+    protected function validationBeforeDelete($r, $mess, $pkFields){
+        return array('r' => $r, 'mess' => $mess);
+    }
     
 	public function doDelete(){
             $r = 1;
@@ -231,7 +235,15 @@ abstract class FastMaintenance extends FastModWrapper{
                     $where = isEmpty($where) ? $where : sprintf('%s AND ', $where);
                     $where.= sprintf('%s="%s"', $k, $v);
                 }
-                $this->db->query_delete($this->table, $where);
+
+                $specialValidation = $this->validationBeforeDelete($r, $msg, $pkFields);
+                $r = $specialValidation['r'];
+                $msg = $specialValidation['mess'];
+                if($r == 1) {
+                    $this->db->query_delete($this->table, $where);
+                } else {
+                    echo json_encode(array('result' => $r, 'msg' => $msg));
+                }
             } catch (Exception $e){
                 $r = 0;
                 $msg = 'Error desconocido, contacte a soporte';

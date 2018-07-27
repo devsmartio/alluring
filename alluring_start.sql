@@ -1087,3 +1087,6 @@ ALTER TABLE `empleados`
 ADD COLUMN es_vendedor bit(1) NOT NULL DEFAULT b'0';
 ALTER TABLE `clientes` MODIFY id_empleado int(20) NULL;
 alter table `clientes` drop foreign key clientes_cliente_referido;
+alter table tipo drop column prefijo;
+alter table tipo drop column id_categoria;
+alter table sucursales add column identificador_excel varchar(100) NULL;
