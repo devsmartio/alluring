@@ -44,6 +44,7 @@
     <form ng-show='editMode||newMode' class='col-md-12 col-lg-12' id="mantForm" name="mantForm" method="post">
         <div class="row">
             <div class="col-lg-5 col-md-5 col-sm-12 col-xs-12">
+                <input ng-model="lastSelected.id_producto" type="hidden" class='form-control'/>
                 <div class='form-group form-group-sm'>
                     <label for='nombre' class='control-label'>Nombre</label>
                     <input ng-model="lastSelected.nombre" type="text" required class='form-control' name='nombre' placeholder='' ng-readonly='(editMode&&false)||(newMode&&false)' />
@@ -68,7 +69,8 @@
                 </div>
                 <div class='form-group form-group-sm'>
                     <label for='imagen' class='control-label'>Imagen</label>
-                    <input type="file" name="file" onchange="angular.element(this).scope().uploadFile(this.files)"/>
+                    <input type="file" name="imagen" accept="image/jpeg"  value="lastSelected.imagen" onchange="angular.element(this).scope().uploadFile(this.files)"/>
+                    <input ng-model="lastSelected.imagen" type="hidden" class='form-control'/>
                 </div>
                 <div class='form-group form-group-sm'>
                     <label for='codigo_origen' class='control-label'>Código Origen</label>

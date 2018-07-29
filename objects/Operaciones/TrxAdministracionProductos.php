@@ -30,7 +30,7 @@ class TrxAdministracionProductos  extends FastTransaction {
         );
 
         $this->gridCols = array(
-            'Código producto' => 'codigo_origen',
+            'Código producto' => 'id_producto',
             'Nombre' => 'nombre',
             'Categoria' => 'nombre_tipo'
         );
@@ -50,6 +50,7 @@ class TrxAdministracionProductos  extends FastTransaction {
                     $scope.goNoMode();
                     $scope.currentIndex = null;
                     $scope.lastSelected = {
+                        id_producto: 0,
                         nombre: '',
                         descripcion: '',
                         id_tipo: 0,
@@ -94,28 +95,34 @@ class TrxAdministracionProductos  extends FastTransaction {
                     var fd = new FormData();
                     fd.append('file', files[0]);
                     fd.append('name', files[0]['name']);
+                    fd.append('old_name', ($scope.lastSelected.imagen == undefined) ? '' : $scope.lastSelected.imagen);
 
                     $http.post(uploadUrl, fd, {
                         transformRequest: angular.identity,
                         headers: {'Content-Type': undefined,'Process-Data': false}
                     })
-                        .success(function(){
+                        .success(function(response){
                             console.log("Success");
+                            $scope.lastSelected.imagen = response.msg;
                         })
-                        .error(function(){
-                            console.log("Success");
+                        .error(function(response){
+                            $scope.alerts.push({
+                                type: 'alert-danger',
+                                msg: response.msg
+                            });
                         });
                 };
 
                 $scope.finalizarEditado = function () {
                     $rootScope.modData = {
+                        id_producto: $scope.lastSelected.id_producto,
                         nombre: $scope.lastSelected.nombre,
                         descripcion: $scope.lastSelected.descripcion,
                         costo: $scope.lastSelected.costo,
                         id_tipo: $scope.lastSelected.id_tipo,
                         precio_venta: $scope.lastSelected.precio_venta,
                         imagen: $scope.lastSelected.imagen,
-                        codigo_origen: $scope.lastSelected.codigo_origen,
+                        codigo_origen: ($scope.lastSelected.codigo_origen == undefined) ? ' ' : $scope.lastSelected.codigo_origen,
                         mod: 2
                     };
 
@@ -124,13 +131,14 @@ class TrxAdministracionProductos  extends FastTransaction {
 
                 $scope.finalizar = function () {
                     $rootScope.modData = {
+                        id_producto: $scope.lastSelected.id_producto,
                         nombre: $scope.lastSelected.nombre,
                         descripcion: $scope.lastSelected.descripcion,
                         costo: $scope.lastSelected.costo,
                         id_tipo: $scope.lastSelected.id_tipo,
                         precio_venta: $scope.lastSelected.precio_venta,
                         imagen: $scope.lastSelected.imagen,
-                        codigo_origen: $scope.lastSelected.codigo_origen,
+                        codigo_origen: ($scope.lastSelected.codigo_origen == undefined) ? ' ' : $scope.lastSelected.codigo_origen,
                         mod: 1
                     };
 
@@ -140,7 +148,7 @@ class TrxAdministracionProductos  extends FastTransaction {
                     if ($scope.editMode) {
                         if (confirm('¿Confirmas borrar este registro? Si el registro está en uso, la acción no se realizará.')) {
                             $rootScope.modData = {
-
+                                id_producto: $scope.lastSelected.id_producto,
                                 nombre: $scope.lastSelected.nombre,
                                 descripcion: $scope.lastSelected.descripcion,
                                 costo: $scope.lastSelected.costo,
@@ -349,14 +357,96 @@ class TrxAdministracionProductos  extends FastTransaction {
 
     public function uploadImage()
     {
+        try {
 
-        $target_dir = "./upload/";
-        $name = $_POST['name'];
-        print_r($_FILES);
-        $target_file = $this->uploadPath . basename($_FILES["file"]["name"]);
+            if ($_POST['old_name'] == '') {
+                $id_producto = $this->db->max_id('producto', 'id_producto');
 
-        move_uploaded_file($_FILES["file"]["tmp_name"], $target_file);
+                if (!$id_producto)
+                    $id_producto = 1;
+                else {
+                    $id_producto += 1;
+                }
 
+                $nombre_archivo = 'Y' . $id_producto . '.jpg';
+            } else
+                $nombre_archivo = $_POST['old_name'];
+
+//            $target_file = $this->uploadPath . basename($_FILES["file"]["name"]);
+            $target_file = $this->uploadPath . basename($nombre_archivo);
+
+            move_uploaded_file($_FILES["file"]["tmp_name"], $target_file . '.temp');
+
+
+            $result = $this->resize_image($target_file . '.temp', 370, 277, $target_file);
+            unlink($target_file . '.temp');
+
+            if($result)
+                echo json_encode(array('result' => 1, 'msg' => $nombre_archivo));
+            else
+                echo json_encode(array('result' => 0, 'msg' => 'Ocurrio un error al momento de convertir la imagen'));
+        } catch (Exception $e) {
+            $this->r = 0;
+            if (DEBUG) {
+                $this->msg = var_dump($e->getMessage());
+            } else {
+                error_log($e->getMessage());
+                $this->msg = 'Error al subir la imagen. Intente de nuevo';
+            }
+
+            echo json_encode(array('result' => $this->r, 'msg' => $this->msg));
+        }
+    }
+
+    public function resize_image($filename, $thumb_width, $thumb_height, $newFile)
+    {
+        if (($img_info = getimagesize($filename)) === FALSE) {
+            die("Image not found or not an image");
+        }
+
+        switch ($img_info[2]) {
+            case IMAGETYPE_GIF  :
+                $image = imagecreatefromgif($filename);
+                break;
+            case IMAGETYPE_JPEG :
+                $image = imagecreatefromjpeg($filename);
+                break;
+            case IMAGETYPE_PNG  :
+                $image = imagecreatefrompng($filename);
+                break;
+            default :
+                die("Unknown filetype");
+        }
+
+        $owidth = $img_info[0];
+        $oheight = $img_info[1];
+
+        if (($owidth / $thumb_width) > ($oheight / $thumb_height)) {
+            $y = 0;
+            $x = $owidth - (($oheight * $thumb_width) / $thumb_height);
+        } else {
+            $x = 0;
+            $y = $oheight - (($owidth * $thumb_height) / $thumb_width);
+        }
+
+        $thumb = imagecreatetruecolor($thumb_width, $thumb_height);
+        imagecopyresampled($thumb, $image, 0, 0, $x / 2, $y / 2, $thumb_width, $thumb_height, $owidth - $x, $oheight - $y);
+
+        switch ( $img_info[2] ) {
+            case IMAGETYPE_GIF  :
+                imagegif( $thumb,  $newFile );
+                break;
+            case IMAGETYPE_JPEG :
+                imagejpeg( $thumb, $newFile, 100 );
+                break;
+            case IMAGETYPE_PNG  :
+                imagepng($thumb,  $newFile, 0 );
+                break;
+            default :
+                die("Unknown filetype");
+        }
+
+        return true;
     }
 
     public function doSave($data)
@@ -370,7 +460,7 @@ class TrxAdministracionProductos  extends FastTransaction {
             'costo' => sqlValue($data['costo'], 'float'),
             'id_tipo' => sqlValue($data['id_tipo'], 'int'),
             'precio_venta' => sqlValue($data['precio_venta'], 'float'),
-            'imagen' => sqlValue($data['correo'], 'imagen'),
+            'imagen' => sqlValue($data['imagen'], 'text'),
             'codigo_origen' => sqlValue($data['codigo_origen'], 'text'),
             'fecha_creacion' => sqlValue($fecha->format('Y-m-d H:i:s'), 'date'),
             'usuario_creacion' => sqlValue(self_escape_string($user['FIRST_NAME']), 'text')
@@ -379,17 +469,19 @@ class TrxAdministracionProductos  extends FastTransaction {
         if ($data['mod'] == 1) {
             $this->db->query_insert('producto', $producto);
 
-            $this->msg = 'Cliente ingresado con éxito';
+            $this->msg = 'Producto ingresado con éxito';
         } else if ($data['mod'] == 2) {
 
             $this->db->query_update('producto', $producto, sprintf('id_producto = %s', $data['id_producto']));
 
-            $this->msg = 'Cliente actualizado con éxito';
+            $this->msg = 'Producto actualizado con éxito';
         } else if ($data['mod'] == 3) {
+
+            unlink($producto['imagen']);
 
             $this->db->query_delete('producto', sprintf('id_producto = %s', $data['id_producto']));
 
-            $this->msg = 'Cliente eliminado con éxito';
+            $this->msg = 'Producto eliminado con éxito';
         }
 
         $this->r = 1;
