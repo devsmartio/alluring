@@ -6,7 +6,7 @@
  * Time: 12:07 PM
  */
 
-class TrxCargaMasivaProductos   extends FastTransaction {
+class TrxCargaMasivaProductos extends FastTransaction {
     protected $onlyEdit;
     protected $uploadPath;
     function __construct(){

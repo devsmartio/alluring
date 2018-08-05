@@ -42,14 +42,8 @@ $last_name = $user['LAST_NAME'];
     <script src="media/jquery-ui/jquery-ui.min.js" type='text/javascript'></script>
     <script src="media/js/angular/angular-file-upload.min.js" type="text/javascript"></script>
     <style>
-        .main .container-fluid {
+        .breadcrumb {
             padding: 0px;
-        }
-        .card-body {
-            -ms-flex: 1 1 auto;
-            flex: 1 1 auto;
-            padding: 0rem;
-            padding-top: 1rem;
         }
     </style>
     <!--[if lt IE 9]>
@@ -246,23 +240,22 @@ $last_name = $user['LAST_NAME'];
         <!--<button class="sidebar-minimizer brand-minimizer" type="button"></button>-->
     </div>
     <main class="main" ng-controller="WrapperCtrl">
+        <ol class="breadcrumb">
+        </ol>
         <div class="container-fluid">
             <div class="animated fadeIn">
                 <div class="card">
+                    <div class="card-header">
+                        <h3 class="panel-title"><?php echo $this->mod->myTitle() ?></h3>
+                    </div>
                     <div class="card-body">
-                        <!-- here -->
-                        <div class="col-md-12 col-lg-12" id="moduleCont">
-                            <div class="panel panel-default" style="min-height:750px;">
-                                <div class="panel-heading">
-                                    <h3 class="panel-title"><?php echo $this->mod->myTitle() ?></h3>
-                                </div>
-                                <div class="panel-body">
-                                    <?php
-                                    if ($this->mod != null) {
-                                        $this->mod->init();
-                                    }
-                                    ?>
-                                </div>
+                        <div class="row">
+                            <div class="col-md-12 col-lg-12" id="moduleCont">
+                                        <?php
+                                        if ($this->mod != null) {
+                                            $this->mod->init();
+                                        }
+                                        ?>
                             </div>
                         </div>
                     </div>
