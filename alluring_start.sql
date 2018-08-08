@@ -1093,3 +1093,7 @@ alter table sucursales add column identificador_excel varchar(100) NULL;
 alter table producto add column precio_venta decimal(10,2) NOT NULL DEFAULT '0.00';
 alter table producto add column imagen varchar(255) NOT NULL;
 alter table producto add column codigo_origen varchar(255) NOT NULL;
+ALTER TABLE trx_movimiento_sucursales ADD COLUMN id_cliente_recibe int(20) NULL;
+ALTER TABLE trx_movimiento_sucursales ADD COLUMN es_consignacion bit(1) NOT NULL DEFAULT 0;
+ALTER TABLE trx_movimiento_sucursales ADD COLUMN dias_consignacion int(20) NULL;
+ALTER TABLE trx_movimiento_sucursales ADD COLUMN porcetaje_compra_min float NULL;
