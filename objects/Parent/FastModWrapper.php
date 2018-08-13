@@ -67,7 +67,7 @@ class FastModWrapper implements BaseMod{
 
     public function myStyle() {
         ?>
-        <link rel="stylesheet" href="media/css/FastModWrapper.min.css"/>
+<!--        <link rel="stylesheet" href="media/css/FastModWrapper.min.css"/>-->
         <?php 
     }
 
