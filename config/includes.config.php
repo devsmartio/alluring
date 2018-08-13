@@ -47,4 +47,4 @@ include ENT . DS . "IngredienteTable.php";
 include ENT . DS . "LoteTable.php";
 include LIB . "/selecttemplate.inc.php";
 include LIB . "/buttontemplate.inc.php";
-
+include LIB . "/Picqer/Barcode/BarcodeGeneratorHTML.php";

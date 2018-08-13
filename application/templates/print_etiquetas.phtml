@@ -1,0 +1,72 @@
+<?php
+$sucursal = "select id_sucursal from sucursales where identificador_excel='%s'";
+$sucursal = $this->db->queryToArray(sprintf($sucursal, $identificador_excel));
+$sucursal = sanitize_by_keys($sucursal[0], ['id_sucursal']);
+
+$queryTransacciones ="  SELECT	p.codigo_origen, p.descripcion, t.haber
+                        FROM	trx_transacciones t
+                                INNER JOIN producto p ON p.id_producto = t.id_producto
+                        WHERE	id_sucursal = %s
+                        AND CAST(t.fecha_creacion AS DATE) = curdate()";
+
+$transacciones = $this->db->queryToArray(sprintf($queryTransacciones, $sucursal['id_sucursal']));
+
+$generator = new BarcodeGeneratorHTML();
+
+$total = 0;
+foreach ($transacciones as $trx) {
+    $total += $trx['haber'];
+}
+
+?>
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title></title>
+    <style>
+        body {
+            width: 19cm;
+            font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif;
+            font-size: 10px;
+        }
+        label {
+            display: block;
+            text-align: center;
+            max-width: 200px;
+            word-wrap: break-word
+        }
+        div {
+            margin: auto;
+        }
+    </style>
+</head>
+<body>
+<table>
+    <?php
+        reset($transacciones);
+        $p = current($transacciones);
+        $conteo = 0;
+        $cantidad = (int)$p['haber'];
+    ?>
+    <?php for($i = 1; $i <= $total; $i++){
+        if($conteo == $cantidad){
+            $p = next($transacciones);
+            $cantidad = (int)$p['haber'];
+            $conteo = 0;
+        }else
+            $conteo++;
+    ?>
+        <?php if ($i%3 == 1) echo "<tr>" ?>
+            <td style="padding-left:5px;">
+                <div style="height: 90px;">
+                    <label><?php echo $p['descripcion'] ?></label>
+                    <label><?php echo $generator->getBarcode($p['codigo_origen'], $generator::TYPE_CODE_128); ?></label>
+                    <label><?php echo $p['codigo_origen'] ?></label>
+                </div>
+            </td>
+        <?php if ($i%3 == 0) echo "</tr>" ?>
+    <?php } ?>
+</table>
+</body>
+</html>

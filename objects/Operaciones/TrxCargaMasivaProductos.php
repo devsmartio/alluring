@@ -28,7 +28,7 @@ class TrxCargaMasivaProductos extends FastTransaction {
             new FastField('Costo', 'costo', 'text', 'text'),
             new FastField('Imagen', 'imagen', 'text', 'text'),
             new FastField('Codigo', 'codigo_origen', 'text', 'text'),
-            new FastField('Catidad', 'cantidad', 'text', 'text')
+            new FastField('Cantidad', 'cantidad', 'text', 'text')
         );
 
         $this->gridCols = array(
@@ -38,7 +38,8 @@ class TrxCargaMasivaProductos extends FastTransaction {
             'Precio venta al público' =>'precio_venta',
             'Costo' => 'costo',
             'Imagen' => 'imagen',
-            'Codigo' => 'codigo_origen'
+            'Codigo' => 'codigo_origen',
+            'Cantidad' => 'cantidad'
         );
     }
 
@@ -101,17 +102,22 @@ class TrxCargaMasivaProductos extends FastTransaction {
 
                 $scope.finalizar = function () {
 
+                    var identificador_excel = $scope.lastSelected.identificador_excel;
                     var productos = JSON.stringify($scope.rows);
                     productos = productos.replace(/\\/g, "\\\\");
 
                     $rootScope.modData = {
                         file: $scope.lastSelected.file,
                         productos: JSON.parse(productos),
-                        identificador_excel: $scope.lastSelected.identificador_excel,
+                        identificador_excel: identificador_excel,
                         mod: 1
                     };
 
                     $scope.doSave();
+
+
+                    $rootScope.addCallback(response =>
+                        window.open("./?action=pdf&tmp=TRX&identificador_excel=" + identificador_excel));
                 };
 
                 $scope.cancelar = function () {

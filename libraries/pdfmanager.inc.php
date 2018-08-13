@@ -53,6 +53,11 @@ class PDFManager {
                 $template = "print_cambio_producto.phtml";
                 break;
             }
+            case "TRX": {
+                $identificador_excel = getParam('identificador_excel');
+                $template = "print_etiquetas.phtml";
+                break;
+            }
         }
         
         ob_start();
