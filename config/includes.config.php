@@ -13,7 +13,7 @@ include LIB . "/fastmailer.inc.php";
 include LIB . "/fastmaintfield.inc.php";
 include LIB . "/typeaheadgen.inc.php";
 include LIB . "/thumbnailgen.inc.php";
-include LIB . "/browser.inc.php";
+//include LIB . "/browser.inc.php";
 include LIB . "/fastfield.inc.php";
 include LIB . "/filemanager.inc.php";
 include LIB . "/angulargridcolumn.inc.php";

@@ -12,6 +12,28 @@
         <button class="btn btn-sm btn-danger" ng-click="startAgain()">
             <span class="glyphicon glyphicon-remove"></span>&nbsp;Cancelar
         </button>  
+        <div class="modal" tabindex="-1" role="dialog" id="exampleModal">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Modal title</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>Modal body text goes here.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary">Save changes</button>
+                </div>
+                </div>
+            </div>
+            </div>
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">
+                Launch demo modal
+            </button>
         
             </div>
     </div>        
@@ -29,17 +51,17 @@
     </div>
     <div class="col-lg-2 col-md-2">
         <div class="form-group">
-            <button class="btn btn-success visible-lg visible-md centrado" ng-click="addPermissions()">
-                <span class="glyphicon glyphicon-chevron-right"></span>
+            <button class="btn btn-success d-none d-md-block visible-md centrado" ng-click="addPermissions()">
+                <span class="glyphicon glyphicon-chevron-right">></span>
             </button>
-            <button class="btn btn-danger visible-lg visible-md centrado" ng-click="removePermissions()">
-                <span class="glyphicon glyphicon-chevron-left"></span>
+            <button class="btn btn-danger d-none d-md-block centrado" ng-click="removePermissions()">
+                <span class="glyphicon glyphicon-chevron-left"><</span>
             </button>
-            <button class="btn btn-danger visible-sm visible-xs centrado" ng-click="removePermissions()">
-                <span class="glyphicon glyphicon-chevron-up"></span>
+            <button class="btn btn-danger d-md-none centrado" ng-click="removePermissions()">
+                <span class="glyphicon glyphicon-chevron-up">^</span>
             </button>         
-            <button class="btn btn-success visible-sm visible-xs centrado" ng-click="addPermissions()">
-                <span class="glyphicon glyphicon-chevron-down"></span>
+            <button class="btn btn-success d-md-none centrado" ng-click="addPermissions()">
+                <span class="glyphicon glyphicon-chevron-down">v</span>
             </button>       
         </div>
     </div>
