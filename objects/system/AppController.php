@@ -58,12 +58,14 @@ class AppController{
     public function run(){
         $defaultModule = "";
         //Check browser only if not ajax request
+        /*
         if(isEmpty(getParam(AJAX))){
             if(!$this->isValidBrowser()){
                 include_once VIEWS  . '/sorry.html';
                 return;
             }
         }
+        */
         $sec = AppSecurity::getMe();
         if($sec->isLogged()){ 
             $this->loadModules();
@@ -95,21 +97,25 @@ class AppController{
                 if(!isEmpty(getParam("mod"))){
                     $this->setMod(getParam("mod"));
                 } else {
-                    $modulo = $this->db->query('select
-                        am.PATH, ad.id_profile
-                        from app_defaultscreen ad join app_modules am
-                        on ad.id_module = am.ID 
-                        where ad.id_profile = '.$_SESSION[USER_TYPE]
-                    );
-                    if (count($modulo) > 0){
-                        foreach($modulo as $m){
-                            $defaultModule = $m['PATH'];
-                        }
-                        $this->setMod($defaultModule);
-                    } else {                       
+                    try {
+                        $modulo = $this->db->queryToArray('select
+                            am.PATH, ad.id_profile
+                            from app_defaultscreen ad join app_modules am
+                            on ad.id_module = am.ID 
+                            where ad.id_profile = '.$_SESSION[USER_TYPE]
+                        );
+                        if (count($modulo) > 0){
+                            foreach($modulo as $m){
+                                $defaultModule = $m['PATH'];
+                            }
+                            $this->setMod($defaultModule);
+                        } else {                       
+                            $this->setMod('GeoModError');
+                        }    
+                    } catch(Exception $e){
                         $this->setMod('GeoModError');
-                    }    
-                } 
+                    } 
+                }
                 $this->init();
             }
         } else {
