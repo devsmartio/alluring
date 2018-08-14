@@ -1097,3 +1097,8 @@ ALTER TABLE trx_movimiento_sucursales ADD COLUMN id_cliente_recibe int(20) NULL;
 ALTER TABLE trx_movimiento_sucursales ADD COLUMN es_consignacion bit(1) NOT NULL DEFAULT 0;
 ALTER TABLE trx_movimiento_sucursales ADD COLUMN dias_consignacion int(20) NULL;
 ALTER TABLE trx_movimiento_sucursales ADD COLUMN porcetaje_compra_min float NULL;
+
+create table generacion_etiquetas (
+	codigo_origen varchar(255) NOT NULL,
+    cantidad decimal(10,2) NOT NULL DEFAULT '0.00'
+);

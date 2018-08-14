@@ -58,6 +58,17 @@ class PDFManager {
                 $template = "print_etiquetas.phtml";
                 break;
             }
+            case "GEN_ET": {
+                $tipoGeneracion = getParam("GEN_ET");
+
+                if($tipoGeneracion == '1'){
+                   $idSucursal = getParam("idSucursal");
+                   $idTipo = getParam("idTipo");
+                }
+
+                $template = "print_generacion_etiquetas.phtml";
+                break;
+            }
         }
         
         ob_start();
