@@ -6,7 +6,7 @@
  * Time: 1:41 PM
  */
 
-class TrxTrasladoBodegas   extends FastTransaction {
+class TrxTrasladoBodegas extends FastTransaction {
     function __construct(){
         parent::__construct();
         $this->instanceName = 'TrxTrasladoBodegas';

@@ -50,7 +50,7 @@ $last_name = $user['LAST_NAME'];
         <img class="navbar-brand-full" src="media/img/brand/logo.svg" width="89" height="25" alt="CoreUI Logo">
         <img class="navbar-brand-minimized" src="media/img/brand/sygnet.svg" width="30" height="30" alt="CoreUI Logo">
     </a>
-    <!--<button class="navbar-toggler sidebar-toggler d-md-down-none" type="button" data-toggle="sidebar-lg-show"><span class="navbar-toggler-icon"></span></button>-->
+    <button class="navbar-toggler sidebar-toggler d-md-down-none" type="button" data-toggle="sidebar-lg-show"><span class="navbar-toggler-icon"></span></button>
     <ul class="nav navbar-nav d-md-down-none">
         <!--<li class="nav-item px-3"><a class="nav-link" href="#">Dashboard</a></li><li class="nav-item px-3"><a class="nav-link" href="#">Users</a></li><li class="nav-item px-3"><a class="nav-link" href="#">Settings</a></li>-->
     </ul>
@@ -89,7 +89,7 @@ $last_name = $user['LAST_NAME'];
 </header>
 <div class="app-body">
     <div class="sidebar">
-        <nav class="sidebar-nav">
+        <nav class="sidebar-nav ps ps--active-y">
             <ul class="nav">
                 <li class="nav-item">
                     <a class="nav-link" href="./">
@@ -124,7 +124,7 @@ $last_name = $user['LAST_NAME'];
                 ?>
             </ul>
         </nav>
-        <!--<button class="sidebar-minimizer brand-minimizer" type="button"></button>-->
+        <button class="sidebar-minimizer brand-minimizer" type="button"></button>
     </div>
     <main class="main" ng-controller="WrapperCtrl">
     <ol class="breadcrumb">
@@ -140,7 +140,7 @@ $last_name = $user['LAST_NAME'];
                 <div class="card">
                     <div class="card-body">
                         <!-- here -->
-                        <div class="col-md-12 col-lg-12" id="moduleCont">
+                        <div id="moduleCont">
                                     <?php
                                     if ($this->mod != null) {
                                         $this->mod->init();
@@ -220,7 +220,7 @@ $last_name = $user['LAST_NAME'];
                 }
             });
         });
-        app.controller('mainCtrl', function ($scope, $timeout, $rootScope) {
+        app.controller('mainCtrl', function ($scope, $timeout, $rootScope, $filter) {
             $scope.mainLoading = true;
             $timeout(function () {
                 $scope.mainLoading = false;

@@ -75,7 +75,7 @@ abstract class FastTransaction extends FastModWrapper{
         parent::myJavascript();
         ?>
         <script type='text/javascript'>
-            app.controller('WrapperCtrl', function($scope,$http,$rootScope, $timeout){
+            app.controller('WrapperCtrl', ['$scope', '$http', '$rootScope' , '$timeout', '$filter', function($scope, $http, $rootScope, $timeout, $filter){
                 $scope.ajaxUrl = './?<?php echo AJAX ?>=true&mod=<?php echo $this->instanceName ?>';
                 $rootScope.callbacks = new Array();
                 $rootScope.modData = new Array();
@@ -243,7 +243,7 @@ abstract class FastTransaction extends FastModWrapper{
                         $scope.alerts = new Array();
                     }, timeout);
                 };
-            });
+            }]);
         </script>
         <?php
     }

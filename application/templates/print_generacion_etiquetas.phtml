@@ -55,7 +55,7 @@ foreach ($transacciones as $trx) {
     </style>
 </head>
 <body>
-<table>
+<table border="0">
     <?php
     reset($transacciones);
     $p = current($transacciones);
@@ -71,7 +71,7 @@ foreach ($transacciones as $trx) {
             $conteo++;
         ?>
         <?php if ($i%3 == 1) echo "<tr>" ?>
-        <td style="padding-left:5px;">
+        <td style="padding-left:5px; width: 198px;">
             <div style="height: 90px;">
                 <label><?php echo $p['descripcion'] ?></label>
                 <label><?php echo $generator->getBarcode($p['codigo_origen'], $generator::TYPE_CODE_128); ?></label>
