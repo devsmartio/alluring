@@ -3,6 +3,12 @@
         height:400px;
         overflow-y: scroll;
     }
+    .color-red {
+        color: red;
+    }
+    .color-green {
+        color: green;
+    }
 </style>
 <div ng-controller="ModuleCtrl">
     <div class="modal fade" tabindex="-1" role="dialog" id="clientesModal">
@@ -87,23 +93,35 @@
             </div>
             <div class="row anyClass">
                 <div ng-repeat="prod in productos | filter:search" class="col-12 col-md-4">
-                    <span class="d-inline-block" tabindex="0" data-toggle="tooltip" title="{{prod.unidades-prod.cant_reingreso}} unidades">
                         <figure class="figure btn btn-ghost-light">
-                            <input class="form-control form-control-sm" type="number" ng-model="prod.cant_reingreso" min="0" max="{{prod.unidades}}" value="0">
-                            <img src="media/uploads/{{prod.imagen}}" alt="{{prod.descripcion}}" class="img-thumbnail" ng-click="reIngresar(prod)">
-                            <figcaption class="figure-caption">
-                                <label class="col-sm-2 col-form-label col-form-label-sm">{{prod.nombre}}</label>
-                            </figcaption>
+                            <div class="row">
+                                <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
+                                    <input class="form-control form-control-sm" type="number" ng-model="prod.cant_reingreso" min="0" value="0">
+                                </div>
+                                <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
+                                    <button class='btn btn-success btn-sm' title="Agregar" ng-click='reIngresar(prod)' type="button">
+                                        <span class='cui-chevron-right'></span>
+                                    </button>
+                                </div>
+                            </div>
+                            <span class="d-inline-block" tabindex="0" data-toggle="tooltip" title="{{prod.unidades-prod.cant_reingreso}} unidades restantes" >
+                                <img ng-src="media/uploads/{{prod.imagen}}" alt="{{prod.descripcion}}" class="img-thumbnail" ng-click="reIngresarUno(prod)">
+                                <figcaption class="figure-caption">
+                                    <label class="col-sm-2 col-form-label col-form-label-sm">{{prod.nombre}}</label>
+                                </figcaption>
+                            </span>
                         </figure>
-                    </span>
                 </div>
             </div>
             <div class="row">
-                <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
-                    <label>Entregado - {{lastSelectedConsig.total_entregado}}</label>
+                <div class="col-lg-5 col-md-5 col-sm-12 col-xs-12">
+                    <label class="color-green">Entregado - {{lastSelectedConsig.total_entregado}}</label>
                 </div>
-                <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
-                    <label>Reingreso - {{lastSelectedConsig.total_reingreso}}/{{lastSelectedConsig.compra_minima}}</label>
+                <div class="col-lg-2 col-md-2 col-sm-12 col-xs-12">
+                    <button type="button" class="btn btn-pill btn-success" ng-show="lastSelectedConsig.total_reingreso === lastSelectedConsig.compra_minima" ng-click="generarFactura()">Generar Factura</button>
+                </div>
+                <div class="col-lg-5 col-md-5 col-sm-12 col-xs-12" style="text-align: right;">
+                    <label ng-class="{'color-red': lastSelectedConsig.total_reingreso === lastSelectedConsig.compra_minima}">Reingreso - {{lastSelectedConsig.total_reingreso}}/{{lastSelectedConsig.compra_minima}}</label>
                 </div>
             </div>
         </div>
@@ -127,12 +145,12 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <th scope="row">1</th>
-                                <td>Y1</td>
-                                <td>100</td>
-                                <td>2.5</td>
-                                <td>250</td>
+                            <tr ng-repeat='prod in productos_facturar' >
+                                <th scope="row">{{($index+1)}}</th>
+                                <td ng-bind="prod.codigo_origen"></td>
+                                <td ng-bind="prod.cant_facturar"></td>
+                                <td ng-bind="prod.precio_descuento"></td>
+                                <td ng-bind="prod.sub_total | number:2"></td>
                             </tr>
                         </tbody>
                         <tfoot>
@@ -141,10 +159,19 @@
                                 <td></td>
                                 <td></td>
                                 <td></td>
-                                <th scope="row">250.00</th>
+                                <th scope="row">{{productos_facturar.sum("sub_total") | number:2}}</th>
                             </tr>
                         </tfoot>
                     </table>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-5 col-md-5 col-sm-12 col-xs-12">
+                </div>
+                <div class="col-lg-2 col-md-2 col-sm-12 col-xs-12">
+                    <button type="button" class="btn btn-pill btn-success" ng-show="facturar" ng-click="facturar()">Facturar</button>
+                </div>
+                <div class="col-lg-5 col-md-5 col-sm-12 col-xs-12">
                 </div>
             </div>
         </div>

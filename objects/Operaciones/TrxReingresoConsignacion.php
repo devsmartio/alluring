@@ -30,9 +30,19 @@ class TrxReingresoConsignacion extends FastTransaction {
         ?>
         <script>
             app.controller('ModuleCtrl', ['$scope', '$http', '$rootScope' , '$timeout', '$filter', function ($scope, $http, $rootScope, $timeout, $filter) {
+
+                Array.prototype.sum = function (prop) {
+                    var total = 0
+                    for ( var i = 0, _len = this.length; i < _len; i++ ) {
+                        total += parseFloat(this[i][prop])
+                    }
+                    return total
+                }
+
                 $scope.startAgain = function () {
                     $scope.cliente = '';
-                    $scope.productos_reingreso = new Array();
+                    $scope.productos_facturar = new Array();
+                    $scope.facturar = false;
 
                     $http.get($scope.ajaxUrl + '&act=getClientes').success(function (response) {
                         $scope.rows = response.data;
@@ -138,27 +148,74 @@ class TrxReingresoConsignacion extends FastTransaction {
                     $scope.startAgain();
                 });
 
-                $scope.reIngresar = function(prod) {
-                    var total_reingreso_temp = $scope.lastSelectedConsig.total_reingreso + (prod.cant_reingreso > 0 ? prod.cant_reingreso : 1);
-                    if (total_reingreso_temp <= $scope.lastSelectedConsig.compra_minima) {
-                        $scope.lastSelectedConsig.total_reingreso = $scope.lastSelectedConsig.total_reingreso + (prod.cant_reingreso > 0 ? prod.cant_reingreso : 1);
+                $scope.reIngresarUno = function(prod) {
+                    if ((prod.cant_reingreso + 1) <= prod.unidades) {
+                        var total_reingreso_temp = $scope.lastSelectedConsig.total_reingreso + 1;
+                        if (total_reingreso_temp <= $scope.lastSelectedConsig.compra_minima) {
+                            $scope.lastSelectedConsig.total_reingreso++;
 
-//                        $filter('filter')($scope.productos_reingreso, {id_producto: prod.id_producto})[0].price+=999;
+                            prod.cant_reingreso = prod.cant_reingreso + 1;
+                            prod.total_reingreso = prod.cant_reingreso;
 
-                        $producto = $filter('filter')($scope.productos_reingreso, {id_producto: prod.id_producto});
-
-                        if ($producto.length > 0) {
-                            $producto[0].cant_reingreso = (prod.cant_reingreso > 0 ? prod.cant_reingreso : 1)
                         } else {
-                            $scope.productos_reingreso.push(prod);
+                            $scope.alerts.push({
+                                type: 'alert-danger',
+                                msg: 'Ha llegado al maximo de la compra minima'
+                            });
                         }
-
                     } else {
                         $scope.alerts.push({
                             type: 'alert-danger',
-                            msg: 'Ha llegado al maximo de la compra minima'
+                            msg: 'No puede reingresar mas de las unidades (' + prod.unidades + ') de este producto'
                         });
                     }
+                };
+
+                $scope.reIngresar = function(prod) {
+                    if(prod.cant_reingreso > 0) {
+                        if (prod.cant_reingreso <= prod.unidades) {
+
+                            var total_reingreso_temp = 0;
+                            angular.forEach($scope.productos, function(obj, key){
+                                total_reingreso_temp += parseInt(obj['cant_reingreso']);
+                            });
+
+                            if (total_reingreso_temp <= $scope.lastSelectedConsig.compra_minima) {
+                                $scope.lastSelectedConsig.total_reingreso = total_reingreso_temp;
+                                prod.total_reingreso = prod.cant_reingreso;
+
+                            } else {
+                                prod.cant_reingreso = prod.total_reingreso;
+                                $scope.productos_vender = $scope.productos;
+
+                                $scope.alerts.push({
+                                    type: 'alert-danger',
+                                    msg: 'Ha llegado al maximo de la compra minima'
+                                });
+                            }
+                        } else {
+                            prod.cant_reingreso = prod.total_reingreso;
+                            $scope.alerts.push({
+                                type: 'alert-danger',
+                                msg: 'No puede reingresar mas de las unidades (' + prod.unidades + ') de este producto'
+                            });
+                        }
+                    }
+                };
+
+                $scope.generarFactura = function() {
+                    angular.forEach($scope.productos, function (prod, key) {
+                        if ((prod.unidades - prod.cant_reingreso) > 0) {
+                            prod.cant_facturar = prod.unidades - prod.cant_reingreso;
+                            prod.precio_descuento = parseFloat(prod.precio_descuento).toFixed(2);
+                            prod.sub_total = ((prod.unidades - prod.cant_reingreso) * prod.precio_descuento).toFixed(2);
+                            $scope.productos_facturar.push(prod);
+                        }
+                    });
+                    $scope.facturar = true;
+                };
+
+                $scope.facturar = function() {
                 };
             }]);
         </script>
@@ -215,7 +272,7 @@ class TrxReingresoConsignacion extends FastTransaction {
     public function getProductos(){
         $id_movimiento_sucursales = getParam("id_movimiento_sucursales");
 
-        $queryProductos = " SELECT	p.id_producto, p.nombre, p.descripcion, p.precio_venta, (p.precio_venta * (ctp.porcentaje_descuento/100)) AS precio_descuento, p.imagen, p.codigo_origen, tmsd.unidades, ctp.porcentaje_descuento, 0 AS cant_reingreso
+        $queryProductos = " SELECT	p.id_producto, p.nombre, p.descripcion, p.precio_venta, (p.precio_venta * (ctp.porcentaje_descuento/100)) AS precio_descuento, p.imagen, p.codigo_origen, tmsd.unidades, ctp.porcentaje_descuento, 0 AS cant_reingreso, 0 AS total_reingreso
                             FROM	trx_movimiento_sucursales tms
                                     INNER JOIN trx_movimiento_sucursales_detalle tmsd ON tmsd.id_movimiento_sucursales = tms.id_movimiento_sucursales
                                     INNER JOIN producto p ON p.id_producto = tmsd.id_producto
@@ -225,9 +282,11 @@ class TrxReingresoConsignacion extends FastTransaction {
 
         $productos = $this->db->queryToArray($queryProductos);
 
-//        for($i = 0; count($consignaciones) > $i; $i++){
-//            $consignaciones[$i]['compra_minima'] = ceil($consignaciones[$i]['compra_minima']);
-//        }
+        for($i = 0; count($productos) > $i; $i++){
+            $productos[$i]['unidades'] = (int)$productos[$i]['unidades'];
+            $productos[$i]['cant_reingreso'] = (int)$productos[$i]['cant_reingreso'];
+            $productos[$i]['total_reingreso'] = (int)$productos[$i]['total_reingreso'];
+        }
 
         echo json_encode(array('data' => $productos));
     }
