@@ -1102,3 +1102,61 @@ create table generacion_etiquetas (
 	codigo_origen varchar(255) NOT NULL,
     cantidad decimal(10,2) NOT NULL DEFAULT '0.00'
 );
+
+CREATE TABLE `trx_venta` (
+  `id_venta` bigint(50) NOT NULL AUTO_INCREMENT,
+  `total` decimal(10,2) NOT NULL,
+  `id_cliente` int(20) NOT NULL,
+  `id_empleado` int(20) NOT NULL,
+  `usuario_creacion` varchar(100) NOT NULL,
+  `fecha_creacion` datetime NOT NULL,
+  PRIMARY KEY (`id_venta`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+CREATE TABLE `trx_venta_detalle` (
+  `id_venta_detalle` bigint(50) NOT NULL AUTO_INCREMENT,
+  `id_venta` bigint(50) NOT NULL,
+  `id_producto` int(20) NOT NULL,
+  `cantidad` decimal(10,2)  NOT NULL,
+  `usuario_creacion` varchar(100) NOT NULL,
+  `fecha_creacion` datetime NOT NULL,
+  KEY `id_venta` (`id_venta`),
+  CONSTRAINT `venta_detalle_ibfk_2` FOREIGN KEY (`id_venta`) REFERENCES `trx_venta` (`id_venta`),
+  PRIMARY KEY (`id_venta_detalle`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+CREATE TABLE `trx_venta_formas_pago` (
+  `id_venta_formas_pago` bigint(50) NOT NULL AUTO_INCREMENT,
+  `id_venta` bigint(50) NOT NULL,
+  `id_forma_pago` int(20) NOT NULL,
+  `id_moneda` int(5) NULL,
+  `cantidad` decimal(10,2) NULL,
+  `monto` decimal(10,2) NULL,
+  `numero_cheque` varchar(255) NULL,
+  `id_banco` int(5) NULL,
+  `numero_autorizacion` varchar(255) NULL,
+  `autorizado_por` varchar(255) NULL,
+  `numero_voucher` varchar(255) NULL,
+  `usuario_creacion` varchar(100) NOT NULL,
+  `fecha_creacion` datetime NOT NULL,
+  KEY `id_venta` (`id_venta`),
+  CONSTRAINT `venta_formas_pago_ibfk_2` FOREIGN KEY (`id_venta`) REFERENCES `trx_venta` (`id_venta`),
+  PRIMARY KEY (`id_venta_formas_pago`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+CREATE TABLE `formas_pago` (
+  `id_forma_pago` int(20) NOT NULL AUTO_INCREMENT,
+  `nombre` varchar(100) NOT NULL,
+  `usuario_creacion` varchar(100) NOT NULL,
+  `fecha_creacion` datetime NOT NULL,
+  PRIMARY KEY (`id_forma_pago`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+CREATE TABLE `bancos` (
+  `id_banco` int(5) NOT NULL AUTO_INCREMENT,
+  `nombre` varchar(100) NOT NULL,
+  `usuario_creacion` varchar(100) NOT NULL,
+  `fecha_creacion` datetime NOT NULL,
+  PRIMARY KEY (`id_banco`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+

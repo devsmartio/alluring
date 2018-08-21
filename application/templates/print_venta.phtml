@@ -1,5 +1,5 @@
 <?php
-$queryVenta = "select v.id_venta, v.total, v.credito, CONCAT(e.nombres,' ',e.apellidos) nombre_empleado, s.nombre nombre_sucursal, v.fecha_creacion, CONCAT(c.nombres,' ',c.apellidos) nombre_cliente, IFNULL(c.nit, 'C/F') nit_cliente "
+    $queryVenta = "select v.id_venta, v.total, v.credito, CONCAT(e.nombres,' ',e.apellidos) nombre_empleado, s.nombre nombre_sucursal, v.fecha_creacion, CONCAT(c.nombres,' ',c.apellidos) nombre_cliente, IFNULL(c.nit, 'C/F') nit_cliente "
         . "from trx_venta v "
         . "join sucursales s on s.id_sucursal=v.id_sucursal "
         . "join empleados e on e.id_empleado=v.id_empleado "

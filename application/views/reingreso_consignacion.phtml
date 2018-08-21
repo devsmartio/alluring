@@ -9,6 +9,10 @@
     .color-green {
         color: green;
     }
+    .form-group.required .col-form-label:after {
+        content:"*";
+        color:red;
+    }
 </style>
 <div ng-controller="ModuleCtrl">
     <div class="modal fade" tabindex="-1" role="dialog" id="clientesModal">
@@ -16,7 +20,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Clientes</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
@@ -42,7 +46,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
                 </div>
             </div>
         </div>
@@ -52,7 +56,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Clientes</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
@@ -78,7 +82,141 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal" tabindex="-1" role="dialog" id="tipoPagoModal">
+        <div class="modal-dialog" role="document" style="max-width: 700px; height: 500px;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Forma de Pago</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-lg-4 col-md-4 col-sm-12 col-xs-12">
+                        </div>
+                        <div class="col-lg-4 col-md-4 col-sm-12 col-xs-12">
+                            <div class="btn-group">
+                                <label ng-repeat="fpago in formas_pago" class="btn btn-primary" ng-class="{active: forma_pago.tipo_pago == fpago.id_forma_pago}" ng-model="forma_pago.tipo_pago" btn-radio="{{fpago.id_forma_pago}}" uncheckable>
+                                    {{fpago.nombre}}
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-md-4 col-sm-12 col-xs-12">
+                        </div>
+                    </div>
+                    <div ng-show="forma_pago.tipo_pago == 1">
+                        <form name="formEfectivo" data-toggle="validator" role="form" class="row" >
+                            <div class="col-lg-2 col-md-3 col-sm-12 col-xs-12">
+                            </div>
+                            <div class="col-lg-8 col-md-6 col-sm-12 col-xs-12">
+                                <div class='form-group row required'>
+                                    <label for='id_moneda' class="col-sm-4 col-form-label">Moneda</label>
+                                    <div class="col-sm-8">
+                                        <select name="id_moneda" id="id_moneda" ng-model="forma_pago.id_moneda" type="select" class='form-control' ng-change="cambioMoneda()">
+                                            <option ng-repeat="moneda in monedas" value="{{moneda.id_moneda}}" >{{moneda.nombre}}</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class='form-group row required'>
+                                    <label for='cantidad' class="col-sm-4 col-form-label">Cantidad</label>
+                                    <div class="col-sm-8">
+                                        <input ng-model="forma_pago.cantidad" type="text" class='form-control' name='cantidad' value="{{forma_pago.cantidad | number:2}}" required oninvalid="this.setCustomValidity('La cantidad es requerida')" oninput="setCustomValidity('')"/>
+                                    </div>
+                                </div>
+                                <div class='form-group row required'>
+                                    <label for='monto' class="col-sm-4 col-form-label">Monto a Pagar</label>
+                                    <div class="col-sm-8">
+                                        <input ng-model="forma_pago.monto" type="text" class='form-control' name='monto' required oninvalid="this.setCustomValidity('El monto es requerido')" oninput="setCustomValidity('')"/>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button class="btn btn-primary" type="submit" ng-click="facturar()" ng-disabled="formEfectivo.$invalid">Facturar</button>
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                                </div>
+                            </div>
+                            <div class="col-lg-2 col-md-3 col-sm-12 col-xs-12">
+                            </div>
+                        </form>
+                    </div>
+                    <div ng-if="forma_pago.tipo_pago == 2">
+                        <form name="formCheque" data-toggle="validator" role="form" class="row" >
+                            <div class="col-lg-2 col-md-3 col-sm-12 col-xs-12">
+                            </div>
+                            <div class="col-lg-8 col-md-6 col-sm-12 col-xs-12">
+                                <div class='form-group row required'>
+                                    <label for='numero_cheque' class="col-sm-4 col-form-label">Numero Cheque</label>
+                                    <div class="col-sm-8">
+                                        <input ng-model="forma_pago.numero_cheque" type="text" class='form-control' name='numero_cheque' required oninvalid="this.setCustomValidity('Número de cheque es requerido')" oninput="setCustomValidity('')"/>
+                                        <div class="help-block with-errors"></div>
+                                    </div>
+                                </div>
+                                <div class='form-group row required'>
+                                    <label for='id_banco' class="col-sm-4 col-form-label">Banco</label>
+                                    <div class="col-sm-8">
+                                        <select name="id_banco" id="id_banco" ng-model="forma_pago.id_banco" type="select" required class='form-control' ng-change=""  required oninvalid="this.setCustomValidity('Banco es requerido')" oninput="setCustomValidity('')">
+                                            <option ng-repeat="banco in bancos" value="{{banco.id_banco}}" >{{banco.nombre}}</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class='form-group row required'>
+                                    <label for='cantidad' class="col-sm-4 col-form-label">Cantidad</label>
+                                    <div class="col-sm-8">
+                                        <input ng-model="forma_pago.cantidad" type="text" required class='form-control' name='cantidad' value="{{forma_pago.cantidad | number:2}}" required oninvalid="this.setCustomValidity('La cantidad es requerida')" oninput="setCustomValidity('')"/>
+                                    </div>
+                                </div>
+                                <div class='form-group row required'>
+                                    <label for='numero_autorizacion' class="col-sm-4 col-form-label">Número Autorización</label>
+                                    <div class="col-sm-8">
+                                        <input ng-model="forma_pago.numero_autorizacion" type="text" required class='form-control' name='numero_autorizacion' required oninvalid="this.setCustomValidity('El número de autorizacion es requerido')" oninput="setCustomValidity('')"/>
+                                    </div>
+                                </div>
+                                <div class='form-group row required'>
+                                    <label for='autorizado_por' class="col-sm-4 col-form-label">Autorizado por</label>
+                                    <div class="col-sm-8">
+                                        <input ng-model="forma_pago.autorizado_por" type="text" required class='form-control' name='autorizado_por' required oninvalid="this.setCustomValidity('Autorizado por es requerido')" oninput="setCustomValidity('')"/>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button class="btn btn-primary" type="submit" ng-click="facturar()" ng-disabled="formCheque.$invalid">Facturar</button>
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                                </div>
+                            </div>
+                            <div class="col-lg-2 col-md-3 col-sm-12 col-xs-12">
+                            </div>
+                        </form>
+                    </div>
+                    <div ng-show="forma_pago.tipo_pago == 3">
+                        <form name="formTarjeta" data-toggle="validator" role="form" class="row" >
+                            <div class="col-lg-2 col-md-3 col-sm-12 col-xs-12">
+                            </div>
+                            <div class="col-lg-8 col-md-6 col-sm-12 col-xs-12">
+                                <div class='form-group row required'>
+                                    <label for='cantidad' class="col-sm-4 col-form-label">Cantidad</label>
+                                    <div class="col-sm-8">
+                                        <input ng-model="forma_pago.cantidad" type="text" class='form-control' name='cantidad' value="{{forma_pago.cantidad | number:2}}" required oninvalid="this.setCustomValidity('La cantidad es requerida')" oninput="setCustomValidity('')"/>
+                                    </div>
+                                </div>
+                                <div class='form-group row required'>
+                                    <label for='numero_voucher' class="col-sm-4 col-form-label">Número de Voucher</label>
+                                    <div class="col-sm-8">
+                                        <input ng-model="forma_pago.numero_voucher" type="text" class='form-control' name='numero_voucher' required oninvalid="this.setCustomValidity('El numero de voucher es requerido')" oninput="setCustomValidity('')"/>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button class="btn btn-primary" type="submit" ng-click="facturar()" ng-disabled="formTarjeta.$invalid">Facturar</button>
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                                </div>
+                            </div>
+                            <div class="col-lg-2 col-md-3 col-sm-12 col-xs-12">
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
@@ -114,13 +252,16 @@
                 </div>
             </div>
             <div class="row">
-                <div class="col-lg-5 col-md-5 col-sm-12 col-xs-12">
+                <div class="col-lg-3 col-md-5 col-sm-12 col-xs-12">
                     <label class="color-green">Entregado - {{lastSelectedConsig.total_entregado}}</label>
                 </div>
-                <div class="col-lg-2 col-md-2 col-sm-12 col-xs-12">
-                    <button type="button" class="btn btn-pill btn-success" ng-show="lastSelectedConsig.total_reingreso === lastSelectedConsig.compra_minima" ng-click="generarFactura()">Generar Factura</button>
+                <div class="col-lg-6 col-md-2 col-sm-12 col-xs-12" style="text-align: center;">
+                    <div class='btn-group' role='group'>
+                        <button type="button" class="btn btn-pill btn-danger" ng-click="cancelar()">Cancelar</button>
+                        <button type="button" class="btn btn-pill btn-success" ng-show="lastSelectedConsig.total_reingreso === lastSelectedConsig.compra_minima" ng-click="generar()">Generar</button>
+                    </div>
                 </div>
-                <div class="col-lg-5 col-md-5 col-sm-12 col-xs-12" style="text-align: right;">
+                <div class="col-lg-3 col-md-5 col-sm-12 col-xs-12" style="text-align: right;">
                     <label ng-class="{'color-red': lastSelectedConsig.total_reingreso === lastSelectedConsig.compra_minima}">Reingreso - {{lastSelectedConsig.total_reingreso}}/{{lastSelectedConsig.compra_minima}}</label>
                 </div>
             </div>
@@ -166,12 +307,12 @@
                 </div>
             </div>
             <div class="row">
-                <div class="col-lg-5 col-md-5 col-sm-12 col-xs-12">
+                <div class="col-lg-5 col-md-4 col-sm-12 col-xs-12">
                 </div>
-                <div class="col-lg-2 col-md-2 col-sm-12 col-xs-12">
-                    <button type="button" class="btn btn-pill btn-success" ng-show="facturar" ng-click="facturar()">Facturar</button>
+                <div class="col-lg-2 col-md-4 col-sm-12 col-xs-12">
                 </div>
-                <div class="col-lg-5 col-md-5 col-sm-12 col-xs-12">
+                <div class="col-lg-5 col-md-4 col-sm-12 col-xs-12" style="text-align: right;">
+                    <button type="button" class="btn btn-pill btn-success" ng-show="vender" data-toggle="modal" data-target="#tipoPagoModal">Vender</button>
                 </div>
             </div>
         </div>

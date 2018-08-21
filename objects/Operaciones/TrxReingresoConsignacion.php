@@ -37,17 +37,46 @@ class TrxReingresoConsignacion extends FastTransaction {
                         total += parseFloat(this[i][prop])
                     }
                     return total
-                }
+                };
 
                 $scope.startAgain = function () {
                     $scope.cliente = '';
                     $scope.productos_facturar = new Array();
-                    $scope.facturar = false;
+                    $scope.lastSelected = new Array();
+                    $scope.consignaciones = new Array();
+                    $scope.productos = new Array();
+                    $scope.vender = false;
+                    $scope.formas_pago = new Array();
+                    $scope.forma_pago = new Array();
+                    $scope.forma_pago.tipo_pago = 1;
+                    $scope.forma_pago.id_moneda = '';
+                    $scope.id_moneda_defecto = 0;
 
                     $http.get($scope.ajaxUrl + '&act=getClientes').success(function (response) {
                         $scope.rows = response.data;
                         $scope.setRowSelected($scope.rows);
                         $scope.setRowIndex($scope.rows);
+                    });
+
+                    $http.get($scope.ajaxUrl + '&act=getFormasPago').success(function (response) {
+                        $scope.formas_pago = response.data;
+                    });
+
+                    $http.get($scope.ajaxUrl + '&act=getMonedas').success(function (response) {
+                        $scope.monedas = response.data;
+                        $moneda = $filter('filter')($scope.monedas, {selected: true});
+                        if ($moneda.length > 0) {
+                            $scope.id_moneda_defecto = $moneda[0].id_moneda;
+                            $scope.forma_pago.id_moneda = $scope.id_moneda_defecto;
+                        }
+                    });
+
+                    $http.get($scope.ajaxUrl + '&act=getTipoCambio').success(function (response) {
+                        $scope.tipo_cambio = response.data;
+                    });
+
+                    $http.get($scope.ajaxUrl + '&act=getBancos').success(function (response) {
+                        $scope.bancos = response.data;
                     });
 
                     $('#clientesModal').modal();
@@ -84,7 +113,7 @@ class TrxReingresoConsignacion extends FastTransaction {
                     $scope.currentIndexConsig = row.index;
                     $scope.setRowSelectedConsignaciones($scope.consignaciones);
                     $scope.lastSelectedConsig.selected = true;
-                    $scope.cliente = $scope.lastSelected.nombres + " " + $scope.lastSelected.apellidos
+                    $scope.cliente = $scope.lastSelected.nombres + " " + $scope.lastSelected.apellidos;
                     $('#consignacionesModal').modal('hide');
 
                     $http.get($scope.ajaxUrl + '&act=getProductos&id_movimiento_sucursales=' + $scope.lastSelectedConsig.id_movimiento_sucursales).success(function (response) {
@@ -203,7 +232,14 @@ class TrxReingresoConsignacion extends FastTransaction {
                     }
                 };
 
-                $scope.generarFactura = function() {
+                $scope.cambioMoneda = function() {
+                    $tipo_cambio = $filter('filter')($scope.tipo_cambio, {id_moneda_muchos: $scope.id_moneda_defecto, id_moneda_uno: $scope.forma_pago.id_moneda});
+
+                    if($tipo_cambio.length > 0)
+                        $scope.forma_pago.monto = (parseFloat($scope.forma_pago.cantidad) / parseFloat($tipo_cambio[0].factor)).toFixed(2);
+                };
+
+                $scope.generar = function() {
                     angular.forEach($scope.productos, function (prod, key) {
                         if ((prod.unidades - prod.cant_reingreso) > 0) {
                             prod.cant_facturar = prod.unidades - prod.cant_reingreso;
@@ -212,10 +248,31 @@ class TrxReingresoConsignacion extends FastTransaction {
                             $scope.productos_facturar.push(prod);
                         }
                     });
-                    $scope.facturar = true;
+                    $scope.forma_pago.cantidad = $scope.productos_facturar.sum("sub_total").toFixed(2);
+                    $scope.forma_pago.monto = $scope.forma_pago.cantidad;
+
+                    $tipo_cambio = $filter('filter')($scope.tipo_cambio, {id_moneda_muchos: $scope.id_moneda_defecto, id_moneda_uno: $scope.forma_pago.id_moneda});
+
+                    if($tipo_cambio.length > 0)
+                        $scope.forma_pago.monto = (parseFloat($scope.forma_pago.cantidad) / parseFloat($tipo_cambio[0].factor)).toFixed(2);
+
+                    $scope.vender = true;
                 };
 
                 $scope.facturar = function() {
+
+                    var productos = JSON.stringify($scope.productos);
+//                    productos = productos.replace(/\\/g, "\\\\");
+//
+//                    $rootScope.modData = {
+//                        productos: JSON.parse(productos),
+//                        id_cliente: $scope.lastSelected.id_cliente
+//                    };
+//
+//                    $scope.doSave();
+
+//                    $rootScope.addCallback(response =>
+//                    window.open("./?action=pdf&tmp=TRX&identificador_excel=" + identificador_excel));
                 };
             }]);
         </script>
@@ -231,6 +288,63 @@ class TrxReingresoConsignacion extends FastTransaction {
             );
             $resultSet[] = $toAdd;
         }
+        echo json_encode(array('data' => $resultSet));
+    }
+
+    public function getFormasPago()
+    {
+        $resultSet = array();
+
+        $ds = $this->db->query_select('formas_pago');
+
+        foreach ($ds as $p) {
+            $resultSet[] = array('id_forma_pago' => $p['id_forma_pago'], 'nombre' => $p['nombre']);
+        }
+
+        echo json_encode(array('data' => $resultSet));
+    }
+
+    public function getBancos()
+    {
+        $resultSet = array();
+        $resultSet[] = array('id_banco' => '', 'nombre' => '-- Seleccione uno --');
+
+        $ds = $this->db->query_select('bancos');
+
+        foreach ($ds as $p) {
+            $resultSet[] = array('id_banco' => $p['id_banco'], 'nombre' => $p['nombre']);
+        }
+
+        echo json_encode(array('data' => $resultSet));
+    }
+
+    public function getTipoCambio()
+    {
+        $resultSet = array();
+
+        $ds = $this->db->query_select('tipo_cambio');
+
+        foreach ($ds as $p) {
+            $resultSet[] = array('id_moneda_muchos' => $p['id_moneda_muchos'], 'id_moneda_uno' => $p['id_moneda_uno'], 'factor' => $p['factor']);
+        }
+
+        echo json_encode(array('data' => $resultSet));
+    }
+
+    public function getMonedas()
+    {
+        $resultSet = array();
+
+        $ds = $this->db->query_select('monedas');
+
+        foreach ($ds as $p) {
+            if ($p['moneda_defecto'] == 1) {
+                $resultSet[] = array('id_moneda' => $p['id_moneda'], 'nombre' => $p['nombre'], 'selected' => true);
+            } else {
+                $resultSet[] = array('id_moneda' => $p['id_moneda'], 'nombre' => $p['nombre'], 'selected' => false);
+            }
+        }
+
         echo json_encode(array('data' => $resultSet));
     }
 
@@ -305,6 +419,11 @@ class TrxReingresoConsignacion extends FastTransaction {
         $fecha = new DateTime();
         $user = AppSecurity::$UserData['data'];
 
+
+
+        foreach ($data['productos'] as $prod) {
+
+        }
 
         $this->r = 1;
         $this->msg = 'Traslado realizado con éxito';
