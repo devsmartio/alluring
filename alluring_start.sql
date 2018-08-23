@@ -1118,6 +1118,7 @@ CREATE TABLE `trx_venta_detalle` (
   `id_venta` bigint(50) NOT NULL,
   `id_producto` int(20) NOT NULL,
   `cantidad` decimal(10,2)  NOT NULL,
+  `precio_venta` decimal(10,2)  NOT NULL,
   `usuario_creacion` varchar(100) NOT NULL,
   `fecha_creacion` datetime NOT NULL,
   KEY `id_venta` (`id_venta`),

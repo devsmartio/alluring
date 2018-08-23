@@ -47,10 +47,11 @@ class TrxReingresoConsignacion extends FastTransaction {
                     $scope.productos = new Array();
                     $scope.vender = false;
                     $scope.formas_pago = new Array();
-                    $scope.forma_pago = new Array();
+                    $scope.forma_pago = {};
                     $scope.forma_pago.tipo_pago = 1;
                     $scope.forma_pago.id_moneda = '';
                     $scope.id_moneda_defecto = 0;
+                    $scope.today = $filter('date')(new Date(), 'yyyy-MM-dd');
 
                     $http.get($scope.ajaxUrl + '&act=getClientes').success(function (response) {
                         $scope.rows = response.data;
@@ -262,17 +263,29 @@ class TrxReingresoConsignacion extends FastTransaction {
                 $scope.facturar = function() {
 
                     var productos = JSON.stringify($scope.productos);
-//                    productos = productos.replace(/\\/g, "\\\\");
-//
-//                    $rootScope.modData = {
-//                        productos: JSON.parse(productos),
-//                        id_cliente: $scope.lastSelected.id_cliente
-//                    };
-//
-//                    $scope.doSave();
+                    productos = productos.replace(/\\/g, "\\\\");
 
-//                    $rootScope.addCallback(response =>
-//                    window.open("./?action=pdf&tmp=TRX&identificador_excel=" + identificador_excel));
+                    var forma_pago = JSON.stringify($scope.forma_pago);
+                    forma_pago = forma_pago.replace(/\\/g, "\\\\");
+
+                    var consignaciones = JSON.stringify($scope.consignaciones);
+                    consignaciones = consignaciones.replace(/\\/g, "\\\\");
+
+                        $rootScope.modData = {
+                        productos: JSON.parse(productos),
+                        id_cliente: $scope.lastSelected.id_cliente,
+                        forma_pago: JSON.parse(forma_pago),
+                        consignaciones: JSON.parse(consignaciones)
+                    };
+
+                    $scope.doSave();
+
+                    $('#tipoPagoModal').modal('hide');
+
+                    var id_venta = 10;
+
+                    $rootScope.addCallback(response =>
+                    window.open("./?action=pdf&tmp=VT&id_venta=" + id_venta));
                 };
             }]);
         </script>
@@ -365,7 +378,7 @@ class TrxReingresoConsignacion extends FastTransaction {
     {
         $id_cliente = getParam("id_cliente");
 
-        $queryConsignaciones = " SELECT	tms.id_movimiento_sucursales, tms.comentario_envio, tms.fecha_creacion, tms.dias_consignacion, tms.porcetaje_compra_min, (SUM(tmsd.unidades)*(tms.porcetaje_compra_min/100)) AS compra_minima, tms.id_sucursal_origen, 0 AS total_reingreso, SUM(tmsd.unidades) AS total_entregado
+        $queryConsignaciones = " SELECT	tms.id_movimiento_sucursales, tms.comentario_envio, tms.fecha_creacion, tms.dias_consignacion, tms.porcetaje_compra_min, (SUM(tmsd.unidades)*(tms.porcetaje_compra_min/100)) AS compra_minima, tms.id_sucursal_origen, 0 AS total_reingreso, SUM(tmsd.unidades) AS total_entregado, (DATE(DATE_ADD(tms.fecha_creacion, INTERVAL tms.dias_consignacion DAY)) >= CURDATE()) AS vencida
                                  FROM	trx_movimiento_sucursales tms
                                         INNER JOIN trx_movimiento_sucursales_detalle tmsd
                                  WHERE	tms.es_consignacion = 1
@@ -418,14 +431,86 @@ class TrxReingresoConsignacion extends FastTransaction {
     {
         $fecha = new DateTime();
         $user = AppSecurity::$UserData['data'];
+        $dsEmpleado = Collection::get($this->db, 'empleados', sprintf('id_usuario = "%s"', $user['ID']))->single();
+        $dsCuentaVenta = Collection::get($this->db, 'cuentas', 'lower(nombre) = "venta"')->single();
+        $dsCuentaReingreso = Collection::get($this->db, 'cuentas', 'lower(nombre) = "reingreso"')->single();
+        $dsMoneda = Collection::get($this->db, 'monedas', 'moneda_defecto = 1')->single();
 
+        $venta = [
+            'total' => sqlValue($data['forma_pago']['cantidad'], 'float'),
+            'id_cliente' => sqlValue($data['id_cliente'], 'int'),
+            'id_empleado' => sqlValue($dsEmpleado['id_empleado'], 'int'),
+            'fecha_creacion' => sqlValue($fecha->format('Y-m-d H:i:s'), 'date'),
+            'usuario_creacion' => sqlValue(self_escape_string($user['FIRST_NAME']), 'text')
+        ];
 
+        $this->db->query_insert('trx_venta', $venta);
+
+        $id_venta = $this->db->max_id('trx_venta', 'id_venta');
 
         foreach ($data['productos'] as $prod) {
 
+            $venta_detalle = [
+                'id_venta' => sqlValue($id_venta, 'int'),
+                'id_producto' => sqlValue($prod['id_producto'], 'int'),
+                'cantidad' => sqlValue($prod['cant_facturar'], 'float'),
+                'precio_venta' => sqlValue($prod['precio_descuento'], 'float'),
+                'fecha_creacion' => sqlValue($fecha->format('Y-m-d H:i:s'), 'date'),
+                'usuario_creacion' => sqlValue(self_escape_string($user['FIRST_NAME']), 'text')
+            ];
+
+            $this->db->query_insert('trx_venta_detalle', $venta_detalle);
+
+            $transaccion = [
+                'id_cuenta' => sqlValue($dsCuentaVenta['id_cuenta'], 'int'),
+                'id_empleado' => sqlValue($dsEmpleado['id_empleado'], 'int'),
+                'id_sucursal' => sqlValue($data['consignaciones'][0]['id_sucursal_origen'], 'int'),
+                'descripcion' => sqlValue('Venta por Consignacion', 'text'),
+                'id_moneda' => sqlValue($dsMoneda['id_moneda'], 'int'),
+                'id_producto' => sqlValue($prod['id_producto'], 'int'),
+                'debe' => sqlValue($prod['cant_facturar'], 'float'),
+                'haber' => sqlValue('0', 'float'),
+                'fecha_creacion' => sqlValue($fecha->format('Y-m-d H:i:s'), 'date'),
+                'id_cliente' => sqlValue($data['id_cliente'], 'int')
+            ];
+
+            $this->db->query_insert('trx_transacciones', $transaccion);
+
+            $transaccion = [
+                'id_cuenta' => sqlValue($dsCuentaVenta['id_cuenta'], 'int'),
+                'id_empleado' => sqlValue($dsEmpleado['id_empleado'], 'int'),
+                'id_sucursal' => sqlValue($data['consignaciones'][0]['id_sucursal_origen'], 'int'),
+                'descripcion' => sqlValue('Venta por Consignacion', 'text'),
+                'id_moneda' => sqlValue($dsMoneda['id_moneda'], 'int'),
+                'id_producto' => sqlValue($prod['id_producto'], 'int'),
+                'debe' => sqlValue('0', 'float'),
+                'haber' => sqlValue($prod['cant_reingreso'], 'float'),
+                'fecha_creacion' => sqlValue($fecha->format('Y-m-d H:i:s'), 'date'),
+                'id_cliente' => sqlValue(0, 'text')
+            ];
+
+            $this->db->query_insert('trx_transacciones', $transaccion);
         }
+
+        $forma_pago = [
+            'id_venta' => sqlValue($id_venta, 'int'),
+            'id_forma_pago' => sqlValue($data['forma_pago']['tipo_pago'], 'int'),
+            'id_moneda' => sqlValue(array_key_exists("id_moneda", $data['forma_pago']) ? $data['forma_pago']['id_moneda'] : 0, 'int'),
+            'cantidad' => sqlValue(array_key_exists("cantidad", $data['forma_pago']) ? $data['forma_pago']['cantidad'] : 0, 'float'),
+            'monto' => sqlValue(array_key_exists("monto", $data['forma_pago']) ? $data['forma_pago']['monto'] : 0, 'float'),
+            'numero_cheque' => sqlValue(array_key_exists("numero_cheque", $data['forma_pago']) ? $data['forma_pago']['numero_cheque'] : '', 'text'),
+            'id_banco' => sqlValue(array_key_exists("id_banco", $data['forma_pago']) ? $data['forma_pago']['id_banco'] : 0, 'int'),
+            'numero_autorizacion' => sqlValue(array_key_exists("numero_autorizacion", $data['forma_pago']) ? $data['forma_pago']['numero_autorizacion'] : '', 'text'),
+            'autorizado_por' => sqlValue(array_key_exists("autorizado_por", $data['forma_pago']) ? $data['forma_pago']['autorizado_por'] : '', 'text'),
+            'numero_voucher' => sqlValue(array_key_exists("numero_voucher", $data['forma_pago']) ? $data['forma_pago']['numero_voucher'] : '', 'text'),
+            'fecha_creacion' => sqlValue($fecha->format('Y-m-d H:i:s'), 'date'),
+            'usuario_creacion' => sqlValue(self_escape_string($user['FIRST_NAME']), 'text')
+        ];
+
+        $this->db->query_insert('trx_venta_formas_pago', $forma_pago);
 
         $this->r = 1;
         $this->msg = 'Traslado realizado con éxito';
+        $this->returnData = array('id_venta' => $id_venta);
     }
 }

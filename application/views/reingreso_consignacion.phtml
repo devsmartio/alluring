@@ -73,7 +73,7 @@
                                 <td><input type='text' ng-model="search.comentario_envio"/></td>
                                 <td><input type='text' ng-model="search.fecha_creacion"/></td>
                             </tr>
-                            <tr ng-class="{info:row.selected}" ng-click='selectRowConsignaciones(row)' ng-repeat='row in consignaciones | filter:search | orderBy: sortBy'>
+                            <tr ng-click='selectRowConsignaciones(row)' ng-repeat='row in consignaciones | filter:search | orderBy: sortBy' ng-class="{'color-red': row['vencida'] == '1'}">
                                 <td ng-bind="row['id_movimiento_sucursales']"></td>
                                 <td ng-bind="row['comentario_envio']"></td>
                                 <td ng-bind="row['fecha_creacion']"></td>
