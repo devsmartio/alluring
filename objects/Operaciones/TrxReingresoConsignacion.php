@@ -52,6 +52,10 @@ class TrxReingresoConsignacion extends FastTransaction {
                     $scope.forma_pago.id_moneda = '';
                     $scope.id_moneda_defecto = 0;
                     $scope.today = $filter('date')(new Date(), 'yyyy-MM-dd');
+                    $scope.lastSelectedConsig = {};
+                    $scope.search_codigo_origen = '';
+                    $scope.show_empty = false;
+                    $('#loading').hide();
 
                     $http.get($scope.ajaxUrl + '&act=getClientes').success(function (response) {
                         $scope.rows = response.data;
@@ -87,9 +91,6 @@ class TrxReingresoConsignacion extends FastTransaction {
                     })
                 };
 
-                $scope.finalizar = function () {
-                };
-
                 $scope.cancelar = function () {
                     $scope.cancel();
                 };
@@ -115,13 +116,16 @@ class TrxReingresoConsignacion extends FastTransaction {
                     $scope.setRowSelectedConsignaciones($scope.consignaciones);
                     $scope.lastSelectedConsig.selected = true;
                     $scope.cliente = $scope.lastSelected.nombres + " " + $scope.lastSelected.apellidos;
-                    $('#consignacionesModal').modal('hide');
 
                     $http.get($scope.ajaxUrl + '&act=getProductos&id_movimiento_sucursales=' + $scope.lastSelectedConsig.id_movimiento_sucursales).success(function (response) {
                         $scope.productos = response.data;
+                        $scope.filterProductos = $scope.productos;
                         $scope.setRowSelectedConsignaciones($scope.productos);
                         $scope.setRowIndexConsignaciones($scope.productos);
                     });
+
+                    $('#consignacionesModal').modal('hide');
+                    $('#producto').focus();
                 };
 
                 $scope.selectRowProd = function(row){
@@ -174,9 +178,34 @@ class TrxReingresoConsignacion extends FastTransaction {
                 };
 
                 $scope.startAgain();
-                $rootScope.addCallback(function () {
+                $rootScope.addCallback(function (response) {
+
+                    if (response.result == 1) {
+                        var id_venta = 0;
+
+                        if (response.data)
+                            id_venta = response.data.id_venta;
+
+                        window.open("./?action=pdf&tmp=VT&id_venta=" + id_venta);
+                    }
+
                     $scope.startAgain();
                 });
+
+                    $scope.$watch('search_codigo_origen', function(val){
+                        if(val.length >= 3) {
+                            $scope.productos = $filter('filter')($scope.productos, val);
+
+                            if ($scope.productos.length == 0) {
+                                $scope.show_empty = true;
+                            } else if ($scope.productos.length == 1) {
+
+                                $('#loading').show();
+                                $scope.reIngresarUno($scope.productos[0]);
+                                $('#loading').hide();
+                            }
+                        }
+                    });
 
                 $scope.reIngresarUno = function(prod) {
                     if ((prod.cant_reingreso + 1) <= prod.unidades) {
@@ -186,6 +215,10 @@ class TrxReingresoConsignacion extends FastTransaction {
 
                             prod.cant_reingreso = prod.cant_reingreso + 1;
                             prod.total_reingreso = prod.cant_reingreso;
+
+                            $scope.search_codigo_origen = '';
+                            $scope.productos = $scope.filterProductos;
+                            $('#producto').focus();
 
                         } else {
                             $scope.alerts.push({
@@ -241,6 +274,7 @@ class TrxReingresoConsignacion extends FastTransaction {
                 };
 
                 $scope.generar = function() {
+                    $scope.productos = $scope.filterProductos;
                     angular.forEach($scope.productos, function (prod, key) {
                         if ((prod.unidades - prod.cant_reingreso) > 0) {
                             prod.cant_facturar = prod.unidades - prod.cant_reingreso;
@@ -257,6 +291,7 @@ class TrxReingresoConsignacion extends FastTransaction {
                     if($tipo_cambio.length > 0)
                         $scope.forma_pago.monto = (parseFloat($scope.forma_pago.cantidad) / parseFloat($tipo_cambio[0].factor)).toFixed(2);
 
+                    $("#generar").attr("disabled", "disabled");
                     $scope.vender = true;
                 };
 
@@ -281,11 +316,6 @@ class TrxReingresoConsignacion extends FastTransaction {
                     $scope.doSave();
 
                     $('#tipoPagoModal').modal('hide');
-
-                    var id_venta = 10;
-
-                    $rootScope.addCallback(response =>
-                    window.open("./?action=pdf&tmp=VT&id_venta=" + id_venta));
                 };
             }]);
         </script>
@@ -378,7 +408,7 @@ class TrxReingresoConsignacion extends FastTransaction {
     {
         $id_cliente = getParam("id_cliente");
 
-        $queryConsignaciones = " SELECT	tms.id_movimiento_sucursales, tms.comentario_envio, tms.fecha_creacion, tms.dias_consignacion, tms.porcetaje_compra_min, (SUM(tmsd.unidades)*(tms.porcetaje_compra_min/100)) AS compra_minima, tms.id_sucursal_origen, 0 AS total_reingreso, SUM(tmsd.unidades) AS total_entregado, (DATE(DATE_ADD(tms.fecha_creacion, INTERVAL tms.dias_consignacion DAY)) >= CURDATE()) AS vencida
+        $queryConsignaciones = " SELECT	tms.id_movimiento_sucursales, tms.comentario_envio, tms.fecha_creacion, tms.dias_consignacion, tms.porcetaje_compra_min, (SUM(tmsd.unidades)*(tms.porcetaje_compra_min/100)) AS compra_minima, tms.id_sucursal_origen, 0 AS total_reingreso, SUM(tmsd.unidades) AS total_entregado, (CURDATE() >= DATE(DATE_ADD(tms.fecha_creacion, INTERVAL tms.dias_consignacion DAY))) AS vencida
                                  FROM	trx_movimiento_sucursales tms
                                         INNER JOIN trx_movimiento_sucursales_detalle tmsd
                                  WHERE	tms.es_consignacion = 1
