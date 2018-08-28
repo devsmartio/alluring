@@ -54,7 +54,6 @@ class TrxReingresoConsignacion extends FastTransaction {
                     $scope.today = $filter('date')(new Date(), 'yyyy-MM-dd');
                     $scope.lastSelectedConsig = {};
                     $scope.search_codigo_origen = '';
-                    $scope.show_empty = false;
                     $('#loading').hide();
 
                     $http.get($scope.ajaxUrl + '&act=getClientes').success(function (response) {
@@ -122,6 +121,11 @@ class TrxReingresoConsignacion extends FastTransaction {
                         $scope.filterProductos = $scope.productos;
                         $scope.setRowSelectedConsignaciones($scope.productos);
                         $scope.setRowIndexConsignaciones($scope.productos);
+
+                        if($scope.productos.length > 0){
+                            $scope.lastSelectedConsig.compra_minima = $scope.productos[0].compra_minima;
+                            $scope.lastSelectedConsig.total_entregado = $scope.productos[0].total_entregado;
+                        }
                     });
 
                     $('#consignacionesModal').modal('hide');
@@ -180,7 +184,7 @@ class TrxReingresoConsignacion extends FastTransaction {
                 $scope.startAgain();
                 $rootScope.addCallback(function (response) {
 
-                    if (response.result == 1) {
+                    if ((response != undefined) && (response.result == 1)) {
                         var id_venta = 0;
 
                         if (response.data)
@@ -197,7 +201,11 @@ class TrxReingresoConsignacion extends FastTransaction {
                             $scope.productos = $filter('filter')($scope.productos, val);
 
                             if ($scope.productos.length == 0) {
-                                $scope.show_empty = true;
+                                $scope.alerts.push({
+                                    type: 'alert-warning',
+                                    msg: 'El producto con el código ' + val + ' no se encuentra dentro de la consignación'
+                                });
+                                $scope.productos = $scope.filterProductos;
                             } else if ($scope.productos.length == 1) {
 
                                 $('#loading').show();
@@ -209,29 +217,31 @@ class TrxReingresoConsignacion extends FastTransaction {
 
                 $scope.reIngresarUno = function(prod) {
                     if ((prod.cant_reingreso + 1) <= prod.unidades) {
-                        var total_reingreso_temp = $scope.lastSelectedConsig.total_reingreso + 1;
+                        var total_reingreso_temp = parseFloat($scope.lastSelectedConsig.total_reingreso) + parseFloat(prod.precio_descuento);
                         if (total_reingreso_temp <= $scope.lastSelectedConsig.compra_minima) {
-                            $scope.lastSelectedConsig.total_reingreso++;
+                            $scope.lastSelectedConsig.total_reingreso += parseFloat(prod.precio_descuento);
 
                             prod.cant_reingreso = prod.cant_reingreso + 1;
                             prod.total_reingreso = prod.cant_reingreso;
 
-                            $scope.search_codigo_origen = '';
-                            $scope.productos = $scope.filterProductos;
                             $('#producto').focus();
 
                         } else {
+
                             $scope.alerts.push({
                                 type: 'alert-danger',
-                                msg: 'Ha llegado al maximo de la compra minima'
+                                msg: 'Ha llegado al máximo de la compra mínima'
                             });
                         }
                     } else {
                         $scope.alerts.push({
                             type: 'alert-danger',
-                            msg: 'No puede reingresar mas de las unidades (' + prod.unidades + ') de este producto'
+                            msg: 'No puede reingresar mas de las unidades (' + prod.unidades + ') de este producto ' + prod.nombre
                         });
                     }
+
+                    $scope.search_codigo_origen = '';
+                    $scope.productos = $scope.filterProductos;
                 };
 
                 $scope.reIngresar = function(prod) {
@@ -291,7 +301,6 @@ class TrxReingresoConsignacion extends FastTransaction {
                     if($tipo_cambio.length > 0)
                         $scope.forma_pago.monto = (parseFloat($scope.forma_pago.cantidad) / parseFloat($tipo_cambio[0].factor)).toFixed(2);
 
-                    $("#generar").attr("disabled", "disabled");
                     $scope.vender = true;
                 };
 
@@ -408,9 +417,15 @@ class TrxReingresoConsignacion extends FastTransaction {
     {
         $id_cliente = getParam("id_cliente");
 
-        $queryConsignaciones = " SELECT	tms.id_movimiento_sucursales, tms.comentario_envio, tms.fecha_creacion, tms.dias_consignacion, tms.porcetaje_compra_min, (SUM(tmsd.unidades)*(tms.porcetaje_compra_min/100)) AS compra_minima, tms.id_sucursal_origen, 0 AS total_reingreso, SUM(tmsd.unidades) AS total_entregado, (CURDATE() >= DATE(DATE_ADD(tms.fecha_creacion, INTERVAL tms.dias_consignacion DAY))) AS vencida
+        $queryClientePrecio = " SELECT	ctp.porcentaje_descuento
+                                FROM	clientes c
+                                        INNER JOIN clientes_tipos_precio ctp ON ctp.id_tipo_precio = c.id_tipo_precio
+                                WHERE	c.id_cliente = " . $id_cliente;
+
+        $clientePrecio = $this->db->queryToArray($queryClientePrecio);
+
+        $queryConsignaciones = " SELECT	tms.id_movimiento_sucursales, tms.comentario_envio, tms.fecha_creacion, tms.dias_consignacion, tms.id_sucursal_origen, 0 AS total_reingreso, (CURDATE() >= DATE(DATE_ADD(tms.fecha_creacion, INTERVAL tms.dias_consignacion DAY))) AS vencida, 0 AS compra_minima, 0 AS total_entregado
                                  FROM	trx_movimiento_sucursales tms
-                                        INNER JOIN trx_movimiento_sucursales_detalle tmsd
                                  WHERE	tms.es_consignacion = 1
                                  AND	tms.id_cliente_recibe = " . $id_cliente .
                                " LIMIT 	10 ";
@@ -429,7 +444,7 @@ class TrxReingresoConsignacion extends FastTransaction {
     public function getProductos(){
         $id_movimiento_sucursales = getParam("id_movimiento_sucursales");
 
-        $queryProductos = " SELECT	p.id_producto, p.nombre, p.descripcion, p.precio_venta, (p.precio_venta * (ctp.porcentaje_descuento/100)) AS precio_descuento, p.imagen, p.codigo_origen, tmsd.unidades, ctp.porcentaje_descuento, 0 AS cant_reingreso, 0 AS total_reingreso
+        $queryProductos = " SELECT	p.id_producto, p.nombre, p.descripcion, p.precio_venta, (p.precio_venta * (ctp.porcentaje_descuento/100)) AS precio_descuento, p.imagen, p.codigo_origen, tmsd.unidades, ctp.porcentaje_descuento, 0 AS cant_reingreso, 0 AS total_reingreso, 0 AS compra_minima, 0 AS total_entregado, tms.porcetaje_compra_min
                             FROM	trx_movimiento_sucursales tms
                                     INNER JOIN trx_movimiento_sucursales_detalle tmsd ON tmsd.id_movimiento_sucursales = tms.id_movimiento_sucursales
                                     INNER JOIN producto p ON p.id_producto = tmsd.id_producto
@@ -438,12 +453,19 @@ class TrxReingresoConsignacion extends FastTransaction {
                             WHERE	tmsd.id_movimiento_sucursales = " . $id_movimiento_sucursales;
 
         $productos = $this->db->queryToArray($queryProductos);
+        $total_entregado = 0;
+        $compra_minima = 0;
 
         for($i = 0; count($productos) > $i; $i++){
             $productos[$i]['unidades'] = (int)$productos[$i]['unidades'];
             $productos[$i]['cant_reingreso'] = (int)$productos[$i]['cant_reingreso'];
             $productos[$i]['total_reingreso'] = (int)$productos[$i]['total_reingreso'];
+            $total_entregado += ((float)$productos[$i]['precio_descuento'] * (float)$productos[$i]['unidades']);
+            $compra_minima += ceil(((float)$productos[$i]['precio_descuento'] * (float)$productos[$i]['unidades']) * ((float)$productos[$i]['porcetaje_compra_min']/100));
         }
+
+        $productos[0]['total_entregado'] = $total_entregado;
+        $productos[0]['compra_minima'] = $compra_minima;
 
         echo json_encode(array('data' => $productos));
     }
@@ -470,6 +492,8 @@ class TrxReingresoConsignacion extends FastTransaction {
             'total' => sqlValue($data['forma_pago']['cantidad'], 'float'),
             'id_cliente' => sqlValue($data['id_cliente'], 'int'),
             'id_empleado' => sqlValue($dsEmpleado['id_empleado'], 'int'),
+            'id_sucursal' => sqlValue($data['consignaciones'][0]['id_sucursal_origen'], 'int'),
+            'estado' => sqlValue('C', 'text'),
             'fecha_creacion' => sqlValue($fecha->format('Y-m-d H:i:s'), 'date'),
             'usuario_creacion' => sqlValue(self_escape_string($user['FIRST_NAME']), 'text')
         ];
@@ -514,7 +538,7 @@ class TrxReingresoConsignacion extends FastTransaction {
                 'id_moneda' => sqlValue($dsMoneda['id_moneda'], 'int'),
                 'id_producto' => sqlValue($prod['id_producto'], 'int'),
                 'debe' => sqlValue('0', 'float'),
-                'haber' => sqlValue($prod['cant_reingreso'], 'float'),
+                'haber' => sqlValue($prod['cant_reingreso'] == 0 ? '0' : $prod['cant_reingreso'], 'float'),
                 'fecha_creacion' => sqlValue($fecha->format('Y-m-d H:i:s'), 'date'),
                 'id_cliente' => sqlValue(0, 'text')
             ];

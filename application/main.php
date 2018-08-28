@@ -27,6 +27,7 @@ $last_name = $user['LAST_NAME'];
     <link href="media/css/core-ui.min.css" rel="stylesheet">
     <link href="vendors/pace-progress/css/pace.min.css" rel="stylesheet">
     <link href="media/css/site.css" type="text/css" rel="stylesheet"/>
+    <link href="media/js/angular/xeditable.min.css" type="text/css" rel="stylesheet"/>
     <?php
     if ($this->mod != null) {
         echo $this->mod->myStyle();
@@ -184,9 +185,11 @@ $last_name = $user['LAST_NAME'];
 <script src="media/jquery-ui/jquery-ui.min.js" type='text/javascript'></script>
 <script src="media/js/angular/angular-file-upload.min.js" type="text/javascript"></script>
 <script src="media/js/core-ui.js"></script>
+<script src="media/js/angular/xeditable.min.js" type="text/javascript"></script>
+<script src="media/js/angular/angular-file-upload.min.js" type="text/javascript"></script>
 <script src='media/js/MainWrapper.js' type='text/javascript'></script>
 <script>
-        var app = angular.module('app', ['ngSanitize', 'ngRoute', 'angularFileUpload', 'ngGrid', 'ui.bootstrap']);
+        var app = angular.module('app', ['ngSanitize', 'ngRoute', 'angularFileUpload', 'ngGrid', 'ui.bootstrap', 'xeditable']);
         app.directive('compile', ['$compile', function ($compile) {
             return function (scope, element, attrs) {
                 scope.$watch(
@@ -200,6 +203,10 @@ $last_name = $user['LAST_NAME'];
                 );
             };
         }]);
+
+        app.run(function(editableOptions) {
+            editableOptions.theme = 'bs3';
+        });
 
         $(function () {
             $('.tipMe').tooltipster({

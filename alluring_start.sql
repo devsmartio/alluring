@@ -1105,9 +1105,11 @@ create table generacion_etiquetas (
 
 CREATE TABLE `trx_venta` (
   `id_venta` bigint(50) NOT NULL AUTO_INCREMENT,
-  `total` decimal(10,2) NOT NULL,
-  `id_cliente` int(20) NOT NULL,
-  `id_empleado` int(20) NOT NULL,
+  `total` decimal(10,2) NULL,
+  `id_cliente` int(20) NULL,
+  `id_empleado` int(20) NULL,
+  `id_sucursal` int(20) NOT NULL,
+  `estado` varchar(1) NOT NULL DEFAULT 'P',
   `usuario_creacion` varchar(100) NOT NULL,
   `fecha_creacion` datetime NOT NULL,
   PRIMARY KEY (`id_venta`)
