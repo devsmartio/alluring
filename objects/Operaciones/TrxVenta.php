@@ -42,7 +42,10 @@ class TrxVenta extends FastTransaction {
             $scope.startAgain = function () {
 
                 $scope.currentVentaIndex = null;
+                $scope.productos = {};
                 $scope.productos_facturar = new Array();
+                $scope.search_codigo_origen = '';
+                $('#loading').hide();
 
                 $http.get($scope.ajaxUrl + '&act=getVentas').success(function (response) {
                     $scope.ventas = response.data;
@@ -50,6 +53,12 @@ class TrxVenta extends FastTransaction {
                     $scope.setVentasRowIndex($scope.ventas);
 
                     $('#ventasModal').modal();
+                });
+
+                $http.get($scope.ajaxUrl + '&act=getClientes').success(function (response) {
+                    $scope.clientes = response.data;
+                    $scope.setClienteRowSelected($scope.rows);
+                    $scope.setClienteRowIndex($scope.rows);
                 });
             };
 
@@ -82,30 +91,114 @@ class TrxVenta extends FastTransaction {
                 });
             };
 
-            $scope.saveRow = function(data, id) {
+            $scope.selectClienteRow = function(row){
+                $scope.lastClienteSelected = row;
+                $scope.currentClienteIndex = row.index;
+                $scope.setClienteRowSelected($scope.ventas);
+                $scope.lastClienteSelected.selected = true;
+                $scope.cliente = $scope.lastClienteSelected.nombres + " " + $scope.lastClienteSelected.apellidos;
+                $('#clientesModal').modal('hide');
+            };
+
+            $scope.setClienteRowIndex = function(rows){
+                $index = 0;
+                $.each(rows, function(e, row){
+                    row.index = $index;
+                    $index++;
+                });
+            };
+
+            $scope.setClienteRowSelected = function(rows){
+                $.each(rows, function(e, row){
+                    row.selected = false;
+                });
+            };
+
+            $scope.saveRow = function(data, id, rowform) {
                 $productos = $filter('filter')($scope.productos_facturar, {id_producto: id});
                 if ($productos.length > 0) {
-                    $productos[0].cantidad = data.cantidad;
-                    $productos[0].sub_total = parseFloat($productos[0].cantidad) * parseFloat($productos[0].precio_venta);
+                    if(parseFloat(data.cantidad) <= parseFloat($productos[0].total_existencias)) {
+                        $productos[0].cantidad = data.cantidad;
+                        $productos[0].sub_total = parseFloat($productos[0].cantidad) * parseFloat($productos[0].precio_venta);
+                        return true;
+                    } else {
+                        $scope.alerts.push({
+                            type: 'alert-warning',
+                            msg: 'La cantidad de ' + data.cantidad + ' sobrepasa las existencias ' + $productos[0].total_existencias
+                        });
+
+                        return false;
+                    }
                 }
-                //angular.extend(data, {id: id});
-                //return $http.post('/saveUser', data);
             };
 
-            // remove user
-            $scope.removeRow = function(index) {
-                $scope.users.splice(index, 1);
+            $scope.$watch('search_codigo_origen', function(val){
+                if (val.length >= 3) {
+                    $('#loading').show();
+                    $http.get($scope.ajaxUrl + '&act=getProductos&key=' + val).success(function (response) {
+
+                        $('#loading').hide();
+
+                        if (response.data.length == 0) {
+                            $scope.alerts.push({
+                                type: 'alert-warning',
+                                msg: 'El producto con el código ' + val + ' no se encuentra o no hay existencias'
+                            });
+                        } else {
+                            $scope.productos = response.data;
+                        }
+                    });
+                }
+            });
+
+            $scope.agregarUno = function(prod) {
+                var restoExistencias = prod.total_existencias - prod.cantidad;
+                if (restoExistencias > 0) {
+
+                    $productos = $filter('filter')($scope.productos_facturar, {id_producto: prod.id_producto});
+
+                    if ($productos.length > 0) {
+                        $productos[0].cantidad = parseFloat($productos[0].cantidad) + 1;
+                        $productos[0].sub_total = parseFloat($productos[0].cantidad) * parseFloat($productos[0].precio_venta);
+                    } else {
+                        prod.cantidad = parseFloat(prod.cantidad) + 1;
+                        prod.sub_total = parseFloat(prod.cantidad) * parseFloat(prod.precio_venta);
+                        $scope.productos_facturar.push(prod);
+                    }
+                } else {
+                    $scope.alerts.push({
+                        type: 'alert-danger',
+                        msg: 'No puede vender mas de las unidades (' + restoExistencias + ') de este producto ' + prod.nombre
+                    });
+                }
+
+                $scope.search_codigo_origen = '';
+                $scope.productos = {};
             };
 
-            // add user
-            $scope.addRow = function() {
-                $scope.inserted = {
-                    id: $scope.users.length+1,
-                    name: '',
-                    status: null,
-                    group: null
-                };
-                $scope.users.push($scope.inserted);
+            $scope.agregarVarios = function(prod) {
+                var restoExistencias = prod.total_existencias - prod.cant_vender;
+                if (restoExistencias > 0) {
+
+                    $productos = $filter('filter')($scope.productos_facturar, {id_producto: prod.id_producto});
+
+                    if ($productos.length > 0) {
+                        $productos[0].cantidad = parseFloat($productos[0].cantidad) + prod.cant_vender;
+                        $productos[0].sub_total = parseFloat($productos[0].cantidad) * parseFloat($productos[0].precio_venta);
+                    } else {
+                        prod.cantidad = parseFloat(prod.cantidad) + prod.cant_vender;
+                        prod.sub_total = parseFloat(prod.cantidad) * parseFloat(prod.precio_venta);
+                        $scope.productos_facturar.push(prod);
+                    }
+                } else {
+                    $scope.alerts.push({
+                        type: 'alert-danger',
+                        msg: 'No puede vender mas de las unidades (' + restoExistencias + ') de este producto ' + prod.nombre
+                    });
+                }
+
+                $scope.search_codigo_origen = '';
+                $scope.productos = {};
             };
 
             $scope.startAgain();
@@ -212,10 +305,10 @@ class TrxVenta extends FastTransaction {
 
     public function getVentas()
     {
-        $queryVentas = "  SELECT    v.id_venta, v.total, CONCAT(e.nombres,' ',e.apellidos) AS nombre_empleado, s.nombre AS nombre_bodega
+        $queryVentas = "  SELECT    v.id_venta, v.total, CONCAT(e.nombres,' ',e.apellidos) AS nombre_empleado
                           FROM	    trx_venta v
-                                    JOIN empleados e ON e.id_empleado = v.id_empleado
-                                    JOIN sucursales s ON s.id_sucursal = v.id_sucursal";
+                                    LEFT JOIN empleados e ON e.id_empleado = v.id_empleado
+                          WHERE     v.estado = 'P'";
 
         $ventas = $this->db->queryToArray($queryVentas);
 
@@ -225,12 +318,59 @@ class TrxVenta extends FastTransaction {
     public function getDetalleVenta(){
         $id_venta = getParam("id_venta");
 
-        $queryProductos = " SELECT	p.id_producto, p.nombre, p.descripcion, p.precio_venta, p.imagen, p.codigo_origen, vd.cantidad, (vd.cantidad * p.precio_venta) AS sub_total
+        $queryProductos = " SELECT	p.id_producto, p.nombre, p.descripcion, p.precio_venta, p.imagen,
+                                    p.codigo_origen, vd.cantidad, (vd.cantidad * p.precio_venta) AS sub_total,
+                                    (sum(t.haber) - sum(t.debe)) AS total_existencias, 1 AS mostrar
                             FROM	trx_venta_detalle vd
-                                    JOIN producto p ON p.id_producto = vd.id_producto
-                            WHERE	vd.id_venta = " . $id_venta;
+                                    LEFT JOIN producto p
+                                    ON p.id_producto = vd.id_producto
+                                    LEFT JOIN trx_transacciones t
+                                    ON t.id_producto = vd.id_producto
+                                    AND t.id_sucursal = vd.id_sucursal
+                            WHERE	vd.id_venta = " . $id_venta .
+                          " GROUP BY
+                                    vd.id_producto";
 
         $productos = $this->db->queryToArray($queryProductos);
+
+        echo json_encode(array('data' => $productos));
+    }
+
+    public function getProductos(){
+        $key = getParam("key");
+
+        $queryProductos = " SELECT	p.id_producto, p.nombre, p.descripcion, p.precio_venta, p.imagen,
+                                    p.codigo_origen, COALESCE((sum(trx.haber) - sum(trx.debe)),0) AS total_existencias,
+                                    1 AS mostrar, t.nombre AS nombre_categoria, s.nombre AS nombre_sucursal
+                            FROM	producto p
+                                    LEFT JOIN tipo t
+                                    ON t.id_tipo = p.id_tipo
+                                    LEFT JOIN trx_transacciones trx
+                                    ON trx.id_producto = p.id_producto
+                                    LEFT JOIN sucursales s
+                                    ON s.id_sucursal = trx.id_sucursal
+                            WHERE	1 = 1
+                            AND		(p.codigo_origen LIKE '%". $key . "%'
+                                    OR
+                                    p.nombre LIKE '%". $key . "%'
+                                    OR
+                                    p.descripcion LIKE '%". $key . "%'
+                                    OR
+                                    t.nombre LIKE '%". $key . "%'
+                                    OR
+                                    s.nombre LIKE '%". $key . "%'
+                                    )
+                            GROUP BY
+                                    p.id_producto
+                            HAVING	(sum(trx.haber) - sum(trx.debe)) > 0";
+
+        $productos = $this->db->queryToArray($queryProductos);
+
+        for($i = 0; count($productos) > $i; $i++){
+            $productos[$i]['cantidad'] = 0;
+            $productos[$i]['sub_total'] = 0;
+            $productos[$i]['cant_vender'] = 0;
+        }
 
         echo json_encode(array('data' => $productos));
     }

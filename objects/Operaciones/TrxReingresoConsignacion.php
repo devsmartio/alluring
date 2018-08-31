@@ -196,24 +196,24 @@ class TrxReingresoConsignacion extends FastTransaction {
                     $scope.startAgain();
                 });
 
-                    $scope.$watch('search_codigo_origen', function(val){
-                        if(val.length >= 3) {
-                            $scope.productos = $filter('filter')($scope.productos, val);
+                $scope.$watch('search_codigo_origen', function(val){
+                    if(val.length >= 3) {
+                        $scope.productos = $filter('filter')($scope.productos, val);
 
-                            if ($scope.productos.length == 0) {
-                                $scope.alerts.push({
-                                    type: 'alert-warning',
-                                    msg: 'El producto con el código ' + val + ' no se encuentra dentro de la consignación'
-                                });
-                                $scope.productos = $scope.filterProductos;
-                            } else if ($scope.productos.length == 1) {
+                        if ($scope.productos.length == 0) {
+                            $scope.alerts.push({
+                                type: 'alert-warning',
+                                msg: 'El producto con el código ' + val + ' no se encuentra dentro de la consignación'
+                            });
+                            $scope.productos = $scope.filterProductos;
+                        } else if ($scope.productos.length == 1) {
 
-                                $('#loading').show();
-                                $scope.reIngresarUno($scope.productos[0]);
-                                $('#loading').hide();
-                            }
+                            $('#loading').show();
+                            $scope.reIngresarUno($scope.productos[0]);
+                            $('#loading').hide();
                         }
-                    });
+                    }
+                });
 
                 $scope.reIngresarUno = function(prod) {
                     if ((prod.cant_reingreso + 1) <= prod.unidades) {
@@ -492,7 +492,6 @@ class TrxReingresoConsignacion extends FastTransaction {
             'total' => sqlValue($data['forma_pago']['cantidad'], 'float'),
             'id_cliente' => sqlValue($data['id_cliente'], 'int'),
             'id_empleado' => sqlValue($dsEmpleado['id_empleado'], 'int'),
-            'id_sucursal' => sqlValue($data['consignaciones'][0]['id_sucursal_origen'], 'int'),
             'estado' => sqlValue('C', 'text'),
             'fecha_creacion' => sqlValue($fecha->format('Y-m-d H:i:s'), 'date'),
             'usuario_creacion' => sqlValue(self_escape_string($user['FIRST_NAME']), 'text')
@@ -507,6 +506,7 @@ class TrxReingresoConsignacion extends FastTransaction {
             $venta_detalle = [
                 'id_venta' => sqlValue($id_venta, 'int'),
                 'id_producto' => sqlValue($prod['id_producto'], 'int'),
+                'id_sucursal' => sqlValue($data['consignaciones'][0]['id_sucursal_origen'], 'int'),
                 'cantidad' => sqlValue($prod['cant_facturar'], 'float'),
                 'precio_venta' => sqlValue($prod['precio_descuento'], 'float'),
                 'fecha_creacion' => sqlValue($fecha->format('Y-m-d H:i:s'), 'date'),
