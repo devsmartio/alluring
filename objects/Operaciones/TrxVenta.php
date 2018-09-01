@@ -45,6 +45,12 @@ class TrxVenta extends FastTransaction {
                 $scope.productos = {};
                 $scope.productos_facturar = new Array();
                 $scope.search_codigo_origen = '';
+                $scope.formas_pago = new Array();
+                $scope.forma_pago = {};
+                $scope.forma_pago.tipo_pago = 1;
+                $scope.forma_pago.id_moneda = '';
+                $scope.id_moneda_defecto = 0;
+
                 $('#loading').hide();
 
                 $http.get($scope.ajaxUrl + '&act=getVentas').success(function (response) {
@@ -59,6 +65,27 @@ class TrxVenta extends FastTransaction {
                     $scope.clientes = response.data;
                     $scope.setClienteRowSelected($scope.rows);
                     $scope.setClienteRowIndex($scope.rows);
+                });
+
+                $http.get($scope.ajaxUrl + '&act=getFormasPago').success(function (response) {
+                    $scope.formas_pago = response.data;
+                });
+
+                $http.get($scope.ajaxUrl + '&act=getMonedas').success(function (response) {
+                    $scope.monedas = response.data;
+                    $moneda = $filter('filter')($scope.monedas, {selected: true});
+                    if ($moneda.length > 0) {
+                        $scope.id_moneda_defecto = $moneda[0].id_moneda;
+                        $scope.forma_pago.id_moneda = $scope.id_moneda_defecto;
+                    }
+                });
+
+                $http.get($scope.ajaxUrl + '&act=getTipoCambio').success(function (response) {
+                    $scope.tipo_cambio = response.data;
+                });
+
+                $http.get($scope.ajaxUrl + '&act=getBancos').success(function (response) {
+                    $scope.bancos = response.data;
                 });
             };
 
@@ -199,6 +226,24 @@ class TrxVenta extends FastTransaction {
 
                 $scope.search_codigo_origen = '';
                 $scope.productos = {};
+            };
+
+            $scope.cambioMoneda = function() {
+                $tipo_cambio = $filter('filter')($scope.tipo_cambio, {id_moneda_muchos: $scope.id_moneda_defecto, id_moneda_uno: $scope.forma_pago.id_moneda});
+
+                if($tipo_cambio.length > 0)
+                    $scope.forma_pago.monto = (parseFloat($scope.forma_pago.cantidad) / parseFloat($tipo_cambio[0].factor)).toFixed(2);
+            };
+
+            $scope.generar = function() {
+
+                $scope.forma_pago.cantidad = $scope.productos_facturar.sum("sub_total").toFixed(2);
+                $scope.forma_pago.monto = $scope.forma_pago.cantidad;
+
+                $tipo_cambio = $filter('filter')($scope.tipo_cambio, {id_moneda_muchos: $scope.id_moneda_defecto, id_moneda_uno: $scope.forma_pago.id_moneda});
+
+                if($tipo_cambio.length > 0)
+                    $scope.forma_pago.monto = (parseFloat($scope.forma_pago.cantidad) / parseFloat($tipo_cambio[0].factor)).toFixed(2);
             };
 
             $scope.startAgain();
