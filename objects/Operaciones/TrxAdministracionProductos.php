@@ -57,6 +57,7 @@ class TrxAdministracionProductos  extends FastTransaction {
                         precio_venta: 0,
                         costo: 0,
                         imagen: ''
+                        angular.element("input[type='file']").val(null);
                     };
 
                     $http.get($scope.ajaxUrl + '&act=getRows').success(function (response) {

@@ -492,7 +492,7 @@ class TrxReingresoConsignacion extends FastTransaction {
             'total' => sqlValue($data['forma_pago']['cantidad'], 'float'),
             'id_cliente' => sqlValue($data['id_cliente'], 'int'),
             'id_empleado' => sqlValue($dsEmpleado['id_empleado'], 'int'),
-            'estado' => sqlValue('C', 'text'),
+            'estado' => sqlValue('V', 'text'),
             'fecha_creacion' => sqlValue($fecha->format('Y-m-d H:i:s'), 'date'),
             'usuario_creacion' => sqlValue(self_escape_string($user['FIRST_NAME']), 'text')
         ];

@@ -1,9 +1,9 @@
 <?php
 $queryVenta = " SELECT 	v.id_venta, v.total, CONCAT(e.nombres,' ',e.apellidos) nombre_empleado, v.fecha_creacion, CONCAT(c.nombres,' ',c.apellidos) nombre_cliente, IFNULL(c.factura_nit, 'C/F') factura_nit, IFNULL(c.factura_nombre, 'C/F') factura_nombre, IFNULL(c.factura_direccion, ' ') factura_direccion, COUNT(vd.id_venta_detalle) cant_productos
                 FROM 	trx_venta v
-                JOIN 	empleados e ON e.id_empleado=v.id_empleado
-                JOIN 	clientes c ON c.id_cliente=v.id_cliente
-                JOIN	trx_venta_detalle vd ON vd.id_venta = v.id_venta
+                LEFT JOIN 	empleados e ON e.id_empleado=v.id_empleado
+                LEFT JOIN 	clientes c ON c.id_cliente=v.id_cliente
+                LEFT JOIN	trx_venta_detalle vd ON vd.id_venta = v.id_venta
                 WHERE   v.id_venta=%s";
 
 $venta = $this->db->queryToArray(sprintf($queryVenta, $ventaId));
@@ -11,9 +11,10 @@ $venta = sanitize_by_keys($venta[0], ['nombre_empleado', 'nombre_cliente']);
 
 $queryProductos = " SELECT	tp.id_venta_detalle, p.id_tipo, p.id_producto, m.id_tipo, tp.cantidad, CONCAT(m.nombre, ' - ', p.nombre) as descripcion, tp.precio_venta as precio_unitario, p.precio_venta as precio_sugerido, p.codigo_origen
                     FROM 	trx_venta_detalle tp
-                    JOIN 	producto p ON p.id_producto = tp.id_producto
-                    JOIN 	tipo m ON m.id_tipo = p.id_tipo
-                    WHERE   id_venta=%s";
+                    LEFT JOIN 	producto p ON p.id_producto = tp.id_producto
+                    LEFT JOIN 	tipo m ON m.id_tipo = p.id_tipo
+                    WHERE   id_venta=%s
+                    AND		tp.cantidad > 0";
 
 $productos = $this->db->queryToArray(sprintf($queryProductos, $ventaId));
 $productos = sanitize_array_by_keys($productos, ['descripcion']);

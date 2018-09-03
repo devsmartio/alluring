@@ -67,7 +67,7 @@
                 </div>
                 <input type="text" id="cliente" ng-model="cliente" class="form-control" placeholder="Buscar Cliente..." aria-label="Search" autocomplete="off" style="font-size:0.8rem;">
             </div>
-            <div class=" anyClass" ng-show="productos_facturar.length > 0">
+            <div class=" anyClass" ng-show="show_detalle">
                 <div class='table-responsive'>
                     <table class="table table-dark table-striped table-sm table-condensed" style="font-size:0.8rem; ">
                         <thead>
@@ -114,7 +114,7 @@
                             <td></td>
                             <td></td>
                             <td></td>
-                            <th scope="row">{{productos_facturar.sum("sub_total") | number:2}}</th>
+                            <th scope="row">{{total | number:2}}</th>
                         </tr>
                         </tfoot>
                     </table>
@@ -122,7 +122,7 @@
             </div>
             <div class="row">
                 <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" style="text-align: right;">
-                    <button type="button" class="btn btn-block btn-success" data-toggle="modal" data-target="#tipoPagoModal" ng-click="">Vender</button>
+                    <button type="button" class="btn btn-block btn-success" data-toggle="modal" data-target="#tipoPagoModal" ng-click="generar()">Vender</button>
                 </div>
             </div>
         </div>
@@ -156,11 +156,12 @@
                             </tr>
                         </table>
                     </div>
+
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" data-dismiss="modal" ng-disabled="currentVentaIndex == null"><span class="cui-list" aria-hidden="true"></span> Detalle</button>
-                    <button type="button" class="btn btn-success" data-dismiss="modal" ng-disabled="currentVentaIndex == null"><span class="cui-file" aria-hidden="true"></span> Nueva</button>
-                    <button type="button" class="btn btn-warning" data-dismiss="modal" ng-disabled="currentVentaIndex == null"><span class="cui-print" aria-hidden="true"></span> Imprimir</button>
+                    <button type="button" class="btn btn-primary" data-dismiss="modal" ng-disabled="currentVentaIndex == null" ng-click="mostrar_detalle()"><span class="cui-list" aria-hidden="true"></span> Detalle</button>
+                    <button type="button" class="btn btn-warning" data-dismiss="modal" ng-disabled="currentVentaIndex == null" ng-click="imprimir_detalle()"><span class="cui-print" aria-hidden="true"></span> Imprimir</button>
+                    <button type="button" class="btn btn-success" data-dismiss="modal" ng-click="nueva_venta()"><span class="cui-file" aria-hidden="true"></span> Nueva</button>
                 </div>
             </div>
         </div>
@@ -175,8 +176,8 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <div class='table-responsive anyClass'>
-                        <table class='table table-striped table-bordered table-hover'>
+                    <div class='table-responsive anyClass' ng-show="!show_nuevo_cliente">
+                        <table class='table table-sm table-striped table-bordered table-hover'>
                             <tr>
                                 <th>Identificacion</th>
                                 <th>Nombres</th>
@@ -187,15 +188,51 @@
                                 <td><input id="nombres" type='text' ng-model="search.nombres"/></td>
                                 <td><input id="apellidos" type='text' ng-model="search.apellidos"/></td>
                             </tr>
-                            <tr ng-class="{info:row.selected}" ng-click='selectClienteRow(row)' ng-repeat='row in clientes | filter:search | orderBy: sortBy'>
+                            <tr ng-class="{'table-active':row.selected}" ng-click='selectClienteRow(row)' ng-repeat='row in clientes | filter:search | orderBy: sortBy'>
                                 <td ng-bind="row['identificacion']"></td>
                                 <td ng-bind="row['nombres']"></td>
                                 <td ng-bind="row['apellidos']"></td>
                             </tr>
                         </table>
                     </div>
+                    <div ng-show="show_nuevo_cliente">
+                        <form name="formClientes" data-toggle="validator" role="form">
+                            <div class="row">
+                                <div class="col-lg-5 col-md-5 col-sm-12 col-xs-12" >
+                                    <div class='form-group required'>
+                                        <input ng-model="lastClienteSelected.nombres" type="text" required class='form-control form-control-sm' name='nombres' placeholder='Nombres' oninvalid="this.setCustomValidity('El nombre es requerido')" oninput="setCustomValidity('')"/>
+                                    </div>
+                                    <div class='form-group required'>
+                                        <input ng-model="lastClienteSelected.apellidos" type="text" required class='form-control form-control-sm' name='apellidos' placeholder='Apellidos' oninvalid="this.setCustomValidity('El apellido es requerido')" oninput="setCustomValidity('')"/>
+                                    </div>
+                                    <div class='form-group required'>
+                                        <input ng-model="lastClienteSelected.identificacion" type="text" required class='form-control form-control-sm' name='identificacion' placeholder='Identificación' oninvalid="this.setCustomValidity('La identificación es requerida')" oninput="setCustomValidity('')"/>
+                                    </div>
+                                    <div class='form-group required'>
+                                        <input ng-model="lastClienteSelected.correo" type="text" required class='form-control form-control-sm' name='correo' placeholder='Correo' oninvalid="this.setCustomValidity('El correo es requerido')" oninput="setCustomValidity('')"/>
+                                    </div>
+                                </div>
+                                <div class="col-lg-5 col-md-5 col-sm-12 col-xs-12" >
+                                    <div class='form-group required'>
+                                        <input ng-model="lastClienteSelected.factura_nit" type="text" required class='form-control form-control-sm' name='factura_nit' placeholder='Nit' oninvalid="this.setCustomValidity('El NIT es requerido')" oninput="setCustomValidity('')"/>
+                                    </div>
+                                    <div class='form-group required'>
+                                        <input ng-model="lastClienteSelected.factura_nombre" type="text" required class='form-control form-control-sm' name='factura_nombre' placeholder='Nombre de la Factura' oninvalid="this.setCustomValidity('El nombre de la factura es requerido')" oninput="setCustomValidity('')"/>
+                                    </div>
+                                    <div class='form-group required'>
+                                        <input ng-model="lastClienteSelected.factura_direccion" type="text" required class='form-control form-control-sm' name='factura_direccion' placeholder='Dirección de la Factura' oninvalid="this.setCustomValidity('La dirección de la factura es requerido')" oninput="setCustomValidity('')"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="submit" class="btn btn-primary" ng-show="show_nuevo_cliente" ng-click="guardar_nuevo_cliente()">Guardar</button>
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal" ng-click="cerrar_nuevo_cliente()">Cerrar</button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
-                <div class="modal-footer">
+                <div class="modal-footer" ng-show="!show_nuevo_cliente" >
+                    <button type="button" class="btn btn-primary" ng-click="nuevo_cliente()">Nuevo</button>
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
                 </div>
             </div>

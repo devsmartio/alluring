@@ -1163,3 +1163,8 @@ CREATE TABLE `bancos` (
   PRIMARY KEY (`id_banco`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
+
+ALTER TABLE clientes MODIFY COLUMN id_pais int(5) null;
+ALTER TABLE clientes MODIFY COLUMN id_departamento int(5) null;
+ALTER TABLE clientes MODIFY COLUMN id_municipio int(20) null;
+ALTER TABLE clientes MODIFY COLUMN id_tipo_precio int(5) null;
