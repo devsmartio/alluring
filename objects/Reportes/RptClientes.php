@@ -25,10 +25,10 @@ class RptClientes extends FastReport {
             new FastReportColumn('Identificación', 'identificacion'),
             new FastReportColumn('Nombres', 'nombres', 'sanitize'),
             new FastReportColumn('Apellidos', 'apellidos', 'sanitize'),
-            new FastReportColumn('NIT', 'nit'),
-            new FastReportColumn('Teléfono', 'telefono'),
+            new FastReportColumn('NIT', 'factura_nit'),
+            new FastReportColumn('Teléfono', 'numero'),
             new FastReportColumn('Dirección', 'direccion', 'sanitize'),
-            new FastReportColumn('Crédito' , 'credito'),
+            new FastReportColumn('Crédito' , 'tiene_credito'),
             new FastReportColumn('Días Crédito' , 'dias_credito')
         ];
         $this->useDefaultView = true;

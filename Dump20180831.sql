@@ -1,5 +1,3 @@
-CREATE DATABASE  IF NOT EXISTS `alluring` /*!40100 DEFAULT CHARACTER SET utf8 */;
-USE `alluring`;
 -- MySQL dump 10.13  Distrib 5.7.17, for Win64 (x86_64)
 --
 -- Host: localhost    Database: alluring
@@ -84,7 +82,7 @@ CREATE TABLE `app_modules` (
   PRIMARY KEY (`ID`),
   KEY `FK_MODULE_CATEGORY` (`FK_MODULE_CATEGORY`),
   CONSTRAINT `app_modules_ibfk_1` FOREIGN KEY (`FK_MODULE_CATEGORY`) REFERENCES `app_module_category` (`ID`)
-) ENGINE=InnoDB AUTO_INCREMENT=35 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=36 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -93,7 +91,7 @@ CREATE TABLE `app_modules` (
 
 LOCK TABLES `app_modules` WRITE;
 /*!40000 ALTER TABLE `app_modules` DISABLE KEYS */;
-INSERT INTO `app_modules` VALUES (1,'M?dulos','MantModulos',1,1),(2,'Perfiles','MantPerfiles',2,1),(3,'Usuarios','MantUsuarios',2,1),(4,'Accesos','PermissionsManager',2,1),(5,'Monedas','MantMonedas',2,1),(6,'Clientes','MantClientes',1,1),(7,'Proveedores','MantProveedores',1,1),(8,'Empleados','MantEmpleados',1,1),(9,'Tipos de producto','MantTipoProducto',1,1),(10,'Productos','MantProductos',1,1),(11,'Ingreso inventario','TrxIngresoInventario',1,2),(12,'Traslado sucursales','TrxMovimientoSucursales',1,2),(13,'Variables del sistema','MantVariablesSistema',1,1),(14,'Inventario','RptInventario',1,3),(15,'Pantalla de inicio','MantDefaultScreen',1,1),(16,'Salida inventario','TrxSalidaInventario',1,2),(17,'Paises','MantPaises',1,1),(18,'Departamentos','MantDepartamentos',1,1),(19,'Municipios','MantMunicipios',1,1),(20,'Tipo de Cambio','MantTipoCambio',1,1),(22,'Administracion Clientes','TrxAdministracionClientes',1,2),(23,'Tipos de Cliente','MantTipoCliente',1,1),(24,'Categorias de Productos','MantCategoriaProd',1,1),(25,'Mantenimiento de Bodegas','MantBodegas',1,1),(28,'Administracion de Productos','TrxAdministracionProductos',1,2),(29,'Carga Masiva de Productos','TrxCargaMasivaProductos',1,2),(30,'Traslado de Bodegas','TrxTrasladoBodegas',1,2),(31,'Carga Masiva de Clientes','TxCargaMasivaClientes',1,2),(32,'Generacion de Etiquetas','TrxGeneracionEtiquetas',1,2),(33,'Reingreso de Consignacion','TrxReingresoConsignacion',1,2),(34,'Ventas','TrxVenta',1,2);
+INSERT INTO `app_modules` VALUES (1,'M?dulos','MantModulos',1,1),(2,'Perfiles','MantPerfiles',2,1),(3,'Usuarios','MantUsuarios',2,1),(4,'Accesos','PermissionsManager',2,1),(5,'Monedas','MantMonedas',2,1),(6,'Clientes','MantClientes',1,1),(7,'Proveedores','MantProveedores',1,1),(8,'Empleados','MantEmpleados',1,1),(9,'Tipos de producto','MantTipoProducto',1,1),(10,'Productos','MantProductos',1,1),(11,'Ingreso inventario','TrxIngresoInventario',1,2),(12,'Traslado sucursales','TrxMovimientoSucursales',1,2),(13,'Variables del sistema','MantVariablesSistema',1,1),(14,'Inventario','RptInventario',1,3),(15,'Pantalla de inicio','MantDefaultScreen',1,1),(16,'Salida inventario','TrxSalidaInventario',1,2),(17,'Paises','MantPaises',1,1),(18,'Departamentos','MantDepartamentos',1,1),(19,'Municipios','MantMunicipios',1,1),(20,'Tipo de Cambio','MantTipoCambio',1,1),(22,'Administracion Clientes','TrxAdministracionClientes',1,2),(23,'Tipos de Cliente','MantTipoCliente',1,1),(24,'Categorias de Productos','MantCategoriaProd',1,1),(25,'Mantenimiento de Bodegas','MantBodegas',1,1),(28,'Administracion de Productos','TrxAdministracionProductos',1,2),(29,'Carga Masiva de Productos','TrxCargaMasivaProductos',1,2),(30,'Traslado de Bodegas','TrxTrasladoBodegas',1,2),(31,'Carga Masiva de Clientes','TxCargaMasivaClientes',1,2),(32,'Generacion de Etiquetas','TrxGeneracionEtiquetas',1,2),(33,'Reingreso de Consignacion','TrxReingresoConsignacion',1,2),(34,'Ventas','TrxVenta',1,2),(35,'Reporte Clientes','RptClientes',1,3);
 /*!40000 ALTER TABLE `app_modules` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -145,7 +143,7 @@ CREATE TABLE `app_profile_access` (
 
 LOCK TABLES `app_profile_access` WRITE;
 /*!40000 ALTER TABLE `app_profile_access` DISABLE KEYS */;
-INSERT INTO `app_profile_access` VALUES (1,1),(1,2),(1,3),(1,4),(1,5),(1,6),(1,7),(1,8),(1,10),(1,11),(1,12),(1,13),(1,14),(1,15),(1,16),(1,17),(1,18),(1,19),(1,20),(1,22),(1,23),(1,24),(1,25),(1,28),(1,29),(1,30),(1,31),(1,32),(1,33),(1,34);
+INSERT INTO `app_profile_access` VALUES (1,1),(1,2),(1,3),(1,4),(1,5),(1,6),(1,7),(1,8),(1,10),(1,11),(1,12),(1,13),(1,14),(1,15),(1,16),(1,17),(1,18),(1,19),(1,20),(1,22),(1,23),(1,24),(1,25),(1,28),(1,29),(1,30),(1,31),(1,32),(1,33),(1,34),(1,35);
 /*!40000 ALTER TABLE `app_profile_access` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -218,11 +216,11 @@ CREATE TABLE `clientes` (
   `apellidos` varchar(100) NOT NULL,
   `direccion` varchar(100) NOT NULL,
   `identificacion` varchar(20) NOT NULL,
-  `id_pais` int(5) NOT NULL,
-  `id_departamento` int(5) NOT NULL,
-  `id_municipio` int(20) NOT NULL,
+  `id_pais` int(5) DEFAULT NULL,
+  `id_departamento` int(5) DEFAULT NULL,
+  `id_municipio` int(20) DEFAULT NULL,
   `correo` varchar(100) NOT NULL,
-  `id_tipo_precio` int(5) NOT NULL,
+  `id_tipo_precio` int(5) DEFAULT NULL,
   `id_empleado` int(20) DEFAULT NULL,
   `id_cliente_referido` int(20) DEFAULT NULL,
   `tiene_credito` bit(1) NOT NULL DEFAULT b'0',
@@ -247,7 +245,7 @@ CREATE TABLE `clientes` (
   CONSTRAINT `clientes_municipio` FOREIGN KEY (`id_municipio`) REFERENCES `municipios` (`id_municipio`),
   CONSTRAINT `clientes_pais` FOREIGN KEY (`id_pais`) REFERENCES `paises` (`id_pais`),
   CONSTRAINT `clientes_tipo_precio` FOREIGN KEY (`id_tipo_precio`) REFERENCES `clientes_tipos_precio` (`id_tipo_precio`)
-) ENGINE=InnoDB AUTO_INCREMENT=38 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=43 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -256,7 +254,7 @@ CREATE TABLE `clientes` (
 
 LOCK TABLES `clientes` WRITE;
 /*!40000 ALTER TABLE `clientes` DISABLE KEYS */;
-INSERT INTO `clientes` VALUES (4,'Andrea Jose Furlan','Cifuentes','San Lucas','654987',1,2,1,'andrea.furlan@gmail.com',1,1,4,'',60,'39270769','Andrea Jose Furlan Cifuentes de Herrera','San Lucas','TEST 1','andrea','29d9627667b881e4a0694d9b96f91da0','2018-07-26 06:20:00','Pruebas '),(11,'Eder Orlando','Herrera Cabrera','Pradera de Las Flores','1576504990101',1,2,1,'andrea.furlan@gmail.com',1,1,4,'',60,'39270769','Eder Orlando Herrera','Pradera de las Flores','TEST 2','eoherrer3','eabc874e37fbde63161510c54d71144d','2018-07-25 21:25:40','Pruebas '),(13,'Mirna','Cabrera','Martinico II','654987321',1,2,1,'mirna.cabrera@gmail.com',1,1,4,'',60,'321654987','Mirna Cabrera','Martinico II','TEST 33','mirna','3eb4b76179da76a7424469a33b6e94b7','2018-07-22 20:39:49','Pruebas '),(15,'Valeria','Herrera','San Cristobal','6546546',1,2,1,'valeria@gmail.com',1,1,13,'\0',0,'56464','sdfasfdas','sadfasfdas','TEST 4','valeria','321de822b53b16b186625bb390303e96','2018-07-22 20:55:53','Pruebas '),(22,'Juan Diego','Herrera','sadfasdfa','65465465',1,2,1,'jdherrera@gmail.com',1,1,4,'\0',0,NULL,NULL,NULL,NULL,NULL,'d41d8cd98f00b204e9800998ecf8427e','2018-07-26 11:51:04','Pruebas '),(35,'Nom1','Ape1','Dir1','Iden1',1,2,1,'Nom1@gmail.com',1,1,11,'\0',0,NULL,NULL,NULL,'Carga#1','eoherrer2','c53e479b03b3220d3d56da88c4cace20','2018-08-04 23:23:25','Pruebas '),(36,'Nom2','Ape2','Dir2','Iden2',1,2,1,'Nom2@gmail.com',1,1,22,'\0',0,'123456','Nom2 Ape2','Fac Dir 2','Carga#1',NULL,'d41d8cd98f00b204e9800998ecf8427e','2018-08-04 23:23:25','Pruebas '),(37,'Nom3','Ape3','Dir3','Iden3',1,2,1,'Nom3@gmail.com',1,1,11,'\0',0,'654321','Nom3 Ape3','Fac Dir 3','Carga#1','nom3ape3','44403ba33c172cc97627ef916bfe88c3','2018-08-04 23:23:25','Pruebas ');
+INSERT INTO `clientes` VALUES (4,'Andrea Jose Furlan','Cifuentes','San Lucas','654987',1,2,1,'andrea.furlan@gmail.com',1,1,4,'',60,'39270769','Andrea Jose Furlan Cifuentes de Herrera','San Lucas','TEST 1','andrea','29d9627667b881e4a0694d9b96f91da0','2018-07-26 06:20:00','Pruebas '),(11,'Eder Orlando','Herrera Cabrera','Pradera de Las Flores','1576504990101',1,2,1,'andrea.furlan@gmail.com',1,1,4,'',60,'39270769','Eder Orlando Herrera','Pradera de las Flores','TEST 2','eoherrer3','eabc874e37fbde63161510c54d71144d','2018-07-25 21:25:40','Pruebas '),(13,'Mirna','Cabrera','Martinico II','654987321',1,2,1,'mirna.cabrera@gmail.com',1,1,4,'',60,'321654987','Mirna Cabrera','Martinico II','TEST 33','mirna','3eb4b76179da76a7424469a33b6e94b7','2018-07-22 20:39:49','Pruebas '),(15,'Valeria','Herrera','San Cristobal','6546546',1,2,1,'valeria@gmail.com',1,1,13,'\0',0,'56464','sdfasfdas','sadfasfdas','TEST 4','valeria','321de822b53b16b186625bb390303e96','2018-07-22 20:55:53','Pruebas '),(22,'Juan Diego','Herrera','sadfasdfa','65465465',1,2,1,'jdherrera@gmail.com',1,1,4,'\0',0,NULL,NULL,NULL,NULL,NULL,'d41d8cd98f00b204e9800998ecf8427e','2018-07-26 11:51:04','Pruebas '),(35,'Nom1','Ape1','Dir1','Iden1',1,2,1,'Nom1@gmail.com',1,1,11,'\0',0,NULL,NULL,NULL,'Carga#1','eoherrer2','c53e479b03b3220d3d56da88c4cace20','2018-08-04 23:23:25','Pruebas '),(36,'Nom2','Ape2','Dir2','Iden2',1,2,1,'Nom2@gmail.com',1,1,22,'\0',0,'123456','Nom2 Ape2','Fac Dir 2','Carga#1',NULL,'d41d8cd98f00b204e9800998ecf8427e','2018-08-04 23:23:25','Pruebas '),(37,'Nom3','Ape3','Dir3','Iden3',1,2,1,'Nom3@gmail.com',1,1,11,'\0',0,'654321','Nom3 Ape3','Fac Dir 3','Carga#1','nom3ape3','44403ba33c172cc97627ef916bfe88c3','2018-08-04 23:23:25','Pruebas '),(42,'Orlando','Cabrera',' ','456789',NULL,NULL,NULL,'eoherrer@gmail.com',NULL,NULL,0,'\0',0,'41511832','Eder Orlando Herrera Cabrera','2200 NW 129 AVE, SUITE 108/GUA-80411',NULL,NULL,NULL,'2018-09-02 18:25:04','Pruebas ');
 /*!40000 ALTER TABLE `clientes` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -637,7 +635,7 @@ CREATE TABLE `producto` (
   PRIMARY KEY (`id_producto`),
   KEY `id_tipo` (`id_tipo`),
   CONSTRAINT `producto_ibfk_2` FOREIGN KEY (`id_tipo`) REFERENCES `tipo` (`id_tipo`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -646,7 +644,7 @@ CREATE TABLE `producto` (
 
 LOCK TABLES `producto` WRITE;
 /*!40000 ALTER TABLE `producto` DISABLE KEYS */;
-INSERT INTO `producto` VALUES (1,'Producto 1','Desc Producto1','2018-07-28 22:38:24','Pruebas ',50.00,1,75.00,'Y1.jpg','Y01'),(2,'Producto 2','Juego de aros tres tonos con detalle en resorte al centro','2018-07-29 22:11:59','Pruebas ',25.00,1,50.00,'Y2.jpg','Y02'),(3,'Producto 3','Juego de aros tres tonos con cierre de esferas','2018-07-29 22:11:59','Pruebas ',50.00,2,75.00,'Y3.jpg','Y03'),(4,'Producto 4','Desc Producto 4','2018-07-29 22:11:59','Pruebas',55.00,1,60.00,'Y3.jpg','Y04');
+INSERT INTO `producto` VALUES (1,'Producto 1','Desc Producto1','2018-07-28 22:38:24','Pruebas ',50.00,1,75.00,'Y1.jpg','Y01'),(2,'Producto 2','Juego de aros tres tonos con detalle en resorte al centro','2018-07-29 22:11:59','Pruebas ',25.00,1,50.00,'Y2.jpg','Y02'),(3,'Producto 3','Juego de aros tres tonos con cierre de esferas','2018-07-29 22:11:59','Pruebas ',50.00,2,75.00,'Y3.jpg','Y03'),(4,'Producto 4','Desc Producto 4','2018-07-29 22:11:59','Pruebas',55.00,1,60.00,'Y3.jpg','Y04'),(5,'Producto 5','Desc Producto 5','2018-08-31 19:44:10','Pruebas ',100.00,1,150.00,'Y5.jpg','Y05'),(6,'Producto 6','Desc Producto 6','2018-08-31 19:52:09','Pruebas ',120.00,1,160.00,'Y6.jpg','Y06');
 /*!40000 ALTER TABLE `producto` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -679,6 +677,25 @@ LOCK TABLES `proveedor` WRITE;
 /*!40000 ALTER TABLE `proveedor` DISABLE KEYS */;
 /*!40000 ALTER TABLE `proveedor` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Temporary view structure for view `reporte_clientes`
+--
+
+DROP TABLE IF EXISTS `reporte_clientes`;
+/*!50001 DROP VIEW IF EXISTS `reporte_clientes`*/;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+/*!50001 CREATE VIEW `reporte_clientes` AS SELECT 
+ 1 AS `identificacion`,
+ 1 AS `nombres`,
+ 1 AS `apellidos`,
+ 1 AS `factura_nit`,
+ 1 AS `numero`,
+ 1 AS `direccion`,
+ 1 AS `tiene_credito`,
+ 1 AS `dias_credito`*/;
+SET character_set_client = @saved_cs_client;
 
 --
 -- Table structure for table `sucursales`
@@ -897,7 +914,7 @@ CREATE TABLE `trx_movimiento_sucursales_detalle` (
   CONSTRAINT `trx_movimiento_sucursales_detalle_ibfk_2` FOREIGN KEY (`id_producto`) REFERENCES `producto` (`id_producto`),
   CONSTRAINT `trx_movimiento_sucursales_detalle_ibfk_3` FOREIGN KEY (`id_transaccion`) REFERENCES `trx_transacciones` (`id_transaccion`),
   CONSTRAINT `trx_movimiento_sucursales_detalle_ibfk_4` FOREIGN KEY (`id_transaccion_destino`) REFERENCES `trx_transacciones` (`id_transaccion`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1007,7 +1024,7 @@ CREATE TABLE `trx_transacciones` (
   CONSTRAINT `trx_transacciones_ibfk_4` FOREIGN KEY (`id_moneda`) REFERENCES `monedas` (`id_moneda`),
   CONSTRAINT `trx_transacciones_ibfk_5` FOREIGN KEY (`id_producto`) REFERENCES `producto` (`id_producto`),
   CONSTRAINT `trx_transacciones_ibfk_6` FOREIGN KEY (`id_cliente`) REFERENCES `clientes` (`id_cliente`)
-) ENGINE=InnoDB AUTO_INCREMENT=140 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=167 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1016,7 +1033,7 @@ CREATE TABLE `trx_transacciones` (
 
 LOCK TABLES `trx_transacciones` WRITE;
 /*!40000 ALTER TABLE `trx_transacciones` DISABLE KEYS */;
-INSERT INTO `trx_transacciones` VALUES (3,2,1,1,'Carga Masiva Productos',1,2,0.00,50.00,'2018-07-31 12:39:47',NULL),(4,2,1,1,'Carga Masiva Productos',1,3,0.00,70.00,'2018-07-31 12:39:47',NULL),(5,2,1,1,'Carga Masiva Productos',1,1,0.00,100.00,'2018-07-31 12:39:47',NULL),(6,2,1,4,'Carga Masiva Productos',1,2,0.00,1.00,'2018-08-03 13:54:56',NULL),(7,2,1,4,'Carga Masiva Productos',1,3,0.00,1.00,'2018-08-03 13:54:56',NULL),(8,2,1,4,'Carga Masiva Productos',1,1,0.00,1.00,'2018-08-03 13:54:56',NULL),(15,2,1,1,'Carga Masiva Productos',1,2,0.00,1.00,'2018-08-08 15:37:48',NULL),(16,2,1,1,'Carga Masiva Productos',1,3,0.00,1.00,'2018-08-08 15:37:48',NULL),(17,2,1,1,'Carga Masiva Productos',1,1,0.00,1.00,'2018-08-08 15:37:48',NULL),(39,2,1,1,'Carga Masiva Productos',1,2,0.00,15.00,'2018-08-11 21:07:29',NULL),(40,2,1,1,'Carga Masiva Productos',1,3,0.00,20.00,'2018-08-11 21:07:29',NULL),(41,2,1,1,'Carga Masiva Productos',1,1,0.00,10.00,'2018-08-11 21:07:29',NULL),(134,4,1,1,'Venta por Consignacion',1,1,44.00,0.00,'2018-08-27 22:02:05',4),(135,4,1,1,'Venta por Consignacion',1,1,0.00,56.00,'2018-08-27 22:02:05',NULL),(136,4,1,1,'Venta por Consignacion',1,2,35.00,0.00,'2018-08-27 22:02:05',4),(137,4,1,1,'Venta por Consignacion',1,2,0.00,15.00,'2018-08-27 22:02:05',NULL),(138,4,1,1,'Venta por Consignacion',1,3,35.00,0.00,'2018-08-27 22:02:05',4),(139,4,1,1,'Venta por Consignacion',1,3,0.00,35.00,'2018-08-27 22:02:05',NULL);
+INSERT INTO `trx_transacciones` VALUES (3,2,1,1,'Carga Masiva Productos',1,2,0.00,50.00,'2018-07-31 12:39:47',NULL),(4,2,1,1,'Carga Masiva Productos',1,3,0.00,70.00,'2018-07-31 12:39:47',NULL),(5,2,1,1,'Carga Masiva Productos',1,1,0.00,100.00,'2018-07-31 12:39:47',NULL),(6,2,1,4,'Carga Masiva Productos',1,2,0.00,1.00,'2018-08-03 13:54:56',NULL),(7,2,1,4,'Carga Masiva Productos',1,3,0.00,1.00,'2018-08-03 13:54:56',NULL),(8,2,1,4,'Carga Masiva Productos',1,1,0.00,1.00,'2018-08-03 13:54:56',NULL),(15,2,1,1,'Carga Masiva Productos',1,2,0.00,1.00,'2018-08-08 15:37:48',NULL),(16,2,1,1,'Carga Masiva Productos',1,3,0.00,1.00,'2018-08-08 15:37:48',NULL),(17,2,1,1,'Carga Masiva Productos',1,1,0.00,1.00,'2018-08-08 15:37:48',NULL),(39,2,1,1,'Carga Masiva Productos',1,2,0.00,15.00,'2018-08-11 21:07:29',NULL),(40,2,1,1,'Carga Masiva Productos',1,3,0.00,20.00,'2018-08-11 21:07:29',NULL),(41,2,1,1,'Carga Masiva Productos',1,1,0.00,10.00,'2018-08-11 21:07:29',NULL),(134,4,1,1,'Venta por Consignacion',1,1,44.00,0.00,'2018-08-27 22:02:05',4),(135,4,1,1,'Venta por Consignacion',1,1,0.00,56.00,'2018-08-27 22:02:05',NULL),(136,4,1,1,'Venta por Consignacion',1,2,35.00,0.00,'2018-08-27 22:02:05',4),(137,4,1,1,'Venta por Consignacion',1,2,0.00,15.00,'2018-08-27 22:02:05',NULL),(138,4,1,1,'Venta por Consignacion',1,3,35.00,0.00,'2018-08-27 22:02:05',4),(139,4,1,1,'Venta por Consignacion',1,3,0.00,35.00,'2018-08-27 22:02:05',NULL),(140,4,1,1,'Venta',1,1,2.00,0.00,'2018-08-31 23:26:11',4),(141,4,1,1,'Venta',1,2,2.00,0.00,'2018-08-31 23:26:11',4),(142,4,1,1,'Ingreso de venta',1,1,0.00,5.00,'2018-09-02 19:11:17',42),(143,4,1,1,'Ingreso de venta',1,2,0.00,3.00,'2018-09-02 19:11:17',42),(144,4,1,1,'Ingreso de venta',1,3,0.00,3.00,'2018-09-02 19:11:17',42),(145,4,1,1,'Ingreso de venta',1,1,0.00,3.00,'2018-09-02 19:14:58',42),(146,4,1,1,'Ingreso de venta',1,2,0.00,3.00,'2018-09-02 19:14:58',42),(147,4,1,1,'Ingreso de venta',1,3,0.00,3.00,'2018-09-02 19:14:58',42),(148,4,1,1,'Ingreso de venta',1,1,0.00,3.00,'2018-09-02 19:16:16',42),(149,4,1,1,'Ingreso de venta',1,2,0.00,3.00,'2018-09-02 19:16:16',42),(150,4,1,1,'Ingreso de venta',1,3,0.00,3.00,'2018-09-02 19:16:16',42),(151,4,1,1,'Venta',1,1,3.00,0.00,'2018-09-02 19:17:09',42),(152,4,1,1,'Venta',1,2,3.00,0.00,'2018-09-02 19:17:09',42),(153,4,1,1,'Ingreso de venta',1,3,0.00,3.00,'2018-09-02 19:17:09',42),(154,4,1,1,'Venta',1,1,3.00,0.00,'2018-09-02 20:00:03',42),(155,4,1,1,'Venta',1,2,3.00,0.00,'2018-09-02 20:00:03',42),(156,4,1,1,'Ingreso de venta',1,3,0.00,3.00,'2018-09-02 20:00:03',42),(157,4,1,1,'Venta',1,1,3.00,0.00,'2018-09-02 20:19:57',42),(158,4,1,1,'Venta',1,2,3.00,0.00,'2018-09-02 20:19:57',42),(159,4,1,1,'Venta',1,3,3.00,0.00,'2018-09-02 20:19:57',42),(160,4,1,1,'Venta',1,1,3.00,0.00,'2018-09-02 20:34:19',42),(161,4,1,1,'Venta',1,2,3.00,0.00,'2018-09-02 20:34:19',42),(162,4,1,1,'Ingreso de venta',1,3,0.00,3.00,'2018-09-02 20:34:19',42),(163,4,1,1,'Venta',1,1,3.00,0.00,'2018-09-02 20:42:31',42),(164,4,1,1,'Venta',1,2,3.00,0.00,'2018-09-02 20:42:31',42),(165,4,1,1,'Ingreso de venta',1,3,0.00,3.00,'2018-09-02 20:42:31',42),(166,4,1,1,'Venta',1,3,10.00,0.00,'2018-09-02 22:45:48',42);
 /*!40000 ALTER TABLE `trx_transacciones` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1036,7 +1053,7 @@ CREATE TABLE `trx_venta` (
   `usuario_creacion` varchar(100) NOT NULL,
   `fecha_creacion` datetime NOT NULL,
   PRIMARY KEY (`id_venta`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1045,7 +1062,7 @@ CREATE TABLE `trx_venta` (
 
 LOCK TABLES `trx_venta` WRITE;
 /*!40000 ALTER TABLE `trx_venta` DISABLE KEYS */;
-INSERT INTO `trx_venta` VALUES (1,200.00,1,1,'P','Pruebas','2018-08-25 20:55:19'),(2,300.00,1,1,'P','Pruebas','2018-08-25 20:55:19'),(3,3837.50,4,1,'C','Pruebas ','2018-08-27 22:02:05');
+INSERT INTO `trx_venta` VALUES (1,200.00,1,1,'P','Pruebas','2018-08-25 20:55:19'),(2,375.00,42,1,'V','Pruebas ','2018-09-02 20:42:31'),(3,3837.50,4,1,'C','Pruebas ','2018-08-27 22:02:05'),(8,250.00,4,1,'C','Pruebas ','2018-08-31 23:26:11'),(9,750.00,42,1,'C','Pruebas ','2018-09-02 19:11:17'),(10,600.00,42,1,'C','Pruebas ','2018-09-02 19:14:58'),(11,600.00,42,1,'C','Pruebas ','2018-09-02 19:16:16'),(12,600.00,42,1,'C','Pruebas ','2018-09-02 19:17:09'),(13,750.00,42,1,'V','Pruebas ','2018-09-02 22:45:48');
 /*!40000 ALTER TABLE `trx_venta` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1068,7 +1085,7 @@ CREATE TABLE `trx_venta_detalle` (
   PRIMARY KEY (`id_venta_detalle`),
   KEY `id_venta` (`id_venta`),
   CONSTRAINT `venta_detalle_ibfk_2` FOREIGN KEY (`id_venta`) REFERENCES `trx_venta` (`id_venta`)
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=20 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1077,7 +1094,7 @@ CREATE TABLE `trx_venta_detalle` (
 
 LOCK TABLES `trx_venta_detalle` WRITE;
 /*!40000 ALTER TABLE `trx_venta_detalle` DISABLE KEYS */;
-INSERT INTO `trx_venta_detalle` VALUES (1,1,1,1,2.00,37.50,'Pruebas','2018-08-25 20:55:19'),(2,1,2,1,2.00,25.00,'Pruebas','2018-08-25 20:55:19'),(4,2,1,1,3.00,37.50,'Pruebas','2018-08-25 20:55:19'),(5,2,2,1,3.00,25.00,'Pruebas','2018-08-25 20:55:19'),(6,2,3,1,3.00,37.50,'Pruebas','2018-08-25 20:55:19'),(7,3,1,1,44.00,37.50,'Pruebas ','2018-08-27 22:02:05'),(8,3,2,1,35.00,25.00,'Pruebas ','2018-08-27 22:02:05'),(9,3,3,1,35.00,37.50,'Pruebas ','2018-08-27 22:02:05');
+INSERT INTO `trx_venta_detalle` VALUES (1,1,1,1,2.00,37.50,'Pruebas','2018-08-25 20:55:19'),(2,1,2,1,2.00,25.00,'Pruebas','2018-08-25 20:55:19'),(4,2,1,1,3.00,75.00,'Pruebas ','2018-09-02 20:42:31'),(5,2,2,1,3.00,50.00,'Pruebas ','2018-09-02 20:42:31'),(6,2,3,1,0.00,0.00,'Pruebas ','2018-09-02 20:42:31'),(7,3,1,1,44.00,37.50,'Pruebas ','2018-08-27 22:02:05'),(8,3,2,1,35.00,25.00,'Pruebas ','2018-08-27 22:02:05'),(9,3,3,1,35.00,37.50,'Pruebas ','2018-08-27 22:02:05'),(10,8,1,1,2.00,75.00,'Pruebas ','2018-08-31 23:26:11'),(11,8,2,1,2.00,50.00,'Pruebas ','2018-08-31 23:26:11'),(12,12,1,1,3.00,75.00,'Pruebas ','2018-09-02 19:17:09'),(13,12,2,1,3.00,50.00,'Pruebas ','2018-09-02 19:17:09'),(19,13,3,1,10.00,75.00,'Pruebas ','2018-09-02 22:45:48');
 /*!40000 ALTER TABLE `trx_venta_detalle` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1105,7 +1122,7 @@ CREATE TABLE `trx_venta_formas_pago` (
   PRIMARY KEY (`id_venta_formas_pago`),
   KEY `id_venta` (`id_venta`),
   CONSTRAINT `venta_formas_pago_ibfk_2` FOREIGN KEY (`id_venta`) REFERENCES `trx_venta` (`id_venta`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1114,7 +1131,7 @@ CREATE TABLE `trx_venta_formas_pago` (
 
 LOCK TABLES `trx_venta_formas_pago` WRITE;
 /*!40000 ALTER TABLE `trx_venta_formas_pago` DISABLE KEYS */;
-INSERT INTO `trx_venta_formas_pago` VALUES (1,3,1,1,3837.50,3837.50,NULL,NULL,NULL,NULL,NULL,'Pruebas ','2018-08-27 22:02:05');
+INSERT INTO `trx_venta_formas_pago` VALUES (1,3,1,1,3837.50,3837.50,NULL,NULL,NULL,NULL,NULL,'Pruebas ','2018-08-27 22:02:05'),(2,8,1,1,250.00,250.00,NULL,NULL,NULL,NULL,NULL,'Pruebas ','2018-08-31 23:26:11'),(3,9,2,1,750.00,750.00,'123456',2,'987654','231654',NULL,'Pruebas ','2018-09-02 19:11:17'),(4,10,1,1,600.00,600.00,NULL,NULL,NULL,NULL,NULL,'Pruebas ','2018-09-02 19:14:58'),(5,11,1,1,600.00,600.00,NULL,NULL,NULL,NULL,NULL,'Pruebas ','2018-09-02 19:16:16'),(6,12,1,1,600.00,600.00,NULL,NULL,NULL,NULL,NULL,'Pruebas ','2018-09-02 19:17:09'),(7,2,1,1,375.00,375.00,NULL,NULL,NULL,NULL,NULL,'Pruebas ','2018-09-02 20:00:03'),(8,2,1,1,600.00,600.00,NULL,NULL,NULL,NULL,NULL,'Pruebas ','2018-09-02 20:19:57'),(9,2,1,1,375.00,375.00,NULL,NULL,NULL,NULL,NULL,'Pruebas ','2018-09-02 20:34:19'),(10,2,1,1,375.00,375.00,NULL,NULL,NULL,NULL,NULL,'Pruebas ','2018-09-02 20:42:31'),(11,13,1,1,750.00,750.00,NULL,NULL,NULL,NULL,NULL,'Pruebas ','2018-09-02 22:45:48');
 /*!40000 ALTER TABLE `trx_venta_formas_pago` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1144,6 +1161,24 @@ LOCK TABLES `variables_sistema` WRITE;
 INSERT INTO `variables_sistema` VALUES (1,'PassCambiarPrecios','precio123456','2016-09-27 00:00:00','dev'),(2,'Perfil_SuperUsuario','1','2016-10-06 21:41:42','dev'),(3,'PassIngresarGasto','gasto1234','2016-10-11 00:42:08','dev'),(4,'ReservaCajero','500','2016-10-11 04:20:24','dev'),(5,'FECHA_EXP','2019-12-31','2017-03-20 22:47:21','admin');
 /*!40000 ALTER TABLE `variables_sistema` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Final view structure for view `reporte_clientes`
+--
+
+/*!50001 DROP VIEW IF EXISTS `reporte_clientes`*/;
+/*!50001 SET @saved_cs_client          = @@character_set_client */;
+/*!50001 SET @saved_cs_results         = @@character_set_results */;
+/*!50001 SET @saved_col_connection     = @@collation_connection */;
+/*!50001 SET character_set_client      = utf8 */;
+/*!50001 SET character_set_results     = utf8 */;
+/*!50001 SET collation_connection      = utf8_general_ci */;
+/*!50001 CREATE ALGORITHM=UNDEFINED */
+/*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */
+/*!50001 VIEW `reporte_clientes` AS select `c`.`identificacion` AS `identificacion`,`c`.`nombres` AS `nombres`,`c`.`apellidos` AS `apellidos`,`c`.`factura_nit` AS `factura_nit`,`t`.`numero` AS `numero`,`c`.`direccion` AS `direccion`,`c`.`tiene_credito` AS `tiene_credito`,`c`.`dias_credito` AS `dias_credito` from (`clientes` `c` left join `clientes_telefonos` `t` on((`t`.`id_cliente` = `c`.`id_cliente`))) */;
+/*!50001 SET character_set_client      = @saved_cs_client */;
+/*!50001 SET character_set_results     = @saved_cs_results */;
+/*!50001 SET collation_connection      = @saved_col_connection */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -1154,4 +1189,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-08-31 19:03:47
+-- Dump completed on 2018-09-03 17:04:17
