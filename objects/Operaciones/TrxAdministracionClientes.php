@@ -376,8 +376,10 @@ class TrxAdministracionClientes extends FastTransaction {
         $dsClientesBodegas = Collection::get($this->db, 'clientes_bodegas');
 
         for($i = 0; count($resultSet) > $i; $i++){
-            $depto = $departamentos->where(['id_departamento' => $resultSet[$i]['id_departamento']])->single();
-            $resultSet[$i]['nombre_depto'] = $depto['nombre'];
+            if(isset($resultSet[$i]['id_departamento']) && !isEmpty($resultSet[$i]['id_departamento'])) {
+                $depto = $departamentos->where(['id_departamento' => $resultSet[$i]['id_departamento']])->single();
+                $resultSet[$i]['nombre_depto'] = self_escape_string($depto['nombre']);
+            }
 
             $resultSet[$i]['tiene_credito'] = ($resultSet[$i]['tiene_credito'] == '1') ? true : false ;
 
@@ -387,9 +389,9 @@ class TrxAdministracionClientes extends FastTransaction {
 
             $bodegas = $this->db->queryToArray(sprintf('SELECT cl.id_sucursal, nombre FROM clientes_bodegas cl LEFT JOIN sucursales s ON s.id_sucursal = cl.id_sucursal WHERE id_cliente=%s;', $resultSet[$i]['id_cliente']));
 
-            $resultSet[$i]['bodegas'] = $bodegas;
+            $resultSet[$i]['bodegas'] = sanitize_array_by_keys($bodegas, ['nombre']);
         }
-        return sanitize_array_by_keys($resultSet, array('nombre_depto'));
+        return $resultSet;
     }
 
     public function getPaises(){
