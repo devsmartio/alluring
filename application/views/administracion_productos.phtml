@@ -69,7 +69,7 @@
                 </div>
                 <div class='form-group form-group-sm'>
                     <label for='imagen' class='control-label'>Imagen</label>
-                    <input type="file" name="imagen" accept="image/jpeg"  value="lastSelected.imagen" name="file"  onchange="angular.element(this).scope().uploadFile(this.files)"/>
+                    <input type="file" accept="image/jpeg"  value="lastSelected.imagen" name="file" onchange="angular.element(this).scope().uploadFile(this.files)"/>
                     <input ng-model="lastSelected.imagen" type="hidden" class='form-control'/>
                 </div>
                 <div class='form-group form-group-sm'>
