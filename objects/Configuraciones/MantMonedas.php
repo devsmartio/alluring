@@ -58,7 +58,7 @@ class MantMonedas extends FastMaintenance{
         $user = AppSecurity::$UserData['data'];
         $updateData['fecha_creacion'] = sqlValue($date->format('Y-m-d H:i:s'), 'date');
         $updateData['usuario_creacion'] = sqlValue(self_escape_string($user['FIRST_NAME']), 'text');
-        $moneda_defecto = str_replace("'", "", $updateData['moneda_defecto']);
+        $moneda_defecto = str_replace("'", "", isset($updateData['moneda_defecto']) ? $updateData['moneda_defecto']: 'off' );
         $updateData['simbolo'] = strtoupper($updateData['simbolo']);
 
         try {
