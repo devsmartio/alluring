@@ -36,7 +36,8 @@ class MantMonedas extends FastMaintenance{
     {
         $w = sprintf("moneda_defecto=1");
         $count = $this->db->query_select("monedas", $w);
-        if(count($count) == 0 && !$fields['moneda_defecto'] ){
+
+        if(count($count) == 0 && isset($fields['moneda_defecto']) && isEmpty($fields['moneda_defecto']) ){
             $r = 0;
             $mess = "Esta moneda debe ser seleccionada por defecto, debido a que no existe una";
         }
