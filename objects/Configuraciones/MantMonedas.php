@@ -60,18 +60,20 @@ class MantMonedas extends FastMaintenance{
         $moneda_defecto = str_replace("'", "", $updateData['moneda_defecto']);
         $updateData['simbolo'] = strtoupper($updateData['simbolo']);
 
-        if(array_key_exists('moneda_defecto', $updateData) && $moneda_defecto == "on"){
-            $updateData['moneda_defecto'] = 1;
-            try {
+        try {
+            if(array_key_exists('moneda_defecto', $updateData) && $moneda_defecto == "on") {
+                $updateData['moneda_defecto'] = 1;
+
                 $values = array('moneda_defecto' => 0);
                 $this->db->query_update('monedas', $values);
-            } catch (Exception $e){
-                $r = 0;
-                $mess = 'Error desconocido. Contacte a soporte';
-                var_dump($e->getTraceAsString());
+
+            } else {
+                $updateData['moneda_defecto'] = 0;
             }
-        }else{
-            $updateData['moneda_defecto'] = 0;
+        } catch (Exception $e){
+            $r = 0;
+            $mess = 'Error desconocido. Contacte a soporte';
+            var_dump($e->getTraceAsString());
         }
 
         return $updateData;
