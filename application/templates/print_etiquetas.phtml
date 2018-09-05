@@ -1,21 +1,16 @@
 <?php
-$sucursal = "select id_sucursal from sucursales where identificador_excel='%s'";
-$sucursal = $this->db->queryToArray(sprintf($sucursal, $identificador_excel));
-$sucursal = sanitize_by_keys($sucursal[0], ['id_sucursal']);
 
-$queryTransacciones ="  SELECT	p.codigo_origen, p.descripcion, t.haber
-                        FROM	trx_transacciones t
-                                INNER JOIN producto p ON p.id_producto = t.id_producto
-                        WHERE	id_sucursal = %s
-                        AND CAST(t.fecha_creacion AS DATE) = curdate()";
+$queryTransacciones ="  SELECT	p.codigo_origen, p.descripcion, ge.cantidad
+                        FROM	producto p
+                                INNER JOIN generacion_etiquetas ge ON ge.codigo_origen = p.codigo_origen";
 
-$transacciones = $this->db->queryToArray(sprintf($queryTransacciones, $sucursal['id_sucursal']));
+$transacciones = $this->db->queryToArray(sprintf($queryTransacciones));
 
 $generator = new BarcodeGeneratorHTML();
 
 $total = 0;
 foreach ($transacciones as $trx) {
-    $total += $trx['haber'];
+    $total += $trx['cantidad'];
 }
 
 ?>
@@ -47,18 +42,18 @@ foreach ($transacciones as $trx) {
         reset($transacciones);
         $p = current($transacciones);
         $conteo = 0;
-        $cantidad = (int)$p['haber'];
+        $cantidad = (int)$p['cantidad'];
     ?>
     <?php for($i = 1; $i <= $total; $i++){
         if($conteo == $cantidad){
             $p = next($transacciones);
-            $cantidad = (int)$p['haber'];
+            $cantidad = (int)$p['cantidad'];
             $conteo = 0;
         }else
             $conteo++;
     ?>
         <?php if ($i%3 == 1) echo "<tr>" ?>
-            <td style="padding-left:5px;">
+            <td style="padding-left:5px; width: 198px;">
                 <div style="height: 90px;">
                     <label><?php echo $p['descripcion'] ?></label>
                     <label><?php echo $generator->getBarcode($p['codigo_origen'], $generator::TYPE_CODE_128); ?></label>

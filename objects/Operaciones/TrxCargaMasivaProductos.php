@@ -27,8 +27,7 @@ class TrxCargaMasivaProductos extends FastTransaction {
             new FastField('Precio venta al público', 'precio_venta', 'text', 'text'),
             new FastField('Costo', 'costo', 'text', 'text'),
             new FastField('Imagen', 'imagen', 'text', 'text'),
-            new FastField('Codigo', 'codigo_origen', 'text', 'text'),
-            new FastField('Cantidad', 'cantidad', 'text', 'text')
+            new FastField('Codigo', 'codigo_origen', 'text', 'text')
         );
 
         $this->gridCols = array(
@@ -38,8 +37,7 @@ class TrxCargaMasivaProductos extends FastTransaction {
             'Precio venta al público' =>'precio_venta',
             'Costo' => 'costo',
             'Imagen' => 'imagen',
-            'Codigo' => 'codigo_origen',
-            'Cantidad' => 'cantidad'
+            'Codigo' => 'codigo_origen'
         );
     }
 
@@ -55,6 +53,7 @@ class TrxCargaMasivaProductos extends FastTransaction {
             app.controller('ModuleCtrl', function ($scope, $http, $rootScope) {
                 $scope.startAgain = function () {
                     $scope.rows = [];
+                    $scope.bodegas = [];
                     $scope.disableBtn = true;
                     $scope.lastSelected = {
                         file: ''
@@ -78,11 +77,12 @@ class TrxCargaMasivaProductos extends FastTransaction {
                     })
                         .success(function (response) {
                             console.log("Success");
+                            $scope.bodegas = [];
                             $scope.lastSelected.file = files[0]['name'];
                             $scope.rows = response.data;
-                            $scope.lastSelected.identificador_excel = response.identificador_excel;
+                            $scope.bodegas = response.bodegas;
 
-                            if (response.identificador_excel == undefined) {
+                            if (($scope.bodegas == undefined) || ($scope.bodegas.length == 0)) {
                                 $scope.disableBtn = true;
                                 $scope.alerts.push({
                                     type: 'alert-danger',
@@ -91,6 +91,7 @@ class TrxCargaMasivaProductos extends FastTransaction {
                             } else {
                                 $scope.disableBtn = false;
                             }
+                            angular.element("input[type='file']").val(null);
                         })
                         .error(function (response) {
                             $scope.alerts.push({
@@ -106,10 +107,13 @@ class TrxCargaMasivaProductos extends FastTransaction {
                     var productos = JSON.stringify($scope.rows);
                     productos = productos.replace(/\\/g, "\\\\");
 
+                    var bodega_cargar = JSON.stringify($scope.bodegas);
+                    bodega_cargar = bodega_cargar.replace(/\\/g, "\\\\");
+
                     $rootScope.modData = {
                         file: $scope.lastSelected.file,
                         productos: JSON.parse(productos),
-                        identificador_excel: identificador_excel,
+                        bodegas_cargar: JSON.parse(bodega_cargar),
                         mod: 1
                     };
 
@@ -117,7 +121,7 @@ class TrxCargaMasivaProductos extends FastTransaction {
 
 
                     $rootScope.addCallback(response =>
-                        window.open("./?action=pdf&tmp=TRX&identificador_excel=" + identificador_excel));
+                        window.open("./?action=pdf&tmp=TRX"));
                 };
 
                 $scope.cancelar = function () {
@@ -210,10 +214,17 @@ class TrxCargaMasivaProductos extends FastTransaction {
             $highestRow = $sheet->getHighestRow();
             $highestColumn = $sheet->getHighestColumn();
             $resultSet = [];
+            $bodegas = [];
+            $countBodegas = 0;
+            $bodegas_cargar = [];
 
             $encabezados = $sheet->rangeToArray('A1:' . $highestColumn . 1, NULL, TRUE, FALSE);
-            $identificador_excel = $encabezados[0][count($this->fields)-1];
 
+            for ($i = 7; $i <= count($encabezados[0])-1; $i++) {
+                $bodegas[$countBodegas++] = $encabezados[0][$i];
+            }
+
+            $countBodegas = 0;
             //  Loop through each row of the worksheet in turn
             for ($row = 2; $row <= $highestRow; $row++) {
                 //  Read a row of data into an array
@@ -227,11 +238,18 @@ class TrxCargaMasivaProductos extends FastTransaction {
                     $resultSet[($row-2)][$f->name] = self_escape_string($rowData[0][$col]);
                     $col++;
                 }
+
+                for ($i = 1; $i <= count($bodegas); $i++) {
+                    $bodegas_cargar[$countBodegas]['codigo_producto'] = $rowData[0][6];
+                    $bodegas_cargar[$countBodegas]['cantidad'] = $rowData[0][(6+$i)];
+                    $bodegas_cargar[$countBodegas]['bodega'] = $bodegas[($i-1)];
+                    $countBodegas++;
+                }
             }
 
             $resultSet = $this->specialProcessBeforeShow($resultSet);
 
-            echo json_encode(array('data' => $resultSet, 'identificador_excel' => $identificador_excel));;
+            echo json_encode(array('data' => $resultSet, 'bodegas' => $bodegas_cargar));;
 
 //            unlink($target_file);
         } catch (Exception $e) {
@@ -252,7 +270,6 @@ class TrxCargaMasivaProductos extends FastTransaction {
         $fecha = new DateTime();
         $user = AppSecurity::$UserData['data'];
 
-        $dsBodega = Collection::get($this->db, 'sucursales', sprintf('identificador_excel = "%s"', $data['identificador_excel']))->single();
         $dsCuenta = Collection::get($this->db, 'cuentas', 'lower(nombre) = "inventario"')->single();
         $dsEmpleado = Collection::get($this->db, 'empleados', sprintf('id_usuario = "%s"', $user['ID']))->single();
         $dsMoneda = Collection::get($this->db, 'monedas', 'moneda_defecto = 1')->single();
@@ -269,7 +286,6 @@ class TrxCargaMasivaProductos extends FastTransaction {
 
                 $this->db->query_update('producto', $producto, sprintf('id_producto = %s', $dsProducto[0]['id_producto']));
 
-                $id_producto = $dsProducto[0]['id_producto'];
             } else {
 
                 $producto = [
@@ -285,9 +301,15 @@ class TrxCargaMasivaProductos extends FastTransaction {
                 ];
 
                 $this->db->query_insert('producto', $producto);
-
-                $id_producto = $this->db->max_id('producto', 'id_producto');
             }
+        }
+
+        $this->db->query_delete('generacion_etiquetas');
+
+        foreach($data['bodegas_cargar'] as $bodega){
+
+            $dsBodega = Collection::get($this->db, 'sucursales', sprintf('identificador_excel = "%s"', $bodega['bodega']))->single();
+            $dsProducto = Collection::get($this->db, 'producto', sprintf('codigo_origen = "%s"', $bodega['codigo_producto']))->single();
 
             if (count($dsBodega) > 0 && count($dsCuenta) > 0 && count($dsEmpleado) > 0) {
 
@@ -297,16 +319,25 @@ class TrxCargaMasivaProductos extends FastTransaction {
                     'id_sucursal' => sqlValue($dsBodega['id_sucursal'], 'int'),
                     'descripcion' => sqlValue('Carga Masiva Productos', 'text'),
                     'id_moneda' => sqlValue($dsMoneda['id_moneda'], 'int'),
-                    'id_producto' => sqlValue($id_producto, 'int'),
+                    'id_producto' => sqlValue($dsProducto['id_producto'], 'int'),
                     'debe' => sqlValue('0', 'float'),
-                    'haber' => sqlValue($prod['cantidad'], 'float'),
+                    'haber' => sqlValue($bodega['cantidad'], 'float'),
                     'fecha_creacion' => sqlValue($fecha->format('Y-m-d H:i:s'), 'date'),
                     'id_cliente' => sqlValue(0, 'text')
                 ];
 
                 $this->db->query_insert('trx_transacciones', $transaccion);
+
+                $etiqueta = [
+                    'codigo_origen' => sqlValue($bodega['codigo_producto'], 'text'),
+                    'cantidad' => sqlValue($bodega['cantidad'], 'int'),
+                    'id_sucursal' => sqlValue($dsBodega['id_sucursal'], 'int'),
+                ];
+
+                $this->db->query_insert('generacion_etiquetas', $etiqueta);
             }
         }
+
         $this->r = 1;
         $this->msg = 'Producto ingresado con éxito';
     }

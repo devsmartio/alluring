@@ -122,17 +122,20 @@ class TrxGeneracionEtiquetas extends FastTransaction {
                     $scope.doSave();
 
                     if ($scope.porArchivo) {
-                        $rootScope.addCallback(response => window.open('./?action=pdf&tmp=GEN_ET&GEN_ET=0'));
+                        //$rootScope.addCallback(response => window.open('./?action=pdf&tmp=GEN_ET&GEN_ET=0'));
+                        window.open('./?action=pdf&tmp=GEN_ET&GEN_ET=0');
                     } else if ($scope.porFiltro) {
                         var idSucursal = $scope.id_sucursal;
                         var idTipo = $scope.id_tipo;
 
-                        $rootScope.addCallback(response => window.open('./?action=pdf&tmp=GEN_ET&GEN_ET=1&idSucursal=' + idSucursal + '&idTipo=' + idTipo));
+                        //$rootScope.addCallback(response => window.open('./?action=pdf&tmp=GEN_ET&GEN_ET=1&idSucursal=' + idSucursal + '&idTipo=' + idTipo));
+                        window.open('./?action=pdf&tmp=GEN_ET&GEN_ET=1&idSucursal=' + idSucursal + '&idTipo=' + idTipo);
                     }
                 };
 
                 $scope.cancelar = function () {
-                    $scope.cancel();
+                    //$scope.cancel();
+                    $scope.startAgain();
                 };
 
                 $scope.startAgain();
