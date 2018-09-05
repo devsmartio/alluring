@@ -118,10 +118,6 @@ class TrxCargaMasivaProductos extends FastTransaction {
                     };
 
                     $scope.doSave();
-
-
-                    $rootScope.addCallback(response =>
-                        window.open("./?action=pdf&tmp=TRX"));
                 };
 
                 $scope.cancelar = function () {
@@ -129,7 +125,13 @@ class TrxCargaMasivaProductos extends FastTransaction {
                 };
 
                 $scope.startAgain();
-                $rootScope.addCallback(function () {
+                $rootScope.addCallback(function (response) {
+
+                    if ((response != undefined) && (response.result == 1)) {
+
+                        window.open("./?action=pdf&tmp=TRX");
+                    }
+
                     $scope.startAgain();
                 });
             });
