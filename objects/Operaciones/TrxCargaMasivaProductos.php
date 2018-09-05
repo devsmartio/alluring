@@ -335,6 +335,9 @@ class TrxCargaMasivaProductos extends FastTransaction {
                 ];
 
                 $this->db->query_insert('generacion_etiquetas', $etiqueta);
+            } else {
+                $error = 'No se encuentra configurada la Bodega, Cuenta o Empleado, favor de revisar';
+                throw new Exception($error);
             }
         }
 
