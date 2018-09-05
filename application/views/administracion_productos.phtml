@@ -43,7 +43,7 @@
     </div>
     <form ng-show='editMode||newMode' class='col-md-12 col-lg-12' id="mantForm" name="mantForm" method="post">
         <div class="row">
-            <div class="col-lg-5 col-md-5 col-sm-12 col-xs-12">
+            <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
                 <input ng-model="lastSelected.id_producto" type="hidden" class='form-control'/>
                 <div class='form-group form-group-sm'>
                     <label for='nombre' class='control-label'>Nombre</label>
@@ -76,6 +76,14 @@
                     <label for='codigo_origen' class='control-label'>Código Origen</label>
                     <input ng-model="lastSelected.codigo_origen" type="text" required class='form-control' name='codigo_origen' placeholder='' ng-readonly='(editMode&&false)||(newMode&&false)'/>
                 </div>
+            </div>
+            <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12" ng-show="lastSelected.imagen">
+                <figure class="figure">
+                    <img ng-src="media/uploads/{{lastSelected.imagen}}" alt="{{lastSelected.descripcion}}" class="img-thumbnail">
+                    <figcaption class="figure-caption">
+                        {{lastSelected.imagen}}
+                    </figcaption>
+                </figure>
             </div>
         </div>
         <div class="row" style="margin-top: 35px;">

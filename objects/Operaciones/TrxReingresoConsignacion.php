@@ -197,7 +197,7 @@ class TrxReingresoConsignacion extends FastTransaction {
                 });
 
                 $scope.$watch('search_codigo_origen', function(val){
-                    if(val.length >= 3) {
+                    if(val.length >= 2) {
                         $scope.productos = $filter('filter')($scope.productos, val);
 
                         if ($scope.productos.length == 0) {

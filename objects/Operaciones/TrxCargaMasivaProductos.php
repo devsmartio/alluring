@@ -59,12 +59,14 @@ class TrxCargaMasivaProductos extends FastTransaction {
                         file: ''
                     };
                     angular.element("input[type='file']").val(null);
+                    $('#loading').hide();
                 };
                 $http.get($scope.ajaxUrl + '&act=getGridCols').success(function (response) {
                     $scope.gridCols = response.data;
                 });
 
                 $scope.uploadFile = function (files) {
+                    $('#loading').show();
                     var uploadUrl = $scope.ajaxUrl + '&act=uploadExcel';
                     var fd = new FormData();
                     fd.append('file', files[0]);
@@ -99,6 +101,7 @@ class TrxCargaMasivaProductos extends FastTransaction {
                                 msg: response.msg
                             });
                         });
+                    $('#loading').hide();
                 };
 
                 $scope.finalizar = function () {

@@ -106,6 +106,7 @@ class TrxAdministracionProductos  extends FastTransaction {
                         .success(function(response){
                             console.log("Success");
                             $scope.lastSelected.imagen = response.msg;
+                            $scope.lastSelected.codigo_origen = response.msg.replace('.jpg','');
                         })
                         .error(function(response){
                             $scope.alerts.push({
@@ -362,15 +363,10 @@ class TrxAdministracionProductos  extends FastTransaction {
         try {
 
             if ($_POST['old_name'] == '') {
-                $id_producto = $this->db->max_id('producto', 'id_producto');
+                $ultimoCodigo = $this->db->queryToArray('  SELECT	COALESCE(MAX(CAST(REPLACE(codigo_origen,"Y","") AS UNSIGNED)),1) AS ultimo_codigo
+                                                           FROM	    producto');
 
-                if (!$id_producto)
-                    $id_producto = 1;
-                else {
-                    $id_producto += 1;
-                }
-
-                $nombre_archivo = 'Y' . $id_producto . '.jpg';
+                $nombre_archivo = 'Y' . ($ultimoCodigo[0]['ultimo_codigo'] + 1) . '.jpg';
             } else
                 $nombre_archivo = $_POST['old_name'];
 
