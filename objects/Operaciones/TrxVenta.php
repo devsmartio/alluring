@@ -508,7 +508,7 @@ class TrxVenta extends FastTransaction {
 
         $queryProductos = " SELECT	p.id_producto, p.nombre, p.descripcion, p.precio_venta, p.imagen,
                                     p.codigo_origen, COALESCE((sum(trx.haber) - sum(trx.debe)),0) AS total_existencias,
-                                    1 AS mostrar, t.nombre AS nombre_categoria, s.nombre AS nombre_sucursal, s.id_sucursal
+                                    1 AS mostrar, max(t.nombre) AS nombre_categoria, max(s.nombre) AS nombre_sucursal,  max(s.id_sucursal) AS id_sucursal
                             FROM	producto p
                                     LEFT JOIN tipo t
                                     ON t.id_tipo = p.id_tipo
