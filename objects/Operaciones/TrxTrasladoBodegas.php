@@ -170,7 +170,7 @@ class TrxTrasladoBodegas extends FastTransaction {
         $resultSet = [];
         try {
             $id_sucursal = getParam('id_sucursal');
-            $resultSet = $this->db->query_toArray('select trx.*, p.*, t.nombre as nombre_tipo from trx_transacciones trx inner join producto p ON p.id_producto = trx.id_producto inner join tipo t ON t.id_tipo = p.id_tipo where trx.id_sucursal = ' . $id_sucursal);
+            $resultSet = $this->db->query_toArray('select trx.*, p.*, t.nombre as nombre_tipo, COALESCE((sum(trx.haber) - sum(trx.debe)),0) AS total_existencias from trx_transacciones trx inner join producto p ON p.id_producto = trx.id_producto inner join tipo t ON t.id_tipo = p.id_tipo where trx.id_sucursal = ' . $id_sucursal . ' GROUP BY p.id_producto HAVING	(sum(trx.haber) - sum(trx.debe)) > 0');
 
             for($i = 0; count($resultSet) > $i; $i++){
                 $resultSet[$i]['cantidad'] = 0;
@@ -208,44 +208,83 @@ class TrxTrasladoBodegas extends FastTransaction {
         $fecha = new DateTime();
         $user = AppSecurity::$UserData['data'];
         $dsEmpleado = Collection::get($this->db, 'empleados', sprintf('id_usuario = "%s"', $user['ID']))->single();
+        $dsCuenta = Collection::get($this->db, 'cuentas', 'lower(nombre) = "inventario"')->single();
+        $dsMoneda = Collection::get($this->db, 'monedas', 'moneda_defecto = 1')->single();
 
-        $trx_movimiento_sucursales = [
-            'id_movimiento_sucursales_estado' => sqlValue('2', 'int'),
-            'id_empleado_envia' => sqlValue($dsEmpleado['id_empleado'], 'int'),
-            'id_sucursal_origen' => sqlValue($data['idSucursalOrigen'], 'int'),
-            'id_sucursal_destino' => sqlValue($data['idSucursalDestino'], 'int'),
-            'comentario_envio' => sqlValue('', 'text'),
-            'comentario_recepcion' => sqlValue('', 'text'),
-            'id_empleado_recibe' => sqlValue('', 'text'),
-            'id_cliente_recibe' => sqlValue($data['idClienteRecibe'], 'int'),
-            'es_consignacion' => sqlValue(($data['esConsignacion'] == false) ? 0 : 1, 'number'),
-            'dias_consignacion' => sqlValue($data['diasConsignar'], 'int'),
-            'porcetaje_compra_min' => sqlValue($data['porcentajeCompraMinima'], 'float'),
-            'fecha_creacion' => sqlValue($fecha->format('Y-m-d H:i:s'), 'date'),
-            'fecha_recepcion' => sqlValue($fecha->format('Y-m-d H:i:s'), 'date')
-        ];
+        try {
 
-        $this->db->query_insert('trx_movimiento_sucursales', $trx_movimiento_sucursales);
-
-        $id_movimiento_sucursales = $this->db->max_id('trx_movimiento_sucursales', 'id_movimiento_sucursales');
-
-        foreach ($data['productos'] as $prod) {
-
-            $trxOrigen = Collection::get($this->db, 'trx_transacciones', sprintf('id_sucursal = %s AND id_producto = %s', $data['idSucursalOrigen'], $prod['id_producto']))->single();
-            $trxDestino = Collection::get($this->db, 'trx_transacciones', sprintf('id_sucursal = %s AND id_producto = %s', $data['idSucursalDestino'], $prod['id_producto']))->single();
-
-            $trx_movimiento_sucursales_detalle = [
-                'id_movimiento_sucursales' => sqlValue($id_movimiento_sucursales, 'int'),
-                'id_producto' => sqlValue($prod['id_producto'], 'int'),
-                'unidades' => sqlValue($prod['cantidad'], 'int'),
-                'id_transaccion' => sqlValue($trxOrigen['id_transaccion'], 'int'),
-                'id_transaccion_destino' => sqlValue($trxDestino['id_transaccion'], 'int')
+            $trx_movimiento_sucursales = [
+                'id_movimiento_sucursales_estado' => sqlValue('2', 'int'),
+                'id_empleado_envia' => sqlValue($dsEmpleado['id_empleado'], 'int'),
+                'id_sucursal_origen' => sqlValue($data['idSucursalOrigen'], 'int'),
+                'id_sucursal_destino' => sqlValue($data['idSucursalDestino'], 'int'),
+                'comentario_envio' => sqlValue('', 'text'),
+                'comentario_recepcion' => sqlValue('', 'text'),
+                'id_empleado_recibe' => sqlValue('', 'text'),
+                'id_cliente_recibe' => sqlValue($data['idClienteRecibe'], 'int'),
+                'es_consignacion' => sqlValue(($data['esConsignacion'] == false) ? 0 : 1, 'number'),
+                'dias_consignacion' => sqlValue($data['diasConsignar'], 'int'),
+                'porcetaje_compra_min' => sqlValue($data['porcentajeCompraMinima'], 'float'),
+                'fecha_creacion' => sqlValue($fecha->format('Y-m-d H:i:s'), 'date'),
+                'fecha_recepcion' => sqlValue($fecha->format('Y-m-d H:i:s'), 'date')
             ];
 
-            $this->db->query_insert('trx_movimiento_sucursales_detalle', $trx_movimiento_sucursales_detalle);
-        }
+            $this->db->query_insert('trx_movimiento_sucursales', $trx_movimiento_sucursales);
 
-        $this->r = 1;
-        $this->msg = 'Traslado realizado con éxito';
+            $id_movimiento_sucursales = $this->db->max_id('trx_movimiento_sucursales', 'id_movimiento_sucursales');
+
+            foreach ($data['productos'] as $prod) {
+
+                $transaccion = [
+                    'id_cuenta' => sqlValue($dsCuenta['id_cuenta'], 'int'),
+                    'id_empleado' => sqlValue($dsEmpleado['id_empleado'], 'int'),
+                    'id_sucursal' => sqlValue($data['idSucursalOrigen'], 'int'),
+                    'descripcion' => sqlValue('Traslado Productos', 'text'),
+                    'id_moneda' => sqlValue($dsMoneda['id_moneda'], 'int'),
+                    'id_producto' => sqlValue($prod['id_producto'], 'int'),
+                    'debe' => sqlValue($prod['cantidad'], 'float'),
+                    'haber' => sqlValue('0', 'float'),
+                    'fecha_creacion' => sqlValue($fecha->format('Y-m-d H:i:s'), 'date'),
+                    'id_cliente' => sqlValue(0, 'text')
+                ];
+
+                $this->db->query_insert('trx_transacciones', $transaccion);
+
+                $id_transaccion_origen = $this->db->max_id('trx_transacciones', 'id_transaccion');
+
+                $transaccion = [
+                    'id_cuenta' => sqlValue($dsCuenta['id_cuenta'], 'int'),
+                    'id_empleado' => sqlValue($dsEmpleado['id_empleado'], 'int'),
+                    'id_sucursal' => sqlValue($data['idSucursalDestino'], 'int'),
+                    'descripcion' => sqlValue('Traslado Productos', 'text'),
+                    'id_moneda' => sqlValue($dsMoneda['id_moneda'], 'int'),
+                    'id_producto' => sqlValue($prod['id_producto'], 'int'),
+                    'debe' => sqlValue('0', 'float'),
+                    'haber' => sqlValue($prod['cantidad'], 'float'),
+                    'fecha_creacion' => sqlValue($fecha->format('Y-m-d H:i:s'), 'date'),
+                    'id_cliente' => sqlValue(0, 'text')
+                ];
+
+                $this->db->query_insert('trx_transacciones', $transaccion);
+
+                $id_transaccion_destino = $this->db->max_id('trx_transacciones', 'id_transaccion');
+
+                $trx_movimiento_sucursales_detalle = [
+                    'id_movimiento_sucursales' => sqlValue($id_movimiento_sucursales, 'int'),
+                    'id_producto' => sqlValue($prod['id_producto'], 'int'),
+                    'unidades' => sqlValue($prod['cantidad'], 'int'),
+                    'id_transaccion' => sqlValue($id_transaccion_origen, 'int'),
+                    'id_transaccion_destino' => sqlValue($id_transaccion_destino, 'int')
+                ];
+
+                $this->db->query_insert('trx_movimiento_sucursales_detalle', $trx_movimiento_sucursales_detalle);
+            }
+
+            $this->r = 1;
+            $this->msg = 'Traslado realizado con éxito';
+        } catch(Exception $e) {
+            $this->r = 0;
+            $this->msg = $e->getMessage();
+        }
     }
 }

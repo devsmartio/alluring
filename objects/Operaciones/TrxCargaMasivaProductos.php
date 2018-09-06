@@ -313,8 +313,8 @@ class TrxCargaMasivaProductos extends FastTransaction {
 
         foreach($data['bodegas_cargar'] as $bodega){
 
-            $dsBodega = Collection::get($this->db, 'sucursales', sprintf('identificador_excel = "%s"', $bodega['bodega']))->single();
-            $dsProducto = Collection::get($this->db, 'producto', sprintf('codigo_origen = "%s"', $bodega['codigo_producto']))->single();
+            $dsBodega = Collection::get($this->db, 'sucursales', sprintf('LOWER(identificador_excel) = LOWER("%s")', $bodega['bodega']))->single();
+            $dsProducto = Collection::get($this->db, 'producto', sprintf('LOWER(codigo_origen) = LOWER("%s")', $bodega['codigo_producto']))->single();
 
             if (count($dsBodega) > 0 && count($dsCuenta) > 0 && count($dsEmpleado) > 0) {
 

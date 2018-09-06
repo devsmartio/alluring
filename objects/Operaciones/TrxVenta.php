@@ -189,7 +189,7 @@ class TrxVenta extends FastTransaction {
             };
 
             $scope.$watch('search_codigo_origen', function(val){
-                if (val.length >= 3) {
+                if (val.length >= 2) {
                     $('#loading').show();
                     $http.get($scope.ajaxUrl + '&act=getProductos&key=' + val).success(function (response) {
 
