@@ -41,6 +41,8 @@ class MantTipoCambio extends FastMaintenance{
 
     protected function specialValidation($fields, $r, $mess, $pkFields)
     {
+        $type = getParam('type');
+
         if (array_key_exists('factor', $fields)) {
             $factor = str_replace("'", "", $fields['factor']);
             if (!preg_match('/^[1-9]\d*(\.\d{1,2})?$/', $factor, $matches)){
@@ -49,13 +51,16 @@ class MantTipoCambio extends FastMaintenance{
             }
         }
 
-        if (array_key_exists('id_moneda_muchos', $fields) && array_key_exists('id_moneda_uno', $fields)) {
-            $tipo_cambio = new Entity($fields);
-            $w = sprintf("id_moneda_muchos = " . $tipo_cambio->get('id_moneda_muchos') . " and id_moneda_uno = " . $tipo_cambio->get('id_moneda_uno'));
-            $count = $this->db->query_select("tipo_cambio", $w);
-            if(count($count) == 1){
-                $r = 0;
-                $mess = "Esta tipo de cambio ya existe.";
+        if ($type == 'new') {
+
+            if (array_key_exists('id_moneda_muchos', $fields) && array_key_exists('id_moneda_uno', $fields)) {
+                $tipo_cambio = new Entity($fields);
+                $w = sprintf("id_moneda_muchos = " . $tipo_cambio->get('id_moneda_muchos') . " and id_moneda_uno = " . $tipo_cambio->get('id_moneda_uno'));
+                $count = $this->db->query_select("tipo_cambio", $w);
+                if (count($count) == 1) {
+                    $r = 0;
+                    $mess = "Este tipo de cambio ya existe.";
+                }
             }
         }
 

@@ -62,20 +62,20 @@
                 </div>
                 <div class='form-group form-group-sm'>
                     <label for='id_pais' class='control-label'>Pais</label>
-                    <select name="id_pais" id="id_pais" ng-model="lastSelected.id_pais" type="select" required class='form-control'>
-                        <option ng-repeat="pais in paises" value="{{pais.id_pais}}">{{pais.nombre}}</option>
+                    <select name='id_pais' id="id_pais" class="form-control" ng-model="lastSelected.id_pais" ng-options="pais as pais.nombre for pais in paises" required>
+                        <option value="" disabled>-- Seleccione --</option>
                     </select>
                 </div>
                 <div class='form-group form-group-sm'>
                     <label for='id_departamento' class='control-label'>Departamento</label>
-                    <select name="id_departamento" id="id_departamento" ng-model="lastSelected.id_departamento" type="select" required class='form-control'>
-                        <option ng-repeat="depto in departamentos" value="{{depto.id_departamento}}">{{depto.nombre}}</option>
+                    <select name='id_departamento' id="id_departamento" class="form-control" ng-model="lastSelected.id_departamento" ng-options="depto as depto.nombre for depto in departamentos" required>
+                        <option value="" disabled>-- Seleccione --</option>
                     </select>
                 </div>
                 <div class='form-group form-group-sm'>
                     <label for='id_municipio' class='control-label'>Municipio</label>
-                    <select name="id_municipio" id="id_municipio" ng-model="lastSelected.id_municipio" type="select" required class='form-control'>
-                        <option ng-repeat="muni in municipios" value="{{muni.id_municipio}}">{{muni.nombre}}</option>
+                    <select name='id_municipio' id="id_municipio" class="form-control" ng-model="lastSelected.id_municipio" ng-options="muni as muni.nombre for muni in municipios" required>
+                        <option value="" disabled>-- Seleccione --</option>
                     </select>
                 </div>
                 <div class='form-group form-group-sm'>

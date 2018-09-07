@@ -16,7 +16,7 @@ class MantTipoCliente extends FastMaintenance{
         $this->fields = array(
             new FastField('Id', 'id_tipo_precio', 'text', 'int', true, null, array(), FALSE, null, true),
             new FastField('Nombre', 'nombre', 'text', 'text', true),
-            new FastField('Porcentaje de Descuento', 'porcentaje_descuento', 'text', 'text', true)
+            new FastField('Porcentaje de Descuento', 'porcentaje_descuento', 'text', 'int', true)
         );
 
         $this->gridCols = array(
@@ -49,6 +49,7 @@ class MantTipoCliente extends FastMaintenance{
             if ($porcentaje < 0 || $porcentaje > 100){
                 $r = 0;
                 $mess = 'Porcentaje descuento inválido (0..100), favor de revisar e intentar de nuevo';
+                $fields['porcentaje_descuento'] = '0';
             }
         }
 

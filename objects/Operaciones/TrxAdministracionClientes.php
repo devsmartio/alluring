@@ -88,12 +88,14 @@ class TrxAdministracionClientes extends FastTransaction {
                     $scope.error = '';
                     $scope.id_sucursal = '';
                     $scope.error_bodega = '';
+                    $scope.todos_departamentos = [];
 
                     $http.get($scope.ajaxUrl + '&act=getRows').success(function (response) {
                         $scope.rows = response.data;
                         $scope.setRowSelected($scope.rows);
                         $scope.setRowIndex($scope.rows);
                     });
+
                     $http.get($scope.ajaxUrl + '&act=getGridCols').success(function (response) {
                         $scope.gridCols = response.data;
                     });
@@ -101,10 +103,10 @@ class TrxAdministracionClientes extends FastTransaction {
                         $scope.paises = response.data;
                     });
                     $http.get($scope.ajaxUrl + '&act=getDepartamentos').success(function (response) {
-                        $scope.departamentos = response.data;
+                        $scope.todos_departamentos = response.data;
                     });
                     $http.get($scope.ajaxUrl + '&act=getMunicipios').success(function (response) {
-                        $scope.municipios = response.data;
+                        $scope.todos_municipios = response.data;
                     });
                     $http.get($scope.ajaxUrl + '&act=getTiposCliente').success(function (response) {
                         $scope.tiposCliente = response.data;
@@ -121,6 +123,27 @@ class TrxAdministracionClientes extends FastTransaction {
 
                     $scope.inList = true;
                 };
+
+                $scope.$watch('lastSelected.id_pais', function () {
+                    if ($scope.todos_departamentos.length > 0 && $scope.lastSelected.id_pais) {
+                        $scope.departamentos = $scope.todos_departamentos.filter(function (s) {
+                            return s.id_pais == $scope.lastSelected.id_pais.id_pais;
+                        });
+                        $scope.lastSelected.id_municipio = {};
+                        $scope.lastSelected.id_departamento = {};
+                        $scope.municipios = [];
+                    }
+                });
+
+                $scope.$watch('lastSelected.id_departamento', function () {
+                    if ($scope.todos_municipios && $scope.lastSelected.id_departamento && $scope.lastSelected.id_departamento.id_departamento > 0) {
+                        $scope.municipios = $scope.todos_municipios.filter(function (s) {
+                            return s.id_departamento == $scope.lastSelected.id_departamento.id_departamento;
+                        });
+                        $scope.lastSelected.id_municipio = {};
+                    }
+                });
+
                 $scope.goNew = function () {
                     $scope.lastSelected = new Array();
                     $scope.Init();
@@ -188,9 +211,9 @@ class TrxAdministracionClientes extends FastTransaction {
                         apellidos: $scope.lastSelected.apellidos,
                         direccion: $scope.lastSelected.direccion,
                         identificacion: $scope.lastSelected.identificacion,
-                        id_pais: $scope.lastSelected.id_pais,
-                        id_departamento: $scope.lastSelected.id_departamento,
-                        id_municipio: $scope.lastSelected.id_municipio,
+                        id_pais: ($scope.lastSelected.id_pais == undefined) ? 0 : $scope.lastSelected.id_pais.id_pais,
+                        id_departamento: ($scope.lastSelected.id_departamento == undefined) ? 0 : $scope.lastSelected.id_departamento.id_departamento,
+                        id_municipio: ($scope.lastSelected.id_municipio == undefined) ? 0 : $scope.lastSelected.id_municipio.id_municipio,
                         correo: $scope.lastSelected.correo,
                         id_tipo_precio: $scope.lastSelected.id_tipo_precio,
                         id_empleado: $scope.lastSelected.id_empleado,
@@ -218,9 +241,9 @@ class TrxAdministracionClientes extends FastTransaction {
                         apellidos: $scope.lastSelected.apellidos,
                         direccion: $scope.lastSelected.direccion,
                         identificacion: $scope.lastSelected.identificacion,
-                        id_pais: $scope.lastSelected.id_pais,
-                        id_departamento: $scope.lastSelected.id_departamento,
-                        id_municipio: $scope.lastSelected.id_municipio,
+                        id_pais: ($scope.lastSelected.id_pais == undefined) ? 0 : $scope.lastSelected.id_pais.id_pais,
+                        id_departamento: ($scope.lastSelected.id_departamento == undefined) ? 0 : $scope.lastSelected.id_departamento.id_departamento,
+                        id_municipio: ($scope.lastSelected.id_municipio == undefined) ? 0 : $scope.lastSelected.id_municipio.id_municipio,
                         correo: $scope.lastSelected.correo,
                         id_tipo_precio: $scope.lastSelected.id_tipo_precio,
                         id_empleado: $scope.lastSelected.id_empleado,
@@ -395,41 +418,22 @@ class TrxAdministracionClientes extends FastTransaction {
     }
 
     public function getPaises(){
-        $resultSet = array();
 
-        $dsPaises = $this->db->query_select('paises');
-        $resultSet[] = array('id_pais' =>'', 'nombre' => '-- Seleccione uno --');
-        foreach($dsPaises as $p){
-            $resultSet[] = array('id_pais' => $p['id_pais'], 'nombre' => $p['nombre']);
-        }
+        $paises = Collection::get($this->db, 'paises')->select(['id_pais','nombre'], true)->toArray();
 
-        echo json_encode(array('data' => $resultSet));
+        echo json_encode(array('data' => $paises));
     }
 
     public function getDepartamentos(){
-        $resultSet = array();
+        $deptos = Collection::get($this->db, 'departamentos')->select(['id_departamento','nombre','id_pais'], true)->toArray();
 
-        $dsDepartamentos = $this->db->query_select('departamentos');
-        $resultSet[] = array('id_pais' =>'', 'nombre' => '-- Seleccione uno --');
-
-        foreach($dsDepartamentos as $p){
-            $resultSet[] = array('id_departamento' => $p['id_departamento'], 'nombre' => $p['nombre']);
-        }
-
-        echo json_encode(array('data' => $resultSet));
+        echo json_encode(array('data' => $deptos));
     }
 
     public function getMunicipios(){
-        $resultSet = array();
+        $municipios = Collection::get($this->db, 'municipios')->select(['id_municipio','nombre','id_departamento'], true)->toArray();
 
-        $dsDepartamentos = $this->db->query_select('municipios');
-        $resultSet[] = array('id_municipio' =>'', 'nombre' => '-- Seleccione uno --');
-
-        foreach($dsDepartamentos as $p){
-            $resultSet[] = array('id_municipio' => $p['id_municipio'], 'nombre' => $p['nombre']);
-        }
-
-        echo json_encode(array('data' => $resultSet));
+        echo json_encode(array('data' => $municipios));
     }
 
     public function getTiposCliente(){
@@ -511,14 +515,15 @@ class TrxAdministracionClientes extends FastTransaction {
                 $this->msg = 'Al momento de indicar que posee credito, debe indicar cuantos dias de credito posee el cliente';
             }
         }
-        if (array_key_exists('factura_nit', $data) && $this->r != 0 && (!array_key_exists('factura_nombre', $data) || !array_key_exists('factura_direccion', $data))) {
-            $this->r = 0;
-            $this->msg = 'Al momento de ingresar el Nit, debe indicar el nombre y direccion a facturar';
-
-//            if (trim($data['factura_nit']) != '' && (trim($data['factura_nombre']) == '' || trim($data['factura_direccion']) == '')) {
-//                $this->r = 0;
-//                $this->msg = 'Al momento de ingresar el Nit, debe indicar el nombre y direccion a facturar';
-//            }
+        if (array_key_exists('factura_nit', $data) && $this->r != 0 && (trim($data['factura_nit']) != '')) {
+            if ((array_key_exists('factura_nombre', $data)  && (trim($data['factura_nombre']) == ''))) {
+                $this->r = 0;
+                $this->msg = 'Al momento de ingresar el Nit, debe indicar el nombre y direccion a facturar';
+            }
+            if ((array_key_exists('factura_direccion', $data)  && (trim($data['factura_direccion']) == ''))) {
+                $this->r = 0;
+                $this->msg = 'Al momento de ingresar el Nit, debe indicar el nombre y direccion a facturar';
+            }
         }
 
         if ($data['mod'] == 1 || $data['mod'] == 2 ) {
@@ -542,9 +547,9 @@ class TrxAdministracionClientes extends FastTransaction {
                 if (trim($data['identificacion']) != '') {
 
                     $identificacion = str_replace("'", "", trim($data['identificacion']));
-                    $idPais = str_replace("'", "", trim($data['id_pais']));
+                    $id_pais = str_replace("'", "", trim($data['id_pais']));
 
-                    $result = $this->db->queryToArray(sprintf("SELECT id_cliente FROM clientes WHERE identificacion = %s and id_pais = %s;", $identificacion, $idPais));
+                    $result = $this->db->queryToArray(sprintf("SELECT id_cliente FROM clientes WHERE identificacion = %s and id_pais = %s;", $identificacion, $id_pais));
                     if (count($result) > 0) {
                         $this->r = 0;
                         $this->msg = 'La identificacion ya existe, favor de corregir y volver a intentar';
