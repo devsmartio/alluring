@@ -19,7 +19,17 @@ class RptClientes extends FastReport {
         $this->setPrefix('rpt_clientes');
         $this->setTitle('Clientes');
 
-        $this->setParams(array());
+        $departamentos = Collection::get($this->db, 'departamentos')->select(['id_departamento','nombre'],true,['nombre'])->toSelectList('id_departamento','nombre');
+        $vendedores = Collection::get($this->db, 'empleados')->where(['es_vendedor' => '1'])->toSelectList('id_empleado','nombres','apellidos');
+
+        $params = [
+            new FastField('Departamento', 'id_departamento', 'select', 'int', true, null, $departamentos, false),
+            new FastField('Vendedor', 'id_empleado', 'select', 'int', true, null, $vendedores, false),
+            new FastField('Nombres', 'nombres', 'text', 'text', true, null, array(), false),
+            new FastField('Apellidos', 'apellidos', 'text', 'text', true, null, array(), false)
+        ];
+
+        $this->setParams($params);
                 
         $this->columns = [
             new FastReportColumn('Identificación', 'identificacion'),
@@ -37,9 +47,37 @@ class RptClientes extends FastReport {
     protected function fieldsAreValid() {
         return true;
     }
-    
+
     protected function getResultSet() {
+        $id_departamento = getParam('id_departamento');
+        $id_empleado = getParam('id_empleado');
+        $nombres = getParam('nombres');
+        $apellidos = getParam('apellidos');
+
+
+        $where = '';
+        if(!isEmpty($id_departamento)){
+            $where = sprintf('id_departamento=%s', $id_departamento);
+        }
+
+        if(!isEmpty($id_empleado)){
+            $where = !isEmpty($where) ? "$where and " : $where;
+            $where .= sprintf('id_empleado=%s', $id_empleado);
+        }
+
+        if(!isEmpty($nombres)){
+            $where = !isEmpty($where) ? "$where and " : $where;
+            $where .= "nombres LIKE '%" . $nombres . "%'";
+        }
+
+        if(!isEmpty($apellidos)){
+            $where = !isEmpty($where) ? "$where and " : $where;
+            $where .= "apellidos LIKE '%" . $apellidos . "%'";
+        }
+
         $query = 'select * from reporte_clientes';
+        $query = isEmpty($where) ? $query : "$query where $where";
+
         return $this->db->queryToArray($query);
     }
 }

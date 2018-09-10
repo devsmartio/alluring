@@ -89,6 +89,7 @@ class TrxAdministracionClientes extends FastTransaction {
                     $scope.id_sucursal = '';
                     $scope.error_bodega = '';
                     $scope.todos_departamentos = [];
+                    $scope.carga_desde_edit = false;
 
                     $http.get($scope.ajaxUrl + '&act=getRows').success(function (response) {
                         $scope.rows = response.data;
@@ -124,24 +125,29 @@ class TrxAdministracionClientes extends FastTransaction {
                     $scope.inList = true;
                 };
 
-                $scope.$watch('lastSelected.id_pais', function () {
-                    if ($scope.todos_departamentos.length > 0 && $scope.lastSelected.id_pais) {
-                        $scope.departamentos = $scope.todos_departamentos.filter(function (s) {
-                            return s.id_pais == $scope.lastSelected.id_pais.id_pais;
-                        });
-                        $scope.lastSelected.id_municipio = {};
-                        $scope.lastSelected.id_departamento = {};
-                        $scope.municipios = [];
+                $scope.$watch('lastPaisSelected', function () {
+                    if (!$scope.carga_desde_edit) {
+                        if ($scope.todos_departamentos.length > 0 && $scope.lastPaisSelected) {
+                            $scope.departamentos = $scope.todos_departamentos.filter(function (s) {
+                                return s.id_pais == $scope.lastPaisSelected.id_pais;
+                            });
+                            $scope.lastMunicipioSelected = {};
+                            $scope.lastDepartamentoSelected = {};
+                            $scope.municipios = [];
+                        }
                     }
                 });
 
-                $scope.$watch('lastSelected.id_departamento', function () {
-                    if ($scope.todos_municipios && $scope.lastSelected.id_departamento && $scope.lastSelected.id_departamento.id_departamento > 0) {
-                        $scope.municipios = $scope.todos_municipios.filter(function (s) {
-                            return s.id_departamento == $scope.lastSelected.id_departamento.id_departamento;
-                        });
-                        $scope.lastSelected.id_municipio = {};
+                $scope.$watch('lastDepartamentoSelected', function () {
+                    if (!$scope.carga_desde_edit) {
+                        if ($scope.todos_municipios && $scope.lastDepartamentoSelected && $scope.lastDepartamentoSelected.id_departamento > 0) {
+                            $scope.municipios = $scope.todos_municipios.filter(function (s) {
+                                return s.id_departamento == $scope.lastDepartamentoSelected.id_departamento;
+                            });
+                            $scope.lastMunicipioSelected = {};
+                        }
                     }
+                    $scope.carga_desde_edit = false;
                 });
 
                 $scope.goNew = function () {
@@ -157,9 +163,41 @@ class TrxAdministracionClientes extends FastTransaction {
                     $scope.noMode = true;
                 };
                 $scope.goEdit = function () {
+                    $scope.carga_desde_edit = true;
                     $scope.editMode = true;
                     $scope.newMode = false;
                     $scope.noMode = false;
+
+                    var pais = $scope.paises.filter(function (s) {
+                        return s.id_pais == $scope.lastSelected.id_pais;
+                    });
+
+                    if (pais.length > 0)
+                        $scope.lastPaisSelected = pais[0];
+
+                    $scope.departamentos = $scope.todos_departamentos.filter(function (s) {
+                        return s.id_pais == $scope.lastPaisSelected.id_pais;
+                    });
+
+                    var departamento = $scope.departamentos.filter(function (s) {
+                        return s.id_departamento == $scope.lastSelected.id_departamento;
+                    });
+
+                    if (departamento.length > 0)
+                        $scope.lastDepartamentoSelected = departamento[0];
+
+                    $scope.municipios = $scope.todos_municipios.filter(function (s) {
+                        return s.id_departamento == $scope.lastDepartamentoSelected.id_departamento;
+                    });
+
+                    var municipio = $scope.todos_municipios.filter(function (s) {
+                        return s.id_municipio == $scope.lastSelected.id_municipio;
+                    });
+
+                    if (municipio.length > 0)
+                        $scope.lastMunicipioSelected = municipio[0];
+
+
                 };
                 $scope.Init = function () {
                     $scope.lastSelected.tiene_credito = false;
@@ -187,8 +225,10 @@ class TrxAdministracionClientes extends FastTransaction {
 
                 $scope.agregarBodega = function () {
                     if($scope.lastSelected.bodegas.filter(bodega => bodega.id_sucursal == $scope.id_sucursal).length > 0) {
-                        $scope.mantForm.id_sucursal.$setValidity("invalid", false);
-                        $scope.error_bodega = 'La bodega ya fue ingresado';
+                        $scope.alerts.push({
+                            type: 'alert-danger',
+                            msg: 'La bodega con ID: ' + $scope.id_sucursal + ' seleccionada ya existe'
+                        });
                     }else {
                         var bodega = $scope.sucursales.filter(sucursal => sucursal.id_sucursal == $scope.id_sucursal);
                         if(bodega.length > 0) {
@@ -197,6 +237,7 @@ class TrxAdministracionClientes extends FastTransaction {
                             $scope.error_bodega = '';
                         }
                     }
+                    $scope.selectBodegaRowSelected($scope.sucursales);
                 };
 
                 $scope.borrarBodega = function (bodega) {
@@ -211,9 +252,9 @@ class TrxAdministracionClientes extends FastTransaction {
                         apellidos: $scope.lastSelected.apellidos,
                         direccion: $scope.lastSelected.direccion,
                         identificacion: $scope.lastSelected.identificacion,
-                        id_pais: ($scope.lastSelected.id_pais == undefined) ? 0 : $scope.lastSelected.id_pais.id_pais,
-                        id_departamento: ($scope.lastSelected.id_departamento == undefined) ? 0 : $scope.lastSelected.id_departamento.id_departamento,
-                        id_municipio: ($scope.lastSelected.id_municipio == undefined) ? 0 : $scope.lastSelected.id_municipio.id_municipio,
+                        id_pais: ($scope.lastPaisSelected == undefined) ? 0 : $scope.lastPaisSelected.id_pais,
+                        id_departamento: ($scope.lastDepartamentoSelected == undefined) ? 0 : $scope.lastDepartamentoSelected.id_departamento,
+                        id_municipio: ($scope.lastMunicipioSelected == undefined) ? 0 : $scope.lastMunicipioSelected.id_municipio,
                         correo: $scope.lastSelected.correo,
                         id_tipo_precio: $scope.lastSelected.id_tipo_precio,
                         id_empleado: $scope.lastSelected.id_empleado,
@@ -241,9 +282,9 @@ class TrxAdministracionClientes extends FastTransaction {
                         apellidos: $scope.lastSelected.apellidos,
                         direccion: $scope.lastSelected.direccion,
                         identificacion: $scope.lastSelected.identificacion,
-                        id_pais: ($scope.lastSelected.id_pais == undefined) ? 0 : $scope.lastSelected.id_pais.id_pais,
-                        id_departamento: ($scope.lastSelected.id_departamento == undefined) ? 0 : $scope.lastSelected.id_departamento.id_departamento,
-                        id_municipio: ($scope.lastSelected.id_municipio == undefined) ? 0 : $scope.lastSelected.id_municipio.id_municipio,
+                        id_pais: ($scope.lastPaisSelected == undefined) ? 0 : $scope.lastPaisSelected.id_pais,
+                        id_departamento: ($scope.lastDepartamentoSelected == undefined) ? 0 : $scope.lastDepartamentoSelected.id_departamento,
+                        id_municipio: ($scope.lastMunicipioSelected == undefined) ? 0 : $scope.lastMunicipioSelected.id_municipio,
                         correo: $scope.lastSelected.correo,
                         id_tipo_precio: $scope.lastSelected.id_tipo_precio,
                         id_empleado: $scope.lastSelected.id_empleado,
@@ -302,6 +343,20 @@ class TrxAdministracionClientes extends FastTransaction {
 
                 $scope.cancelar = function () {
                     $scope.cancel();
+                };
+
+                $scope.selectBodegaRow = function(row){
+                    $scope.lastBodegaSelected = row;
+                    $scope.currentBodegaIndex = row.index;
+                    $scope.selectBodegaRowSelected($scope.sucursales);
+                    $scope.lastBodegaSelected.selected = true;
+                    $scope.id_sucursal = $scope.lastBodegaSelected.id_sucursal;
+                };
+
+                $scope.selectBodegaRowSelected = function(rows){
+                    $.each(rows, function(e, row){
+                        row.selected = false;
+                    });
                 };
 
                 $scope.selectRow = function(row){
@@ -479,17 +534,9 @@ class TrxAdministracionClientes extends FastTransaction {
     }
 
     public function getSucursales(){
-        $resultSet = array();
 
-        $dsSucursales = $this->db->query_select('sucursales');
-
-        $resultSet[] = array('id_sucursal' =>'', 'nombre' => '-- Seleccione uno --');
-
-        foreach($dsSucursales as $s){
-            $resultSet[] = array('id_sucursal' => $s['id_sucursal'], 'nombre' => $s['nombre']);
-        }
-
-        echo json_encode(array('data' => $resultSet));
+        $bodegas = Collection::get($this->db, 'sucursales')->select(['id_sucursal','nombre','identificador_excel'], true)->toArray();
+        echo json_encode(array('data' => $bodegas));
     }
 
     public function dataIsValid($data)

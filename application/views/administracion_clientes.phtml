@@ -62,19 +62,19 @@
                 </div>
                 <div class='form-group form-group-sm'>
                     <label for='id_pais' class='control-label'>Pais</label>
-                    <select name='id_pais' id="id_pais" class="form-control" ng-model="lastSelected.id_pais" ng-options="pais as pais.nombre for pais in paises" required>
+                    <select name='id_pais' id="id_pais" class="form-control" ng-model="lastPaisSelected" ng-options="pais as pais.nombre for pais in paises" required>
                         <option value="" disabled>-- Seleccione --</option>
                     </select>
                 </div>
                 <div class='form-group form-group-sm'>
                     <label for='id_departamento' class='control-label'>Departamento</label>
-                    <select name='id_departamento' id="id_departamento" class="form-control" ng-model="lastSelected.id_departamento" ng-options="depto as depto.nombre for depto in departamentos" required>
+                    <select name='id_departamento' id="id_departamento" class="form-control" ng-model="lastDepartamentoSelected" ng-options="depto as depto.nombre for depto in departamentos" required>
                         <option value="" disabled>-- Seleccione --</option>
                     </select>
                 </div>
                 <div class='form-group form-group-sm'>
                     <label for='id_municipio' class='control-label'>Municipio</label>
-                    <select name='id_municipio' id="id_municipio" class="form-control" ng-model="lastSelected.id_municipio" ng-options="muni as muni.nombre for muni in municipios" required>
+                    <select name='id_municipio' id="id_municipio" class="form-control" ng-model="lastMunicipioSelected" ng-options="muni as muni.nombre for muni in municipios" required>
                         <option value="" disabled>-- Seleccione --</option>
                     </select>
                 </div>
@@ -156,7 +156,9 @@
                             </div>
                         </div>
                         <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
-                            <button type="button" class="btn btn-brand btn-behance" ng-click="agregarTelefono()">+</button>
+                            <button type="button" class="btn btn-primary" ng-click="agregarTelefono()">
+                                <span class="cui-check" aria-hidden="true">
+                            </button>
                         </div>
                     </div>
                     <div class="row" style="margin-top: 15px;">
@@ -180,15 +182,9 @@
                     <legend>Bodegas:</legend>
                     <div class="row">
                         <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
-                            <div class='form-group form-group-sm'>
-                                <select name="id_sucursal" id="id_sucursal" ng-model="id_sucursal" type="select" required class='form-control'>
-                                    <option ng-repeat="sucursal in sucursales" value="{{sucursal.id_sucursal}}">{{sucursal.nombre}}</option>
-                                </select>
-                                <span ng-show="mantForm.id_sucursal.$invalid" class="help-block" style="color: #ff0000">{{error_bodega}}</span>
-                            </div>
-                        </div>
-                        <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
-                            <button type="button" class="btn btn-brand btn-behance" ng-click="agregarBodega()">+</button>
+                            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#bodegasModal">
+                                        <span class="cui-check" aria-hidden="true">
+                            </button>
                         </div>
                     </div>
                     <div class="row" style="margin-top: 15px;">
@@ -248,4 +244,41 @@
             </div>
         </div>
     </form>
+    <div class="modal" tabindex="-1" role="dialog" id="bodegasModal">
+        <div class="modal-dialog" role="document" style="max-width: 800px; height: 500px;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Bodegas</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class='table-responsive anyClass'>
+                        <table class='table table-sm'>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nombre</th>
+                                <th>Identificador Excel</th>
+                            </tr>
+                            <tr>
+                                <td><input type='text' ng-model="search.id_sucursal"/></td>
+                                <td><input type='text' ng-model="search.nombre"/></td>
+                                <td><input type='text' ng-model="search.identificador_excel"/></td>
+                            </tr>
+                            <tr ng-class="{'table-active':bodega.selected}" ng-click='selectBodegaRow(bodega)' ng-repeat='bodega in sucursales | filter:search | orderBy: sortBy'>
+                                <td ng-bind="bodega['id_sucursal']"></td>
+                                <td ng-bind="bodega['nombre']"></td>
+                                <td ng-bind="bodega['identificador_excel']"></td>
+                            </tr>
+                        </table>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success" data-dismiss="modal" ng-click="agregarBodega()"><span class="cui-check" aria-hidden="true"></span> Agregar</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>

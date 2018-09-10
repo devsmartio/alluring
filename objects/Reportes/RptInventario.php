@@ -18,35 +18,31 @@ class RptInventario extends FastReport {
         $this->excelFileName = "Reporte Inventario";
         $this->setPrefix('rpt_inventario');
         $this->setTitle('Inventario');
+
         $sucursales = $this->db->query_select('sucursales');
         $sucs = [];
         foreach($sucursales as $s){
             $sucs[self_escape_string($s['nombre'])] = $s['id_sucursal'];
         }
         
-        $proveedores = $this->db->query_select('proveedor');
+        $categoria = $this->db->query_select('tipo');
         $provs = [];
-        foreach($proveedores as $p){
-            $provs[self_escape_string($p['nombre'])] = $p['id_proveedor'];
+        foreach($categoria as $p){
+            $provs[self_escape_string($p['nombre'])] = $p['id_tipo'];
         }
         
         $params = [
-            new FastField('Sucursal', 'id_sucursal', 'select', 'int', true, null, $sucs, false),
-            new FastField('Proveedor', 'id_proveedor', 'select', 'int', true, null, $provs, false)
+            new FastField('Bodega', 'id_sucursal', 'select', 'int', true, null, $sucs, false),
+            new FastField('Categoria', 'id_tipo', 'select', 'int', true, null, $provs, false)
         ];
         
         $this->setParams($params);
         $this->columns = [
+            new FastReportColumn("Codigo", "codigo_origen"),
             new FastReportColumn("Producto", "nombre_producto", "sanitize"),
-            new FastReportColumn("Cantidad en inventario", "cantidad", "number_format_inverse"),
-            new FastReportColumn("Minimo en inventario", "minimo_inventario"),
-            new FastReportColumn("Sucursal", "nombre_sucursal", "sanitize"),
-            new FastReportColumn("Proveedor", "nombre_proveedor", "sanitize"),
-            new FastReportColumn("Descripción", "descripcion_producto", "sanitize"),
-            new FastReportColumn("Marca", "nombre_marca", "sanitize"),
-            new FastReportColumn("Tipo", "nombre_tipo", "sanitize"),
-            new FastReportColumn("Subtipo", "nombre_subtipo", "sanitize"),
-            new FastReportColumn("Costo", "costo", "sanitize")
+            new FastReportColumn("Categoria", "nombre_categoria", "sanitize"),
+            new FastReportColumn("Bodega", "nombre_sucursal", "sanitize"),
+            new FastReportColumn("Existencia", "total_existencias", "number_format_inverse")
         ];
         $this->useDefaultView = true;
     }
@@ -57,7 +53,7 @@ class RptInventario extends FastReport {
     
     protected function getResultSet() {
         $sucursal = getParam('id_sucursal');
-        $proveedor = getParam('id_proveedor');
+        $id_tipo = getParam('id_tipo');
         
         
         $where = '';
@@ -65,9 +61,9 @@ class RptInventario extends FastReport {
             $where = sprintf('id_sucursal=%s', $sucursal);
         }
         
-        if(!isEmpty($proveedor)){
+        if(!isEmpty($id_tipo)){
             $where = !isEmpty($where) ? "$where and " : $where;
-            $where = sprintf('id_proveedor=%s', $proveedor);
+            $where .= sprintf('id_tipo=%s', $id_tipo);
         }
         $query = 'select * from reporte_inventario';
         $query = isEmpty($where) ? $query : "$query where $where";
