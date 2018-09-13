@@ -170,7 +170,15 @@ class TrxTrasladoBodegas extends FastTransaction {
         $resultSet = [];
         try {
             $id_sucursal = getParam('id_sucursal');
-            $resultSet = $this->db->query_toArray('select trx.*, p.*, t.nombre as nombre_tipo, COALESCE((sum(trx.haber) - sum(trx.debe)),0) AS total_existencias from trx_transacciones trx inner join producto p ON p.id_producto = trx.id_producto inner join tipo t ON t.id_tipo = p.id_tipo where trx.id_sucursal = ' . $id_sucursal . ' GROUP BY p.id_producto HAVING	(sum(trx.haber) - sum(trx.debe)) > 0');
+            $resultSet = $this->db->query_toArray('select	max(trx.haber), p.codigo_origen, p.nombre, p.descripcion, t.nombre as nombre_tipo,
+                                                            COALESCE((sum(trx.haber) - sum(trx.debe)),0) AS total_existencias
+                                                    from 	trx_transacciones trx
+                                                            inner join producto p ON p.id_producto = trx.id_producto
+                                                            inner join tipo t ON t.id_tipo = p.id_tipo
+                                                    where 	trx.id_sucursal = ' . $id_sucursal . '
+                                                    GROUP BY
+                                                            p.id_producto
+                                                    HAVING	(sum(trx.haber) - sum(trx.debe)) > 0;');
 
             for($i = 0; count($resultSet) > $i; $i++){
                 $resultSet[$i]['cantidad'] = 0;
