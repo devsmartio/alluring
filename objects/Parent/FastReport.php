@@ -1,4 +1,8 @@
 <?php
+require VENDOR . DS . "autoload.php";
+
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 /**
  * Description of FastReport
  *
@@ -64,11 +68,18 @@ class FastReport extends FastModWrapper{
         }
     }
     
+    /*
     private function procesarExcel(){
+        
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->setActiveSheetIndex(0);
+        $sheet->setCellValue('A1', 'Hello World !');
+
+        /*
         $cells = range('A', 'Z');
-        $objPHPExcel = new PHPExcel();
+        $objPHPExcel = new Spreadsheet();
         // Add some data
-        $activeSheet = $objPHPExcel->setActiveSheetIndex(0);
+        $activeSheet = $objPHPExcel->getActiveSheet();
         
         //Populamos el reporte
         for($i = 0; count($this->columns) > $i; $i++){
@@ -87,11 +98,15 @@ class FastReport extends FastModWrapper{
 
         // Set active sheet index to the first sheet, so Excel opens this as the first sheet
         $objPHPExcel->setActiveSheetIndex(0);
-
-        $date = new DateTime();
+        
+        
+        
         // Redirect output to a client’s web browser (Excel2007)
-        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header('Content-Disposition: attachment;filename="' . $this->excelFileName . $date->format(SHOW_DT_FORMAT) . '.xlsx"');
+        //header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        
+        header('Content-Type: application/xlsx');
+        header('Content-Disposition: attachment;filename=test.xlsx');
+        
         header('Cache-Control: max-age=0');
         // If you're serving to IE 9, then the following may be needed
         header('Cache-Control: max-age=1');
@@ -101,9 +116,76 @@ class FastReport extends FastModWrapper{
         header ('Last-Modified: '.gmdate('D, d M Y H:i:s').' GMT'); // always modified
         header ('Cache-Control: cache, must-revalidate'); // HTTP/1.1
         header ('Pragma: public'); // HTTP/1.0
+        
+        $writer = new Xlsx($objPHPExcel);
+        /*
+        $objWriter->save($this->excelFileName . $date->format(SHOW_DT_FORMAT) . ".xlsx");
+        //$objWriter->save('php://output');
+        
+        $writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($spreadsheet, "Xlsx");
+        //$writer->save("05featuredemo.xlsx");
+        $writer->save("php://output");
+        
+        $report = array(array('id'=>1,'name'=>'raj'),array('id'=>2,'name'=>'monica'),array('id'=>3,'name'=>'sonia'));
+$t = time();
+$filename = 'excel_report-'.$t.'.xls';
+echo '<table class="table table-responsive table-hover " border="1" ><tbody>';
+// Display results.
+foreach($report as $row) {   
+    echo '<tr>';
+    foreach($row as $column) {
+     // printf('%25s', $column);?>
+       <td><?php echo $column; ?></td>
+      <?php
+    }
+    print "</tr>";
+}  
+print "</tbody></table>";
+@header("Content-type: application/vnd.ms-excel");
+// Defines the name of the export file "filename.xls"
+@header("Content-Disposition: attachment; filename=".$filename); 
+    }
+    */
 
-        $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
-        $objWriter->save('php://output');
+    public function procesarExcel() {
+
+        $result = "<table>";
+        $result .= "<tr>";
+        for($i = 0; count($this->columns) > $i; $i++){
+            $result .= "<th>";
+            if($this->columns[$i] instanceof FastReportColumn){
+                $result.= $this->columns[$i]->name;
+            }
+            $result .= "</th>";
+        }
+        $result .= "</tr>";
+        for($i = 0; count($this->resultSet) > $i; $i++){
+            $result .= "<tr>";
+            for($i2 = 0; count($this->columns) > $i2; $i2++){
+                $result .= "<td>";
+                if($this->columns[$i2] instanceof FastReportColumn){
+                    $result .= $this->columns[$i2]->serveValue($this->resultSet[$i]);
+                }
+                $result .= "</td>";
+            }
+            $result .= "</tr>";
+        }
+        $result .= "<table>";
+        print($result);
+
+        $date = new Datetime();
+        header('Content-Type: application/vnd.ms-excel');
+        header(sprintf('Content-Disposition: attachment;filename=%s_%s.xls', $this->excelFileName, $date->format(SQL_DT_FORMAT)));
+        
+        header('Cache-Control: max-age=0');
+        // If you're serving to IE 9, then the following may be needed
+        header('Cache-Control: max-age=1');
+
+        // If you're serving to IE over SSL, then the following may be needed
+        header ('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
+        header ('Last-Modified: '.gmdate('D, d M Y H:i:s').' GMT'); // always modified
+        header ('Cache-Control: cache, must-revalidate'); // HTTP/1.1
+        header ('Pragma: public'); // HTTP/1.0
     }
     
     private function throwResponse(){

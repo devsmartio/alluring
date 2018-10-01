@@ -54,4 +54,8 @@ class GeoAdmin implements BaseMod {
                 
         }
     }
+
+    public function showSideBar(){
+        return true;
+    }
 }

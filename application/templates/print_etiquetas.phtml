@@ -1,8 +1,8 @@
 <?php
 
-$queryTransacciones ="  SELECT	p.codigo_origen, p.descripcion, ge.cantidad
+$queryTransacciones ="  SELECT	p.codigo, p.descripcion, ge.cantidad
                         FROM	producto p
-                                INNER JOIN generacion_etiquetas ge ON ge.codigo_origen = p.codigo_origen";
+                                INNER JOIN generacion_etiquetas ge ON ge.codigo_origen = p.codigo";
 
 $transacciones = $this->db->queryToArray(sprintf($queryTransacciones));
 
@@ -56,8 +56,8 @@ foreach ($transacciones as $trx) {
             <td style="padding-left:5px; width: 198px;">
                 <div style="height: 90px;">
                     <label><?php echo $p['descripcion'] ?></label>
-                    <label><?php echo $generator->getBarcode($p['codigo_origen'], $generator::TYPE_CODE_128); ?></label>
-                    <label><?php echo $p['codigo_origen'] ?></label>
+                    <label><?php echo $generator->getBarcode($p['codigo'], $generator::TYPE_CODE_128); ?></label>
+                    <label><?php echo $p['codigo'] ?></label>
                 </div>
             </td>
         <?php if ($i%3 == 0) echo "</tr>" ?>

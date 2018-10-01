@@ -39,7 +39,7 @@ $last_name = $user['LAST_NAME'];
     <![endif]-->
     
 </head>
-<body ng-controller="mainCtrl" ng-cloak class="app header-fixed sidebar-fixed aside-menu-fixed sidebar-lg-show">
+<body ng-controller="mainCtrl" ng-cloak class="app header-fixed sidebar-fixed aside-menu-fixed <?php echo ($this->mod->showSideBar() ? 'sidebar-lg-show' : '') ?>">
 <!--    <div class="alert alert-info center-block" ng-show="mainLoading" style="margin-left: auto; margin-right: auto; position: fixed; z-index: 999; width: 90%"><strong>Cargando</strong>
     Espera un momento...
 </div> -->
@@ -128,7 +128,7 @@ $last_name = $user['LAST_NAME'];
         <button class="sidebar-minimizer brand-minimizer" type="button"></button>
     </div>
     <main class="main" ng-controller="WrapperCtrl">
-    <ol class="breadcrumb">
+    <ol class="breadcrumb m-0">
           <li class="breadcrumb-item font-weight-bold" style="font-size: 18px">
               <?php 
               echo $this->mod->myTitle()
@@ -136,10 +136,10 @@ $last_name = $user['LAST_NAME'];
           </li>
           </li>
         </ol>
-        <div class="container-fluid">
+        <div class="container-fluid p-2">
             <div class="animated fadeIn">
                 <div class="card">
-                    <div class="card-body">
+                    <div class="card-body p-3">
                         <!-- here -->
                         <div id="moduleCont">
                                     <?php

@@ -26,18 +26,18 @@ class TrxCargaMasivaProductos extends FastTransaction {
             new FastField('Categoria', 'id_tipo', 'text', 'text'),
             new FastField('Precio venta al público', 'precio_venta', 'text', 'text'),
             new FastField('Costo', 'costo', 'text', 'text'),
-            new FastField('Imagen', 'imagen', 'text', 'text'),
-            new FastField('Codigo', 'codigo_origen', 'text', 'text')
+            new FastField('Codigo', 'codigo', 'text', 'text', false, null, [], false, null, true),
+            new FastField('COdigo Origen', 'codigo_origen', 'text', 'text')
         );
 
         $this->gridCols = array(
+            'Codigo' => 'codigo',
             'Nombre' => 'nombre',
             'Descripción' => 'descripcion',
             'Categoria' => 'nombre_tipo',
             'Precio venta al público' =>'precio_venta',
             'Costo' => 'costo',
-            'Imagen' => 'imagen',
-            'Codigo' => 'codigo_origen'
+            'Codigo origen' => 'codigo_origen'
         );
     }
 
@@ -199,7 +199,6 @@ class TrxCargaMasivaProductos extends FastTransaction {
     public function uploadExcel()
     {
         try {
-
             $target_file = $this->uploadPath . basename($_FILES["file"]["name"]);
 
             move_uploaded_file($_FILES["file"]["tmp_name"], $target_file);
@@ -214,6 +213,7 @@ class TrxCargaMasivaProductos extends FastTransaction {
                 die('Error loading file "' . pathinfo($inputFileName, PATHINFO_BASENAME) . '": ' . $e->getMessage());
             }
 
+            
             //  Get worksheet dimensions
             $sheet = $objPHPExcel->getSheet(0);
             $highestRow = $sheet->getHighestRow();
@@ -224,9 +224,11 @@ class TrxCargaMasivaProductos extends FastTransaction {
             $bodegas_cargar = [];
 
             $encabezados = $sheet->rangeToArray('A1:' . $highestColumn . 1, NULL, TRUE, FALSE);
-
+            
             for ($i = 7; $i <= count($encabezados[0])-1; $i++) {
-                $bodegas[$countBodegas++] = $encabezados[0][$i];
+                if(isset($encabezados[0][$i]) && !isEmpty($encabezados[0][$i])){
+                    $bodegas[$countBodegas++] = $encabezados[0][$i];
+                } 
             }
 
             $countBodegas = 0;
@@ -238,6 +240,9 @@ class TrxCargaMasivaProductos extends FastTransaction {
                     TRUE,
                     FALSE);
                 //  Insert row data array into your database of choice here
+                if(!isset($rowData[0][5]) || isEmpty($rowData[0][5])){
+                    continue;
+                }
                 $col = 0;
                 foreach($this->fields as $f) {
                     $resultSet[($row-2)][$f->name] = self_escape_string($rowData[0][$col]);
@@ -245,7 +250,7 @@ class TrxCargaMasivaProductos extends FastTransaction {
                 }
 
                 for ($i = 1; $i <= count($bodegas); $i++) {
-                    $bodegas_cargar[$countBodegas]['codigo_producto'] = $rowData[0][6];
+                    $bodegas_cargar[$countBodegas]['codigo'] = $rowData[0][5];
                     $bodegas_cargar[$countBodegas]['cantidad'] = $rowData[0][(6+$i)];
                     $bodegas_cargar[$countBodegas]['bodega'] = $bodegas[($i-1)];
                     $countBodegas++;
@@ -276,12 +281,11 @@ class TrxCargaMasivaProductos extends FastTransaction {
         $user = AppSecurity::$UserData['data'];
 
         $dsCuenta = Collection::get($this->db, 'cuentas', 'lower(nombre) = "inventario"')->single();
-        $dsEmpleado = Collection::get($this->db, 'empleados', sprintf('id_usuario = "%s"', $user['ID']))->single();
         $dsMoneda = Collection::get($this->db, 'monedas', 'moneda_defecto = 1')->single();
 
         foreach ($data['productos'] as $prod) {
             $id_producto = 0;
-            $dsProducto = $this->db->query_select('producto', sprintf('codigo_origen = "%s"', $prod['codigo_origen']));
+            $dsProducto = $this->db->query_select('producto', sprintf('codigo = "%s"', $prod['codigo']));
 
             if (count($dsProducto) > 0) {
                 $producto = [
@@ -299,7 +303,8 @@ class TrxCargaMasivaProductos extends FastTransaction {
                     'costo' => sqlValue($prod['costo'], 'float'),
                     'id_tipo' => sqlValue($prod['id_tipo'], 'int'),
                     'precio_venta' => sqlValue($prod['precio_venta'], 'float'),
-                    'imagen' => sqlValue($prod['imagen'], 'text'),
+                    'imagen' => sqlValue($prod['codigo'] . '.jpg', 'text'),
+                    'codigo' => sqlValue($prod['codigo'], 'text'),
                     'codigo_origen' => sqlValue($prod['codigo_origen'], 'text'),
                     'fecha_creacion' => sqlValue($fecha->format('Y-m-d H:i:s'), 'date'),
                     'usuario_creacion' => sqlValue(self_escape_string($user['FIRST_NAME']), 'text')
@@ -310,17 +315,13 @@ class TrxCargaMasivaProductos extends FastTransaction {
         }
 
         $this->db->query_delete('generacion_etiquetas');
-
         foreach($data['bodegas_cargar'] as $bodega){
-
             $dsBodega = Collection::get($this->db, 'sucursales', sprintf('LOWER(identificador_excel) = LOWER("%s")', $bodega['bodega']))->single();
-            $dsProducto = Collection::get($this->db, 'producto', sprintf('LOWER(codigo_origen) = LOWER("%s")', $bodega['codigo_producto']))->single();
-
-            if (count($dsBodega) > 0 && count($dsCuenta) > 0 && count($dsEmpleado) > 0) {
+            $dsProducto = Collection::get($this->db, 'producto', sprintf('LOWER(codigo) = LOWER("%s")', $bodega['codigo']))->single();
+            if (count($dsBodega) > 0 && count($dsCuenta) > 0) {
 
                 $transaccion = [
                     'id_cuenta' => sqlValue($dsCuenta['id_cuenta'], 'int'),
-                    'id_empleado' => sqlValue($dsEmpleado['id_empleado'], 'int'),
                     'id_sucursal' => sqlValue($dsBodega['id_sucursal'], 'int'),
                     'descripcion' => sqlValue('Carga Masiva Productos', 'text'),
                     'id_moneda' => sqlValue($dsMoneda['id_moneda'], 'int'),
@@ -334,7 +335,7 @@ class TrxCargaMasivaProductos extends FastTransaction {
                 $this->db->query_insert('trx_transacciones', $transaccion);
 
                 $etiqueta = [
-                    'codigo_origen' => sqlValue($bodega['codigo_producto'], 'text'),
+                    'codigo_origen' => sqlValue($bodega['codigo'], 'text'),
                     'cantidad' => sqlValue($bodega['cantidad'], 'int'),
                     'id_sucursal' => sqlValue($dsBodega['id_sucursal'], 'int'),
                 ];
@@ -342,7 +343,7 @@ class TrxCargaMasivaProductos extends FastTransaction {
                 $this->db->query_insert('generacion_etiquetas', $etiqueta);
             } else {
                 $error = 'No se encuentra configurada la Bodega, Cuenta o Empleado, favor de revisar';
-                throw new Exception($error);
+                throw new Exception($error . " " . $bodega['bodega']);
             }
         }
 

@@ -19,15 +19,21 @@ class FastModWrapper implements BaseMod{
     protected $user;
     protected $icon;
     protected $iconDesc;
+    protected $showSideBar;
     
    function __construct() {
         $this->db = DbManager::getMe();
         $user = AppSecurity::$UserData;
         $this->user = $user['data'];
+        $this->showSideBar = true;
    }
    
     public function init() {
         $this->showMe();
+    }
+
+    public function showSideBar() {
+        return $this->showSideBar;
     }
     
     protected function showMiddle(){
@@ -38,7 +44,7 @@ class FastModWrapper implements BaseMod{
     
     protected function showMe(){
         ?>
-        <div class="col-md-12 col-lg-12">
+        <div class="col-md-12 col-lg-12 p-0 m-0">
             <div class="row">
                 <?php 
                 $this->alertMe();

@@ -30,7 +30,7 @@ class TrxAdministracionProductos  extends FastTransaction {
         );
 
         $this->gridCols = array(
-            'Código producto' => 'id_producto',
+            'Código producto' => 'codigo',
             'Nombre' => 'nombre',
             'Categoria' => 'nombre_tipo'
         );
@@ -56,7 +56,8 @@ class TrxAdministracionProductos  extends FastTransaction {
                         id_tipo: 0,
                         precio_venta: 0,
                         costo: 0,
-                        imagen: ''
+                        imagen: '',
+                        codigo: ''
                     };
 
                     angular.element("input[type='file']").val(null);
@@ -104,9 +105,25 @@ class TrxAdministracionProductos  extends FastTransaction {
                         headers: {'Content-Type': undefined,'Process-Data': false}
                     })
                         .success(function(response){
-                            console.log("Success");
-                            $scope.lastSelected.imagen = response.msg;
-                            $scope.lastSelected.codigo_origen = response.msg.replace('.jpg','');
+                            console.log(response);
+                            if(response.result == 1){
+                                if($scope.lastSelected.imagen){
+                                    $scope.lastSelected.imagen = null;
+                                }
+                                $timeout(_ => {
+                                    $scope.lastSelected.imagen = response.msg;
+                                    $scope.lastSelected.codigo = response.msg.replace('.jpg','');
+                                }, 1000)
+                            } else {
+                                $scope.alerts.push({
+                                    type: 'alert-danger',
+                                    msg: response.msg
+                                })
+                                angular.element("input[type='file']").val(null);
+                                $timeout(_ => {
+                                    $scope.alerts = [];
+                                }, 2500)
+                            }
                         })
                         .error(function(response){
                             $scope.alerts.push({
@@ -124,11 +141,12 @@ class TrxAdministracionProductos  extends FastTransaction {
                         costo: $scope.lastSelected.costo,
                         id_tipo: $scope.lastSelected.id_tipo,
                         precio_venta: $scope.lastSelected.precio_venta,
+                        codigo: $scope.lastSelected.codigo,
                         imagen: $scope.lastSelected.imagen,
-                        codigo_origen: ($scope.lastSelected.codigo_origen == undefined) ? ' ' : $scope.lastSelected.codigo_origen,
+                        codigo_origen: !$scope.lastSelected.codigo_origen ? '' : $scope.lastSelected.codigo_origen,
                         mod: 2
                     };
-
+                    console.log($rootScope.modData);
                     $scope.doSave();
                 };
 
@@ -141,10 +159,11 @@ class TrxAdministracionProductos  extends FastTransaction {
                         id_tipo: $scope.lastSelected.id_tipo,
                         precio_venta: $scope.lastSelected.precio_venta,
                         imagen: $scope.lastSelected.imagen,
-                        codigo_origen: ($scope.lastSelected.codigo_origen == undefined) ? ' ' : $scope.lastSelected.codigo_origen,
+                        codigo: $scope.lastSelected.codigo,
+                        codigo_origen: !$scope.lastSelected.codigo_origen ? '' : $scope.lastSelected.codigo_origen,
                         mod: 1
                     };
-
+                    console.log($rootScope.modData);
                     $scope.doSave();
                 };
                 $scope.doDelete = function () {
@@ -171,7 +190,22 @@ class TrxAdministracionProductos  extends FastTransaction {
                 };
 
                 $scope.cancelar = function () {
-                    $scope.cancel();
+                    if($scope.lastSelected.imagen){
+                        if($scope.editMode && confirm("¿Desea cancelar? Los cambios a imagenes no se revertiran")){
+                            $scope.startAgain();
+                        } else if($scope.newMode) {
+                                $scope.alerts.push({type: "alert-info", msg: "Eliminando la imagen subida"});
+                            $http.delete($scope.ajaxUrl + "&act=deleteImage&cod=" + $scope.lastSelected.codigo).success(r => {
+                                $scope.alerts = [];
+                                $scope.startAgain();
+                            }).catch(err => {
+                                $scope.alerts = [];
+                                $scope.alerts.push({type: "alert-danger", msg: err});
+                            });
+                        } else {
+                            $scope.startAgain();
+                        }
+                    }
                 };
 
                 $scope.selectRow = function(row){
@@ -229,6 +263,25 @@ class TrxAdministracionProductos  extends FastTransaction {
             });
         </script>
     <?php
+    }
+
+    public function deleteImage(){
+        $cod = getParam("cod");
+        $r = 0;
+        $mess = 0;
+        if(isEmpty("cod")){
+            http_response_code(400);
+            return;
+        }
+        try {
+            unlink($this->uploadPath . $cod . '.jpg');
+            $r = 1;
+            $mess = "Eliminado con éxito";
+        } catch (Exception $e){
+            $mess = DEBUG ? $e->getTraceAsString() : "Error inesperado al eliminar imagen";
+            http_response_code(500);
+        }
+        echo json_encode(['r' => $r, 'mess' => $mess]);
     }
 
     public function getRows(){
@@ -361,28 +414,30 @@ class TrxAdministracionProductos  extends FastTransaction {
     public function uploadImage()
     {
         try {
+            $parts = pathinfo($_FILES["file"]["name"]);
+            if(!isset($parts["extension"]) || $parts["extension"] != "jpg"){
+                echo json_encode(["r" => 0, "msg" => "La extension del archivo debe ser jpg"]);
+            } else {
+                if ($_POST['old_name'] == '') {
+                    $ultimoCodigo = $this->db->queryToArray('  SELECT	COALESCE(MAX(CAST(REPLACE(codigo_origen,"Y","") AS UNSIGNED)),1) AS ultimo_codigo
+                                                               FROM	    producto');
+    
+                    $nombre_archivo = 'Y' . ($ultimoCodigo[0]['ultimo_codigo'] + 1) . '.jpg';
+                } else
+                    $nombre_archivo = $_POST['old_name'];
+    
+    //            $target_file = $this->uploadPath . basename($_FILES["file"]["name"]);
+                $target_file = $this->uploadPath . basename($nombre_archivo);
+                move_uploaded_file($_FILES["file"]["tmp_name"], $target_file . '.temp');
+                $result = $this->resize_image($target_file . '.temp', 370, 277, $target_file);
+                unlink($target_file . '.temp');
 
-            if ($_POST['old_name'] == '') {
-                $ultimoCodigo = $this->db->queryToArray('  SELECT	COALESCE(MAX(CAST(REPLACE(codigo_origen,"Y","") AS UNSIGNED)),1) AS ultimo_codigo
-                                                           FROM	    producto');
-
-                $nombre_archivo = 'Y' . ($ultimoCodigo[0]['ultimo_codigo'] + 1) . '.jpg';
-            } else
-                $nombre_archivo = $_POST['old_name'];
-
-//            $target_file = $this->uploadPath . basename($_FILES["file"]["name"]);
-            $target_file = $this->uploadPath . basename($nombre_archivo);
-
-            move_uploaded_file($_FILES["file"]["tmp_name"], $target_file . '.temp');
-
-
-            $result = $this->resize_image($target_file . '.temp', 370, 277, $target_file);
-            unlink($target_file . '.temp');
-
-            if($result)
-                echo json_encode(array('result' => 1, 'msg' => $nombre_archivo));
-            else
-                echo json_encode(array('result' => 0, 'msg' => 'Ocurrio un error al momento de convertir la imagen'));
+                if($result) {
+                    echo json_encode(array('result' => 1, 'msg' => $nombre_archivo));
+                } else {
+                    echo json_encode(array('result' => 0, 'msg' => 'Ocurrio un error al momento de convertir la imagen'));
+                }
+            }
         } catch (Exception $e) {
             $this->r = 0;
             if (DEBUG) {
@@ -458,20 +513,23 @@ class TrxAdministracionProductos  extends FastTransaction {
             'costo' => sqlValue($data['costo'], 'float'),
             'id_tipo' => sqlValue($data['id_tipo'], 'int'),
             'precio_venta' => sqlValue($data['precio_venta'], 'float'),
-            'imagen' => sqlValue($data['imagen'], 'text'),
-            'codigo_origen' => sqlValue($data['codigo_origen'], 'text'),
+            'codigo_origen' => sqlValue(isEmpty($data['codigo_origen']) ? null : $data['codigo_origen'], 'text'),
             'fecha_creacion' => sqlValue($fecha->format('Y-m-d H:i:s'), 'date'),
             'usuario_creacion' => sqlValue(self_escape_string($user['FIRST_NAME']), 'text')
         ];
-
         if ($data['mod'] == 1) {
+            if(isEmpty($data['codigo'])){
+                $ultimoCodigo = $this->db->queryToArray('  SELECT	COALESCE(MAX(CAST(REPLACE(codigo_origen,"Y","") AS UNSIGNED)),1) AS ultimo_codigo FROM producto');
+                $nombre_archivo = 'Y' . ($ultimoCodigo[0]['ultimo_codigo'] + 1);
+                $producto['codigo'] = $nombre_archivo;
+            }
+            $producto['codigo'] = sqlValue($data['codigo'], 'text');
+            $producto['imagen'] = sqlValue($data['imagen'], 'text');
             $this->db->query_insert('producto', $producto);
 
             $this->msg = 'Producto ingresado con éxito';
         } else if ($data['mod'] == 2) {
-
             $this->db->query_update('producto', $producto, sprintf('id_producto = %s', $data['id_producto']));
-
             $this->msg = 'Producto actualizado con éxito';
         } else if ($data['mod'] == 3) {
 

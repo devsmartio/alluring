@@ -45,3 +45,4 @@ Temporary Items
 /.idea
 node_modules
 dist
+.vscode/

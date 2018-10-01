@@ -23,9 +23,13 @@ define("USER_TYPE", APP_NAME . "_USER_TYPE");
 define('MAX_FILE_SIZE', 2000000);
 define('SQL_DT_FORMAT', 'Y-m-d H:i:s');
 define('SHOW_DT_FORMAT', 'd/m/Y H:i:s');
+define('VENDOR', __DIR__ . "/vendor");
+define('TEMP_DIR', sys_get_temp_dir());
+
 //Display errors
 error_reporting(E_ALL);
 ini_set('display_errors', DEBUG ? 'On' : 'Off');
+//ini_set('open_basedir', TEMP_DIR);
 //Run the application
 include_once SYSTEM . '/AppController.php';
 AppController::getApp()->run();

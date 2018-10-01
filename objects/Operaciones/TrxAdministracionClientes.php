@@ -33,7 +33,7 @@ class TrxAdministracionClientes extends FastTransaction {
             new FastField('Municipio', 'id_municipio', 'text', 'text'),
             new FastField('Correo', 'correo', 'text', 'text'),
             new FastField('Tipo Precio', 'id_tipo_precio', 'text', 'text'),
-            new FastField('Vendedor', 'id_empleado', 'text', 'text')
+            new FastField('Vendedor', 'id_usuario', 'text', 'text')
         );
 
         $this->gridCols = array(
@@ -70,7 +70,7 @@ class TrxAdministracionClientes extends FastTransaction {
                         id_municipio: 0,
                         correo: '',
                         id_tipo_precio: 0,
-                        id_empleado: 0,
+                        id_usuario: 0,
                         tiene_credito: false,
                         dias_credito: '0',
                         id_cliente_referido: 0,
@@ -257,7 +257,7 @@ class TrxAdministracionClientes extends FastTransaction {
                         id_municipio: ($scope.lastMunicipioSelected == undefined) ? 0 : $scope.lastMunicipioSelected.id_municipio,
                         correo: $scope.lastSelected.correo,
                         id_tipo_precio: $scope.lastSelected.id_tipo_precio,
-                        id_empleado: $scope.lastSelected.id_empleado,
+                        id_usuario: $scope.lastSelected.id_usuario,
                         tiene_credito: $scope.lastSelected.tiene_credito,
                         dias_credito: $scope.lastSelected.dias_credito,
                         id_cliente_referido: ($scope.lastSelected.id_cliente_referido == undefined) ? 0 : $scope.lastSelected.id_cliente_referido,
@@ -287,7 +287,7 @@ class TrxAdministracionClientes extends FastTransaction {
                         id_municipio: ($scope.lastMunicipioSelected == undefined) ? 0 : $scope.lastMunicipioSelected.id_municipio,
                         correo: $scope.lastSelected.correo,
                         id_tipo_precio: $scope.lastSelected.id_tipo_precio,
-                        id_empleado: $scope.lastSelected.id_empleado,
+                        id_usuario: $scope.lastSelected.id_usuario,
                         tiene_credito: $scope.lastSelected.tiene_credito,
                         dias_credito: $scope.lastSelected.dias_credito,
                         id_cliente_referido: ($scope.lastSelected.id_cliente_referido == undefined) ? 0 : $scope.lastSelected.id_cliente_referido,
@@ -318,7 +318,7 @@ class TrxAdministracionClientes extends FastTransaction {
                                 id_municipio: $scope.lastSelected.id_municipio,
                                 correo: $scope.lastSelected.correo,
                                 id_tipo_precio: $scope.lastSelected.id_tipo_precio,
-                                id_empleado: $scope.lastSelected.id_empleado,
+                                id_usuario: $scope.lastSelected.id_usuario,
                                 tiene_credito: $scope.lastSelected.tiene_credito,
                                 dias_credito: $scope.lastSelected.dias_credito,
                                 id_cliente_referido: $scope.lastSelected.id_cliente_referido,
@@ -508,12 +508,12 @@ class TrxAdministracionClientes extends FastTransaction {
     public function getVendedores(){
         $resultSet = array();
 
-        $dsVendedores = $this->db->query_select('empleados', sprintf("es_vendedor = 1"));
+        $dsVendedores = $this->db->query_select('app_user', sprintf("is_seller = 1"));
 
-        $resultSet[] = array('id_empleado' =>'', 'nombre' => '-- Seleccione uno --');
+        $resultSet[] = array('id_usuario' => '', 'nombre' => '-- Seleccione uno --');
 
         foreach($dsVendedores as $p){
-            $resultSet[] = array('id_empleado' => $p['id_empleado'], 'nombre' => $p['nombres'] . ' ' .$p['apellidos']);
+            $resultSet[] = array('id_usuario' => $p['ID'], 'nombre' => $p['FIRST_NAME'] . ' ' .$p['LAST_NAME']);
         }
 
         echo json_encode(array('data' => $resultSet));
@@ -616,7 +616,7 @@ class TrxAdministracionClientes extends FastTransaction {
     {
         $fecha = new DateTime();
         $user = AppSecurity::$UserData['data'];
-
+        
         $cliente = [
             'nombres' => sqlValue($data['nombres'], 'text'),
             'apellidos' => sqlValue($data['apellidos'], 'text'),
@@ -627,7 +627,7 @@ class TrxAdministracionClientes extends FastTransaction {
             'id_municipio' => sqlValue($data['id_municipio'], 'number'),
             'correo' => sqlValue($data['correo'], 'text'),
             'id_tipo_precio' => sqlValue($data['id_tipo_precio'], 'number'),
-            'id_empleado' => sqlValue($data['id_empleado'], 'text'),
+            'id_usuario' => sqlValue($data['id_usuario'], 'text'),
             'tiene_credito' => sqlValue(($data['tiene_credito'] == false) ? 0 : 1, 'number'),
             'dias_credito' => sqlValue($data['dias_credito'], 'number'),
             'id_cliente_referido' => sqlValue($data['id_cliente_referido'], 'number'),
@@ -640,6 +640,7 @@ class TrxAdministracionClientes extends FastTransaction {
             'fecha_creacion' => sqlValue($fecha->format('Y-m-d H:i:s'), 'date'),
             'usuario_creacion' => sqlValue(self_escape_string($user['FIRST_NAME']), 'text')
         ];
+        
 
         if ($data['mod'] == 1) {
             $this->db->query_insert('clientes', $cliente);

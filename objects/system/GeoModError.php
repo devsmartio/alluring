@@ -45,7 +45,11 @@ class GeoModError implements BaseMod {
         ?>
         <div class="alert alert-danger">UPS... Parece que la página que buscas no existe</div>
         <?php
-    }    
+    }
+    
+    public function showSideBar(){
+        return true;
+    }
 }
 
 ?>

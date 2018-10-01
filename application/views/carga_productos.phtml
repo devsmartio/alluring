@@ -17,12 +17,22 @@
         <div id="loading">
             <img src="media/img/ajax-loader.gif" class="ajax-loader"/>
         </div>
+        <p><b>Filas cargadas:{{rows.length}}</b></p>
         <div class='table-responsive' style="margin-top: 35px;">
             <table class='table table-striped table-bordered'>
                 <tr>
                     <th ng-repeat='col in gridCols' ng-bind='col.LABEL'></th>
                 </tr>
-                <tr ng-repeat='row in rows'>
+                <tr>
+                    <?php
+                        foreach ($this->gridCols as $key => $value) {
+                    ?>
+                            <td><input type='text' class="form-control" ng-model='search.<?php echo $value ?>'/></td>
+                    <?php
+                        }
+                    ?>
+                </tr>
+                <tr ng-repeat='row in rows | filter: search'>
                     <td ng-repeat='col in gridCols' ng-bind='row[col.VALOR]'></td>
                 </tr>
             </table>

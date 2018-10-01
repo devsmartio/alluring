@@ -83,4 +83,8 @@ class Collection {
     public function toJSON(){
         echo json_encode($this->items);
     }
+
+    public function any(){
+        return count($this->items) > 0;
+    }
 }

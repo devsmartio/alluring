@@ -15,6 +15,7 @@ interface BaseMod {
     public function myTitle();
     public function init();
     public function alertMe();
+    public function showSideBar();
 }
 
 ?>
