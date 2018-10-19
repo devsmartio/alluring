@@ -310,7 +310,7 @@ class TrxCargaMasivaProductos extends FastTransaction {
                     'id_tipo' => sqlValue($prod['id_tipo'], 'int'),
                     'precio_venta' => sqlValue($prod['precio_venta'], 'float'),
                     'imagen' => sqlValue($prod['codigo'] . '.jpg', 'text'),
-                    'codigo' => sqlValue($ultimoCodigo, 'text'),
+                    'codigo' => sqlValue('Y' . $ultimoCodigo, 'text'),
                     'codigo_origen' => sqlValue($prod['codigo_origen'], 'text'),
                     'fecha_creacion' => sqlValue($fecha->format('Y-m-d H:i:s'), 'date'),
                     'usuario_creacion' => sqlValue(self_escape_string($user['FIRST_NAME']), 'text')
