@@ -2,7 +2,7 @@
 
 $queryTransacciones ="  SELECT	p.codigo, p.descripcion, ge.cantidad
                         FROM	producto p
-                                INNER JOIN generacion_etiquetas ge ON ge.codigo_origen = p.codigo";
+                        INNER JOIN generacion_etiquetas ge ON (case when ge.codigo_origen is null then ge.codigo else ge.codigo_origen end) = (case when ge.codigo_origen is null then p.codigo else p.codigo_origen end)";
 
 $transacciones = $this->db->queryToArray(sprintf($queryTransacciones));
 

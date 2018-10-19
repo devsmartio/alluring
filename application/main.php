@@ -14,7 +14,6 @@ $last_name = $user['LAST_NAME'];
     <link rel="shortcut icon" href="media/img/geoico.ico"/>
     <!-- Bootstrap -->
     <!--    <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet" />-->
-    
     <link href="media/jquery-ui/jquery-ui.min.css" rel='stylesheet'/>
     <link href="bower_components/ng-grid/ng-grid.min.css" type="text/css" rel="stylesheet"/>
     <link rel="stylesheet" href="bower_components/eonasdan-bootstrap-datetimepicker/build/css/bootstrap-datetimepicker.min.css"/>

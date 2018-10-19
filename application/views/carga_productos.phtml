@@ -22,6 +22,7 @@
             <table class='table table-striped table-bordered'>
                 <tr>
                     <th ng-repeat='col in gridCols' ng-bind='col.LABEL'></th>
+                    <th>Bodegas a cargar</th>
                 </tr>
                 <tr>
                     <?php
@@ -31,9 +32,15 @@
                     <?php
                         }
                     ?>
+                    <td>&nbsp;</td>
                 </tr>
                 <tr ng-repeat='row in rows | filter: search'>
                     <td ng-repeat='col in gridCols' ng-bind='row[col.VALOR]'></td>
+                    <td>
+                        <div ng-repeat="(bod, cantidad) in row['bodegas']">
+                            <span>{{bod}}:</span><span ><b>{{cantidad}}</b></span>
+                        </div>
+                    </td>
                 </tr>
             </table>
         </div>

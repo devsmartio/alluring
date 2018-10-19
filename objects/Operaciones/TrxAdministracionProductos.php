@@ -26,11 +26,13 @@ class TrxAdministracionProductos  extends FastTransaction {
             new FastField('Categoria', 'id_tipo', 'text', 'text'),
             new FastField('Precio venta al público', 'precio_venta', 'text', 'text'),
             new FastField('Costo', 'costo', 'text', 'text'),
-            new FastField('Imagen', 'imagen', 'text', 'text')
+            new FastField('Imagen', 'imagen', 'text', 'text'),
+            new FastField('Código Origen', 'codigo_origen', 'text', 'text')
         );
 
         $this->gridCols = array(
             'Código producto' => 'codigo',
+            'Código origen' => 'codigo_origen',
             'Nombre' => 'nombre',
             'Categoria' => 'nombre_tipo'
         );
@@ -59,7 +61,7 @@ class TrxAdministracionProductos  extends FastTransaction {
                         imagen: '',
                         codigo: ''
                     };
-
+                    $scope.rand = Math.random();
                     angular.element("input[type='file']").val(null);
 
                     $http.get($scope.ajaxUrl + '&act=getRows').success(function (response) {
@@ -107,13 +109,12 @@ class TrxAdministracionProductos  extends FastTransaction {
                         .success(function(response){
                             console.log(response);
                             if(response.result == 1){
-                                if($scope.lastSelected.imagen){
-                                    $scope.lastSelected.imagen = null;
-                                }
+                                $scope.lastSelected.imagen = null;
                                 $timeout(_ => {
+                                    $scope.rand = Math.random();
                                     $scope.lastSelected.imagen = response.msg;
                                     $scope.lastSelected.codigo = response.msg.replace('.jpg','');
-                                }, 1000)
+                                }, 2500)
                             } else {
                                 $scope.alerts.push({
                                     type: 'alert-danger',
@@ -415,11 +416,11 @@ class TrxAdministracionProductos  extends FastTransaction {
     {
         try {
             $parts = pathinfo($_FILES["file"]["name"]);
-            if(!isset($parts["extension"]) || $parts["extension"] != "jpg"){
+            if(!isset($parts["extension"]) || strtolower($parts["extension"]) != "jpg"){
                 echo json_encode(["r" => 0, "msg" => "La extension del archivo debe ser jpg"]);
             } else {
                 if ($_POST['old_name'] == '') {
-                    $ultimoCodigo = $this->db->queryToArray('  SELECT	COALESCE(MAX(CAST(REPLACE(codigo_origen,"Y","") AS UNSIGNED)),1) AS ultimo_codigo
+                    $ultimoCodigo = $this->db->queryToArray('  SELECT	COALESCE(MAX(CAST(REPLACE(codigo,"Y","") AS UNSIGNED)),1) AS ultimo_codigo
                                                                FROM	    producto');
     
                     $nombre_archivo = 'Y' . ($ultimoCodigo[0]['ultimo_codigo'] + 1) . '.jpg';

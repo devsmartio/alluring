@@ -38,3 +38,12 @@ alter table trx_venta add column usuario_venta varchar(100) null;
 alter table trx_venta add column id_transaccion bigint(50) null;
 alter table trx_venta add constraint fk_venta_transacciones foreign key (id_transaccion) references trx_transacciones(id_transaccion);
 alter table trx_transacciones modify id_empleado int(20) null;
+
+-- SABADO 10/6/2018
+-- JUEVES 10/18/2018
+alter table trx_venta add credito_devolucion decimal(10,2) null;
+alter table trx_venta add fecha_devolucion datetime null; 
+alter table trx_venta_detalle add cantidad_devolucion int null;
+insert into formas_pago(nombre, usuario_creacion, fecha_creacion) values ('Credito devolucion', 'Dev', now());
+alter table generacion_etiquetas add codigo varchar(50) null;
+alter table generacion_etiquetas modify codigo_origen varchar(50) null;

@@ -39,7 +39,7 @@ class MantBodegasEmpleados extends FastModWrapper{
             }
             $i++;
         }
-        echo json_encode(array('data' => $result));
+        echo json_encode(array('data' => sanitize_array_by_keys($result, ["FIRST_NAME", "LAST_NAME"])));
     }
     
     private function getPermissions($id){

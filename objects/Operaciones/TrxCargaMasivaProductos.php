@@ -239,8 +239,8 @@ class TrxCargaMasivaProductos extends FastTransaction {
                     NULL,
                     TRUE,
                     FALSE);
-                //  Insert row data array into your database of choice here
-                if(!isset($rowData[0][5]) || isEmpty($rowData[0][5])){
+                //Si codigo_origen esta vacio y codigo tambien, nos saltamos esa fila
+                if((!isset($rowData[0][6]) || isEmpty($rowData[0][6])) && (!isset($rowData[0][5]) || isEmpty($rowData[0][5]))){
                     continue;
                 }
                 $col = 0;
@@ -249,10 +249,13 @@ class TrxCargaMasivaProductos extends FastTransaction {
                     $col++;
                 }
 
+                $resultSet[$row - 2]['bodegas'] = [];
                 for ($i = 1; $i <= count($bodegas); $i++) {
                     $bodegas_cargar[$countBodegas]['codigo'] = $rowData[0][5];
+                    $bodegas_cargar[$countBodegas]['codigo_origen'] = $rowData[0][6];
                     $bodegas_cargar[$countBodegas]['cantidad'] = $rowData[0][(6+$i)];
                     $bodegas_cargar[$countBodegas]['bodega'] = $bodegas[($i-1)];
+                    $resultSet[$row - 2]['bodegas'][$bodegas[$i - 1]] = $rowData[0][(6+$i)]; 
                     $countBodegas++;
                 }
             }
@@ -268,7 +271,7 @@ class TrxCargaMasivaProductos extends FastTransaction {
                 $this->msg = var_dump($e->getMessage());
             } else {
                 error_log($e->getMessage());
-                $this->msg = 'Error al subir la imagen. Intente de nuevo';
+                $this->msg = 'Error al cargar Excel. Intente de nuevo';
             }
 
             echo json_encode(array('result' => $this->r, 'msg' => $this->msg));
@@ -285,8 +288,10 @@ class TrxCargaMasivaProductos extends FastTransaction {
 
         foreach ($data['productos'] as $prod) {
             $id_producto = 0;
-            $dsProducto = $this->db->query_select('producto', sprintf('codigo = "%s"', $prod['codigo']));
-
+            $dsProducto = $this->db->query_select('producto', sprintf('codigo_origen = "%s"', $prod['codigo_origen']));
+            if(count($dsProducto) == 0 && !isEmpty($prod['codigo'])){
+                $dsProducto = $this->db->query_select('producto', sprintf('codigo = "%s"', $prod['codigo']));
+            }
             if (count($dsProducto) > 0) {
                 $producto = [
                     'costo' => sqlValue($prod['costo'], 'float'),
@@ -296,7 +301,8 @@ class TrxCargaMasivaProductos extends FastTransaction {
                 $this->db->query_update('producto', $producto, sprintf('id_producto = %s', $dsProducto[0]['id_producto']));
 
             } else {
-
+                $ultimoCodigo = $this->db->queryToArray('SELECT	COALESCE(MAX(CAST(REPLACE(codigo,"Y","") AS UNSIGNED)),1) AS ultimo_codigo FROM producto');
+                $ultimoCodigo = intval($ultimoCodigo[0]['ultimo_codigo']) + 1;
                 $producto = [
                     'nombre' => sqlValue($prod['nombre'], 'text'),
                     'descripcion' => sqlValue($prod['descripcion'], 'text'),
@@ -304,7 +310,7 @@ class TrxCargaMasivaProductos extends FastTransaction {
                     'id_tipo' => sqlValue($prod['id_tipo'], 'int'),
                     'precio_venta' => sqlValue($prod['precio_venta'], 'float'),
                     'imagen' => sqlValue($prod['codigo'] . '.jpg', 'text'),
-                    'codigo' => sqlValue($prod['codigo'], 'text'),
+                    'codigo' => sqlValue($ultimoCodigo, 'text'),
                     'codigo_origen' => sqlValue($prod['codigo_origen'], 'text'),
                     'fecha_creacion' => sqlValue($fecha->format('Y-m-d H:i:s'), 'date'),
                     'usuario_creacion' => sqlValue(self_escape_string($user['FIRST_NAME']), 'text')
@@ -317,7 +323,10 @@ class TrxCargaMasivaProductos extends FastTransaction {
         $this->db->query_delete('generacion_etiquetas');
         foreach($data['bodegas_cargar'] as $bodega){
             $dsBodega = Collection::get($this->db, 'sucursales', sprintf('LOWER(identificador_excel) = LOWER("%s")', $bodega['bodega']))->single();
-            $dsProducto = Collection::get($this->db, 'producto', sprintf('LOWER(codigo) = LOWER("%s")', $bodega['codigo']))->single();
+            $dsProducto = Collection::get($this->db, 'producto', sprintf('LOWER(codigo_origen) = LOWER("%s")', $bodega['codigo_origen']))->single();
+            if(count($dsProducto) == 0){
+                $dsProducto = Collection::get($this->db, 'producto', sprintf('LOWER(codigo) = LOWER("%s")', $bodega['codigo']))->single();
+            }
             if (count($dsBodega) > 0 && count($dsCuenta) > 0) {
 
                 $transaccion = [
@@ -335,7 +344,8 @@ class TrxCargaMasivaProductos extends FastTransaction {
                 $this->db->query_insert('trx_transacciones', $transaccion);
 
                 $etiqueta = [
-                    'codigo_origen' => sqlValue($bodega['codigo'], 'text'),
+                    'codigo' => sqlValue($bodega['codigo'], 'text'),
+                    'codigo_origen' => sqlValue($bodega['codigo_origen'], 'text'),
                     'cantidad' => sqlValue($bodega['cantidad'], 'int'),
                     'id_sucursal' => sqlValue($dsBodega['id_sucursal'], 'int'),
                 ];

@@ -1,6 +1,6 @@
 <style type="text/css">
     .anyClass {
-        height:400px;
+        height:350px;
         overflow-y: scroll;
     }
     .color-red {
@@ -17,11 +17,21 @@
 <div ng-controller="ModuleCtrl">
     <div class="row">
         <div class="col-lg-8 col-md-6 col-sm-12 col-xs-12 bg-light mb-3 pb-2">
-            <div class="input-group input-group-lg my-3">
+            <div class="input-group my-3">
                 <div class="input-group-prepend">
                     <span class="input-group-text"><span class="cui-magnifying-glass"></span></span>
                 </div>
-                <input type="text" id="producto" class="form-control" placeholder="Buscar Productos..." aria-label="Search" ng-model="search_codigo_origen" autocomplete="off" style="font-size:0.8rem;">
+                <input type="text" id="producto" class="form-control" placeholder="Buscar Productos..." aria-label="Search" ng-model="search_codigo_origen" autocomplete="off" style="font-size:0.8rem;" />
+                <div class="input-group-append">
+                    <button ng-click="showBodegaCat()" ng-disabled="productos_facturar.length" class="btn btn-outline-primary">{{bodegaSel ? bodegaSel.nombre : "No ha seleccionado bodega"}}</button>
+                    <button title="pedidos" class="btn btn-info" ng-disabled="productos_facturar.length" ng-show="bodegaSel" ng-click="checkPedidos()">
+                        <i class="cui-basket-loaded"></i>
+                        <span style="z-index: 3; display: inline-block; position: absolute; top: -8px; right: -8px; height: 20px; width: 20px; background: #e94b35; border-radius: 50%; color: white;font-weight: 700; text-ident: 0">0</span>
+                    </button>
+                    <button title="devolucion" ng-click="getVentasPasadas()" style="z-index: 1" class="btn btn-warning" ng-show="bodegaSel" ng-disabled="!lastClienteSelected.id_cliente||devolucion.credito>0">
+                        <i class="cui-action-undo"></i>
+                    </button>
+                </div>
             </div>
             <div id="loading">
                 <img src="media/img/ajax-loader.gif" class="ajax-loader"/>
@@ -63,11 +73,11 @@
             </div>
         </div>
         <div class="col-lg-4 col-md-6 col-sm-12 col-xs-12 text-white bg-secondary mb-3 pb-2">
-            <div class="input-group input-group-lg my-3" ng-click='buscar()' data-toggle="modal" data-target="#clientesModal">
-                <div class="input-group-prepend" >
+            <div class="input-group input-group-lg my-3">
+                <div class="input-group-prepend">
                     <span class="input-group-text"><span class="cui-magnifying-glass"></span></span>
                 </div>
-                <input type="text" id="cliente" ng-model="cliente" class="form-control" placeholder="Buscar Cliente..." aria-label="Search" autocomplete="off" style="font-size:0.8rem;">
+                <input type="text" id="cliente" ng-model="cliente"  class="form-control" placeholder="Buscar Cliente..." aria-label="Search" autocomplete="off" style="font-size:0.8rem;" ng-disabled="devolucion.credito > 0" ng-click='buscar()' data-toggle="modal" data-target="#clientesModal"> 
             </div>
             <div class="anyClass w-100" ng-show="show_detalle" style="overflow-x: auto; max-width: 100%; overflow-y: auto">
                 <div class='table-responsive'>
@@ -130,44 +140,25 @@
             </div>
         </div>
     </div>
-    <div class="modal" tabindex="-1" role="dialog" id="ventasModal" data-backdrop="static" data-keyboard="false">
-        <div class="modal-dialog" role="document" style="max-width: 800px; height: 500px;">
+    <div class="modal" tabindex="-1" role="dialog" id="bodegasModal" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Ventas Pendientes</h5>
+                    <h5 class="modal-title">Seleccione bodega</h5>
                 </div>
                 <div class="modal-body">
-                    <div class='table-responsive anyClass'>
-                        <table class='table table-sm'>
-                            <tr>
-                                <th>ID</th>
-                                <th>Total Venta</th>
-                                <th>Empleado</th>
-                            </tr>
-                            <tr>
-                                <td><input type='text' ng-model="search.id_venta"/></td>
-                                <td><input type='text' ng-model="search.total"/></td>
-                                <td><input type='text' ng-model="search.id_empleado"/></td>
-                            </tr>
-                            <tr ng-class="{'table-active':row.selected}" ng-click='selectVentaRow(row)' ng-repeat='row in ventas | filter:search | orderBy: sortBy'>
-                                <td ng-bind="row['id_venta']"></td>
-                                <td ng-bind="row['total']"></td>
-                                <td ng-bind="row['nombre_empleado']"></td>
-                            </tr>
-                        </table>
-                    </div>
-
+                    <ul class="list-group">
+                        <li ng-repeat="b in bodegas" style="cursor: pointer" ng-class="{'list-group-item-success':b.id_sucursal==bodegaSel.id_sucursal}" class="list-group-item" ng-click="setBodega(b)">{{b.nombre}}</li>
+                    </ul>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" data-dismiss="modal" ng-disabled="currentVentaIndex == null" ng-click="mostrar_detalle()"><span class="cui-list" aria-hidden="true"></span> Detalle</button>
-                    <button type="button" class="btn btn-warning" data-dismiss="modal" ng-disabled="currentVentaIndex == null" ng-click="imprimir_detalle()"><span class="cui-print" aria-hidden="true"></span> Imprimir</button>
-                    <button type="button" class="btn btn-success" data-dismiss="modal" ng-click="nueva_venta()"><span class="cui-file" aria-hidden="true"></span> Nueva</button>
+                    <button data-dismiss="modal" class="btn btn-danger">Cancelar</button>
                 </div>
             </div>
         </div>
     </div>
-    <div class="modal fade" tabindex="-1" role="dialog" id="clientesModal">
-        <div class="modal-dialog" style="max-width: 700px; height: 500px;">
+    <div class="modal" tabindex="-1" role="dialog" id="clientesModal">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Clientes</h5>
@@ -262,6 +253,44 @@
             </div>
         </div>
     </div>
+    <div class="modal" tabindex="-1" role="dialog" id="ventasModal">
+        <div class="modal-dialog" role="document" style="max-width: 800px; height: 500px;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Pedidos</h5>
+                </div>
+                <div class="modal-body">
+                    <div class='table-responsive anyClass'>
+                        <table class='table table-sm'>
+                            <tr>
+                                <th>ID</th>
+                                <th>Cliente</th>
+                                <th>Total Venta</th>
+                                
+                            </tr>
+                            <tr>
+                                <td><input type='text' ng-model="search.id_venta"/></td>
+                                <td><input type='text' ng-model="search.total"/></td>
+                                <td><input type='text' ng-model="search.id_empleado"/></td>
+                            </tr>
+                            <tr ng-class="{'table-active':row.selected}" ng-click='selectVentaRow(row)' ng-repeat='row in ventas | filter:search | orderBy: sortBy'>
+                                <td ng-bind="row['id_venta']"></td>
+                                <td ng-bind="row['nombre_cliente']"></td>
+                                <td ng-bind="row['total']"></td>
+                            </tr>
+                        </table>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" data-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" data-dismiss="modal" ng-disabled="currentVentaIndex == null" ng-click="mostrar_detalle()"><span class="cui-list" aria-hidden="true"></span> Detalle</button>
+                    <button type="button" class="btn btn-warning" data-dismiss="modal" ng-disabled="currentVentaIndex == null" ng-click="imprimir_detalle()"><span class="cui-print" aria-hidden="true"></span> Imprimir</button>
+                    <!--<button type="button" class="btn btn-success" data-dismiss="modal" ng-click="nueva_venta()"><span class="cui-file" aria-hidden="true"></span> Nueva</button>-->
+                </div>
+            </div>
+        </div>
+    </div>
     <div class="modal" tabindex="-1" role="dialog" id="tipoPagoModal">
         <div class="modal-dialog" role="document" style="max-width: 700px; height: 500px;">
             <div class="modal-content">
@@ -273,10 +302,11 @@
                 </div>
                 <div class="modal-body">
                     <div class="row">
-                        <div class="col-lg-4 col-md-4 col-sm-12 col-xs-12">
+                        <div class="col-lg-2 col-md-4 col-sm-12 col-xs-12">
                         </div>
-                        <div class="col-lg-4 col-md-4 col-sm-12 col-xs-12">
+                        <div class="col-lg-8 col-md-4 col-sm-12 col-xs-12">
                             <p>TOTAL A PAGAR: <b>{{total | currency : 'Q' : 2}}</b></p>
+                            <p ng-show="devolucion.credito > 0">CRÉDITO DEVOLUCIÓN: <b>{{devolucion.credito | currency : 'Q' : 2}}</b></p>
                             <p ng-show="tipo_cambio_actual">TIPO CAMBIO: {{tipo_cambio_actual.factor | currency : "Q" : 2}}
                             <div class="btn-group">
                                 <label ng-repeat="fpago in formas_pago" class="btn btn-primary" ng-class="{active: forma_pago.tipo_pago == fpago.id_forma_pago}" ng-model="forma_pago.tipo_pago" btn-radio="{{fpago.id_forma_pago}}" uncheckable>
@@ -284,7 +314,7 @@
                                 </label>
                             </div>
                         </div>
-                        <div class="col-lg-4 col-md-4 col-sm-12 col-xs-12">
+                        <div class="col-lg-2 col-md-4 col-sm-12 col-xs-12">
                         </div>
                     </div>
                     <div ng-show="forma_pago.tipo_pago == 1">
@@ -394,6 +424,78 @@
                             </div>
                         </form>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal" tabindex="-1" role="dialog" id="devolucionModal" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Devoluciones</h5>
+                </div>
+                <div class="modal-body">
+                    <div class='table-responsive' ng-show="selectDevolucion">
+                        <table class='table table-condensed table-striped'>
+                            <tr>
+                                <th>ID</th>
+                                <th>Cliente</th>
+                                <th>Fecha Venta</th>
+                                <th>Total Venta</th>
+                            </tr>
+                            <tr style="cursor: pointer" ng-show="ventasPasadas.length" ng-click='selectVentaPasada(row)' ng-repeat='row in ventasPasadas track by $index'>
+                                <td ng-bind="row['id_venta']"></td>
+                                <td ng-bind="row['nombre_cliente']"></td>
+                                <td ng-bind="row['fecha_creacion']"></td>
+                                <td>{{row.total | currency: 'Q' : 2}}</td>
+                            </tr>
+                            <tr ng-if="!ventasPasadas.length">
+                                <td colspan="4"><i>No hay ventas para esta bodega y cliente del último mes</i></td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div ng-show="sortDevolucion">
+                        <p>
+                            <button class="btn btn-primary btn-sm" ng-click="selectDevolucion=true;sortDevolucion=false">Regresar a seleccion</button>
+                        </p>
+                        <div class="card">
+                            <div class="card-body">
+                                <form>
+                                    <div class="form-group">
+                                        <div class="input-group">
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text"><span class="cui-magnifying-glass"></span></span>
+                                            </div>
+                                            <input id="itemDevolucion" class="form-control" ng-blur="checkItemDevolucion()" ng-model="searchDevolucion" type="text" placeholder="Ingrese o pistolee el código del producto" />
+                                        </div>
+                                    </div>
+                                </form>
+                                <div class="table-responsive" ng-show="devolucion.items.length">
+                                    <table class="table table-bordered table-striped table-condensed">
+                                        <tr ng-repeat="i in devolucion.items">
+                                            <td>{{i.codigo_producto}}</td>
+                                            <td>{{i.cantidad}}</td>
+                                            <td>{{i.precio_venta | currency : 'Q': 2}}</td>
+                                            <td>{{i.subtotal | currency : 'Q' : 2}}</td>
+                                            <td>
+                                                <button class="btn btn-danger btn-sm" ng-click="quitarItemDev(i)">
+                                                    <i class="cui-trash"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <p><b>{{devolucion.credito | currency : 'Q' : 2}}/{{devolucion.maximo | currency : 'Q' : 2}}</b><p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-dismiss="modal" ng-disabled="!devolucion.items.length"><span class="cui-list" aria-hidden="true"></span>&nbsp;Agregar crédito a venta</button>
+                    <button type="button" class="btn btn-danger" data-dismiss="modal">Cancelar</button>
+                    <!--<button type="button" class="btn btn-success" data-dismiss="modal" ng-click="nueva_venta()"><span class="cui-file" aria-hidden="true"></span> Nueva</button>-->
                 </div>
             </div>
         </div>
