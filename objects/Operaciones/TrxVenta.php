@@ -429,7 +429,7 @@ class TrxVenta extends FastTransaction {
                 $productos_calc = $filter('filter')($scope.productos_facturar, {mostrar: 1});
                 $scope.total = $productos_calc.sum("sub_total");
                 if(resetAfter){
-                    $scope.productos = [];
+                    //$scope.productos = [];
                     $("#producto").select();
                 }
             };
