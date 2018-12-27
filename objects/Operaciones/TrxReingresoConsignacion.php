@@ -403,8 +403,7 @@ class TrxReingresoConsignacion extends FastTransaction {
     public function getClientes()
     {
         $resultSet = array();
-
-        $dsClientes = $this->db->query_select('clientes');
+        $dsClientes = $this->db->query_select("clientes", sprintf("id_usuario='%s'", $this->user['ID']));
 
         foreach ($dsClientes as $p) {
             $resultSet[] = array('id_cliente' => $p['id_cliente'], 'identificacion' => $p['identificacion'], 'nombres' => $p['nombres'], 'apellidos' => $p['apellidos']);
@@ -444,7 +443,7 @@ class TrxReingresoConsignacion extends FastTransaction {
     public function getProductos(){
         $id_movimiento_sucursales = getParam("id_movimiento_sucursales");
 
-        $queryProductos = " SELECT	p.id_producto, p.nombre, p.descripcion, p.precio_venta, (p.precio_venta * (ctp.porcentaje_descuento/100)) AS precio_descuento, p.imagen, p.codigo_origen, tmsd.unidades, ctp.porcentaje_descuento, 0 AS cant_reingreso, 0 AS total_reingreso, 0 AS compra_minima, 0 AS total_entregado, tms.porcetaje_compra_min
+        $queryProductos = " SELECT	p.id_producto, p.nombre, p.descripcion, p.precio_venta, (p.precio_venta * (ctp.porcentaje_descuento/100)) AS precio_descuento, p.imagen, p.codigo codigo_origen, tmsd.unidades, ctp.porcentaje_descuento, 0 AS cant_reingreso, 0 AS total_reingreso, 0 AS compra_minima, 0 AS total_entregado, tms.porcetaje_compra_min
                             FROM	trx_movimiento_sucursales tms
                                     INNER JOIN trx_movimiento_sucursales_detalle tmsd ON tmsd.id_movimiento_sucursales = tms.id_movimiento_sucursales
                                     INNER JOIN producto p ON p.id_producto = tmsd.id_producto
@@ -452,7 +451,7 @@ class TrxReingresoConsignacion extends FastTransaction {
                                     INNER JOIN clientes_tipos_precio ctp ON ctp.id_tipo_precio = c.id_tipo_precio
                             WHERE	tmsd.id_movimiento_sucursales = " . $id_movimiento_sucursales;
 
-        $productos = $this->db->queryToArray($queryProductos);
+        $productos = sanitize_array_by_keys($this->db->queryToArray($queryProductos), ['nombre','descripcion']);
         $total_entregado = 0;
         $compra_minima = 0;
 

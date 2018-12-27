@@ -293,12 +293,17 @@ class TrxCargaMasivaProductos extends FastTransaction {
                 $dsProducto = $this->db->query_select('producto', sprintf('codigo = "%s"', $prod['codigo']));
             }
             if (count($dsProducto) > 0) {
-                $producto = [
-                    'costo' => sqlValue($prod['costo'], 'float'),
-                    'precio_venta' => sqlValue($prod['precio_venta'], 'float')
-                ];
-
-                $this->db->query_update('producto', $producto, sprintf('id_producto = %s', $dsProducto[0]['id_producto']));
+                $producto = [];
+                if(!isEmpty($prod['costo'])){
+                    $producto['costo'] = sqlValue($prod['costo'], 'float');
+                }
+                if(!isEmpty($prod['precio_venta'])){
+                    $producto['precio_venta'] = sqlValue($prod['precio_venta'], 'float');
+                }
+                if(count($producto) > 0){
+                    $this->db->query_update('producto', $producto, sprintf('id_producto = %s', $dsProducto[0]['id_producto']));
+                }
+                
 
             } else {
                 $ultimoCodigo = $this->db->queryToArray('SELECT	COALESCE(MAX(CAST(REPLACE(codigo,"Y","") AS UNSIGNED)),1) AS ultimo_codigo FROM producto');

@@ -47,13 +47,13 @@
                 <img src="media/img/ajax-loader.gif" class="ajax-loader"/>
             </div>
             <div class="row anyClass">
-                <div ng-repeat="prod in productos | filter: {codigo_origen : search_codigo_origen}" class="col-12 col-md-4">
+                <div ng-repeat="prod in productos | filter: {codigo : search_codigo_origen}" class="col-12 col-md-4">
                         <figure class="figure btn btn-ghost-light">
                             <div class="row">
                             <span class="d-inline-block" tabindex="0" data-toggle="tooltip" title="{{prod.unidades-prod.cant_reingreso}} unidades restantes" >
                                 <img ng-src="media/uploads/{{prod.imagen}}" alt="{{prod.descripcion}}" class="img-thumbnail">
                                 <figcaption class="figure-caption">
-                                    <label class="col-sm-2 col-form-label col-form-label-sm">{{prod.nombre}}</label>
+                                    <label class="col-sm-2 col-form-label col-form-label-sm">{{prod.codigo}} - {{prod.nombre}}</label>
                                 </figcaption>
                             </span>
                         </figure>

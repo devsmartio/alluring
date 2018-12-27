@@ -124,23 +124,24 @@ abstract class FastMaintenance extends FastModWrapper{
                 }
             }
         }
-        $specialValidation = $this->specialValidation($update, $r, $mess, $pkFields);
-        $r = $specialValidation['r'];
-        $mess = $specialValidation['mess'];
-        
-        $pkFields = $this->processPkFields($pkFields);
         foreach($pkFields as $k => $v){
                 $where = isEmpty($where) ? $where : sprintf('%s AND ', $where);
                 $where.= sprintf('%s="%s"', $k, $v);
         }
         if($r == 1){
-            try {
-                $update = $this->specialProcessBeforeUpdate($update, $pkFields);
-                $this->db->query_update($this->table, $update, $where);
-            } catch (Exception $e){
-                $r = 0;
-                $mess = 'Error desconocido. Contacte a soporte';
-               var_dump($e->getTraceAsString());
+            $specialValidation = $this->specialValidation($update, $r, $mess, $pkFields);
+            $r = $specialValidation['r'];
+            $mess = $specialValidation['mess'];
+            if($r == 1){
+                $pkFields = $this->processPkFields($pkFields);
+                try {
+                    $update = $this->specialProcessBeforeUpdate($update, $pkFields);
+                    $this->db->query_update($this->table, $update, $where);
+                } catch (Exception $e){
+                    $r = 0;
+                    $mess = 'Error desconocido. Contacte a soporte';
+                var_dump($e->getTraceAsString());
+                }
             }
         }
         echo json_encode(array('result' => $r, 'msg' => $mess));
@@ -191,18 +192,20 @@ abstract class FastMaintenance extends FastModWrapper{
             }
         }
         
-        $specialValidation = $this->specialValidation($insert, $r, $mess, $pkFields);
-        $r = $specialValidation['r'];
-        $mess = $specialValidation['mess'];
         
         if($r == 1){
-            try {
-                $insert = $this->specialProcessBeforeInsert($insert);
-                $this->db->query_insert($this->table, $insert);
-            } catch (Exception $e){
-                $r = 0;
-                $mess = 'Error desconocido. Contacte a soporte';
-                var_dump($e->getTraceAsString());
+            $specialValidation = $this->specialValidation($insert, $r, $mess, $pkFields);
+            $r = $specialValidation['r'];
+            $mess = $specialValidation['mess'];
+            if($r == 1){
+                try {
+                    $insert = $this->specialProcessBeforeInsert($insert);
+                    $this->db->query_insert($this->table, $insert);
+                } catch (Exception $e){
+                    $r = 0;
+                    $mess = 'Error desconocido. Contacte a soporte';
+                    var_dump($e->getTraceAsString());
+                }
             }
         }
         echo json_encode(array('result' => $r, 'msg' => $mess));

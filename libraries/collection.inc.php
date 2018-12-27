@@ -40,6 +40,11 @@ class Collection {
         }
         return new static(array_values($result));
     }
+
+    public function find($conditions){
+        $filtered = $this->where($conditions)->single();
+        return count($filtered) > 0 ? $filtered : false; 
+    }
     
     public function toSelectList($idField, $nameField){
         $result = [];
@@ -86,5 +91,9 @@ class Collection {
 
     public function any(){
         return count($this->items) > 0;
+    }
+
+    public function count(){
+        return count($this->items);
     }
 }

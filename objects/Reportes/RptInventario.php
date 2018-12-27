@@ -38,7 +38,8 @@ class RptInventario extends FastReport {
         
         $this->setParams($params);
         $this->columns = [
-            new FastReportColumn("Codigo", "codigo_origen"),
+            new FastReportColumn("Codigo", "codigo"),
+            new FastReportColumn("Codigo Origen", "codigo_origen"),
             new FastReportColumn("Producto", "nombre_producto", "sanitize"),
             new FastReportColumn("Categoria", "nombre_categoria", "sanitize"),
             new FastReportColumn("Bodega", "nombre_sucursal", "sanitize"),
@@ -67,7 +68,6 @@ class RptInventario extends FastReport {
         }
         $query = 'select * from reporte_inventario';
         $query = isEmpty($where) ? $query : "$query where $where";
-        
         return $this->db->queryToArray($query);
     }
 }

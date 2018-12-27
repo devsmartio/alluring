@@ -27,7 +27,8 @@ class TrxAdministracionProductos  extends FastTransaction {
             new FastField('Precio venta al público', 'precio_venta', 'text', 'text'),
             new FastField('Costo', 'costo', 'text', 'text'),
             new FastField('Imagen', 'imagen', 'text', 'text'),
-            new FastField('Código Origen', 'codigo_origen', 'text', 'text')
+            new FastField('Código Origen', 'codigo_origen', 'text', 'text'),
+            new FastField('Código', 'codigo', 'text', 'text')
         );
 
         $this->gridCols = array(
@@ -100,7 +101,9 @@ class TrxAdministracionProductos  extends FastTransaction {
                     var fd = new FormData();
                     fd.append('file', files[0]);
                     fd.append('name', files[0]['name']);
-                    fd.append('old_name', ($scope.lastSelected.imagen == undefined) ? '' : $scope.lastSelected.imagen);
+                    fd.append('old_name', (!$scope.lastSelected.codigo) ? '' : $scope.lastSelected.codigo.toString() + '.jpg');
+                    fd.append('id_producto', $scope.lastSelected.id_producto || "");
+                    
 
                     $http.post(uploadUrl, fd, {
                         transformRequest: angular.identity,
@@ -211,6 +214,7 @@ class TrxAdministracionProductos  extends FastTransaction {
 
                 $scope.selectRow = function(row){
                     $scope.lastSelected = row;
+                    console.log(row);
                     $scope.currentIndex = row.index;
                     $scope.setRowSelected($scope.rows);
                     $scope.lastSelected.selected = true;
@@ -303,7 +307,7 @@ class TrxAdministracionProductos  extends FastTransaction {
         } catch(Exception $e){
             error_log($e->getTraceAsString());
         }
-        echo json_encode(array('data' => $resultSet));
+        echo json_encode(array('data' => sanitize_array_by_keys($resultSet, ['descripcion'])));
     }
 
     public function getGridCols(){
@@ -424,8 +428,9 @@ class TrxAdministracionProductos  extends FastTransaction {
                                                                FROM	    producto');
     
                     $nombre_archivo = 'Y' . ($ultimoCodigo[0]['ultimo_codigo'] + 1) . '.jpg';
-                } else
+                } else {
                     $nombre_archivo = $_POST['old_name'];
+                }
     
     //            $target_file = $this->uploadPath . basename($_FILES["file"]["name"]);
                 $target_file = $this->uploadPath . basename($nombre_archivo);
@@ -434,6 +439,12 @@ class TrxAdministracionProductos  extends FastTransaction {
                 unlink($target_file . '.temp');
 
                 if($result) {
+                    if(isset($_POST["id_producto"]) && !isEmpty($_POST["id_producto"])){
+                        $update = [
+                            "imagen" => sqlValue($nombre_archivo, 'text')
+                        ];
+                        $this->db->query_update("producto", $update, sprintf("id_producto=%s", $_POST["id_producto"]));
+                    }
                     echo json_encode(array('result' => 1, 'msg' => $nombre_archivo));
                 } else {
                     echo json_encode(array('result' => 0, 'msg' => 'Ocurrio un error al momento de convertir la imagen'));

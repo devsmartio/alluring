@@ -34,10 +34,10 @@ foreach ($transacciones as $trx) {
 ?>
 <!DOCTYPE html>
 <html>
-<head>
+    <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <title></title>
-    <style>
+    <!--style>
         body {
             width: 19cm;
             font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif;
@@ -52,10 +52,12 @@ foreach ($transacciones as $trx) {
         div {
             margin: auto;
         }
-    </style>
+    </style-->
 </head>
-<body>
-<table border="0">
+<body style="width: 19cm;
+            font-family:sans-serif;
+            font-size: 10px;">
+<table border="1">
     <?php
     reset($transacciones);
     $p = current($transacciones);
@@ -71,13 +73,13 @@ foreach ($transacciones as $trx) {
             $conteo++;
         ?>
         <?php if ($i%3 == 1) echo "<tr>" ?>
-        <td style="padding-left:5px; width: 198px;">
-            <div style="height: 90px;">
-                <label><?php echo $p['descripcion'] ?></label>
-                <label><?php echo $generator->getBarcode($p['codigo_origen'], $generator::TYPE_CODE_128); ?></label>
-                <label><?php echo $p['codigo_origen'] ?></label>
-            </div>
-        </td>
+        <td style="padding-left:5px; width: 230px">
+                <div style="height: 85px;text-align: center">
+                    <span style="display: block; word-wrap: break-word"><?php echo $p['descripcion'] ?></span>
+                    <div style="margin-left: 18%; display: block"><?php echo $generator->getBarcode($p['codigo'], $generator::TYPE_CODE_128); ?></div>
+                    <span style="display: block;word-wrap: break-word"><?php echo $p['codigo'] ?></span>
+                </div>
+            </td>
         <?php if ($i%3 == 0) echo "</tr>" ?>
     <?php } ?>
 </table>

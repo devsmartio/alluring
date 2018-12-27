@@ -47,3 +47,12 @@ alter table trx_venta_detalle add cantidad_devolucion int null;
 insert into formas_pago(nombre, usuario_creacion, fecha_creacion) values ('Credito devolucion', 'Dev', now());
 alter table generacion_etiquetas add codigo varchar(50) null;
 alter table generacion_etiquetas modify codigo_origen varchar(50) null;
+
+
+-- JUEVES 29/11/2018
+update producto set codigo = codigo_origen where codigo is null;
+alter table producto modify codigo varchar(50) not null;
+insert into variables_sistema(nombre, valor, fecha_creacion, usuario_creacion) values ('BODEGA_CAT', '7', now(), 'dev');
+alter table trx_venta add es_anulado bit not null default b'0';
+alter table sucursales add es_consignatario bit not null default b'0';
+alter table trx_movimiento_sucursales modify id_sucursal_destino int(20) null;

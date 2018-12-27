@@ -24,7 +24,7 @@ function DOMPDF_autoload($class) {
 }
 
 // If SPL autoload functions are available (PHP >= 5.1.2)
-if ( function_exists("spl_autoload_register") ) {
+//if ( function_exists("spl_autoload_register") ) {
   $autoload = "DOMPDF_autoload";
   $funcs = spl_autoload_functions();
   
@@ -72,15 +72,17 @@ if ( function_exists("spl_autoload_register") ) {
       spl_autoload_register("__autoload");
     }
   }
-}
-
+//}
+/*
 else if ( !function_exists("__autoload") ) {
   /**
    * Default __autoload() function
    *
    * @param string $class
-   */
+     
   function __autoload($class) {
     DOMPDF_autoload($class);
   }
 }
+*/
+

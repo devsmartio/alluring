@@ -29,12 +29,15 @@ class TrxVenta extends FastTransaction {
     {
         parent::myJavascript();
         ?>
+        <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/sweetalert2@7.29.2/dist/sweetalert2.all.min.js"></script>
         <script>
         app.controller('ModuleCtrl', ['$scope', '$http', '$rootScope' , '$timeout', '$filter', function ($scope, $http, $rootScope, $timeout, $filter) {
             Array.prototype.sum = function (prop) {
                 var total = 0
                 for ( var i = 0, _len = this.length; i < _len; i++ ) {
-                    total += parseFloat(this[i][prop])
+                    if(this[i].mostrar == 1){
+                        total += parseFloat(this[i][prop])
+                    }
                 }
                 return total
             };
@@ -66,7 +69,8 @@ class TrxVenta extends FastTransaction {
             $scope.startAgain = function () {
                 $scope.currentVentaIndex = null;
                 $scope.productos = [];
-                
+                $scope.preventClienteChange = false;
+                $scope.preventProductoSearch = false;
 
                 //Devolucion
                 $scope.devolucion = {items:[]};
@@ -131,8 +135,7 @@ class TrxVenta extends FastTransaction {
                     $http.get($scope.ajaxUrl + '&act=getBodegasAut').success(function (response) {
                         $scope.bodegas = response;
                         if($scope.bodegas.length == 1){
-                            $scope.bodegaSel = $scope.bodegas[0];
-                            $scope.show_detalle = true;
+                            $scope.setBodega($scope.bodegas[0]);
                         } else if(!$scope.bodegas.length) {
                             $scope.invalidSale = true;
                             $scope.invalidSaleMsg = "El usuario no tiene bodegas asignadas"
@@ -149,6 +152,13 @@ class TrxVenta extends FastTransaction {
                 $scope.bodegaSel = bod;
                 $scope.devolucion = {};
                 $scope.nueva_venta();
+                $scope.getVentas();
+            }
+            $scope.hasProductos = () => {
+                return $scope.productos_facturar.filter(p => p.mostrar == 1).length
+            }
+
+            $scope.getVentas = _ => {
                 $http.get($scope.ajaxUrl + '&act=getVentas&bod=' + $scope.bodegaSel.id_sucursal).success(function (response) {
                     $scope.ventas = response.data;
                     $scope.setVentasRowSelected($scope.ventas);
@@ -270,8 +280,36 @@ class TrxVenta extends FastTransaction {
                 $http.get($scope.ajaxUrl + '&act=getDetalleVenta&id_venta=' + $scope.lastVentaSelected.id_venta).success(function (response) {
                     $scope.productos_facturar = response.data;
                     $scope.total = $scope.productos_facturar.sum("sub_total");
+                    console.log($scope.lastVentaSelected);
+                    let cliente = $scope.clientes.find(c => c.id_cliente == $scope.lastVentaSelected.id_cliente);
+                    console.log(cliente);
+                    $scope.selectClienteRow(cliente);
+                    $scope.preventClienteChange = true;
+                    $scope.preventProductoSearch = true;
                 });
             };
+
+            $scope.anularVenta = function(venta){
+                swal({
+                    title: "Anular pedido",
+                    text: "¿Está seguro de anular el pedido?. Esta accion no es reversible",
+                    type: "warning",
+                    confirmButtonText: "Confirmar",
+                    cancelButtonText: "Cancelar",
+                    showCancelButton: true
+                }).then(res => {
+                    if(res.value === true){
+                        $http.get($scope.ajaxUrl + '&act=anularVenta&id_venta=' + venta.id_venta).success(function (response) {
+                            if(response.result == 1){
+                                swal("Anular", "Se ha reingresado el inventario", "success");
+                                $scope.startAgain();
+                            } else {
+                                swal("Oh oh", "Ocurrió un error al anular el pedido. Intente más tarde", "error");
+                            }
+                        });
+                    }
+                })
+            }
 
             $scope.setVentasRowIndex = function(rows){
                 $index = 0;
@@ -335,25 +373,42 @@ class TrxVenta extends FastTransaction {
                 });
             };
 
-            $scope.saveRow = function(data, id, rowform) {
+            $scope.saveRow = function(data, id, idSuc, rowform) {
                 console.log("SAVING ROW");
                 if(data['cantidad'] <= 0){
-                    $scope.showAlert('alert-warning','La cantidad no puede ser menor que 1', 2500);
+                    swal("Cantidad incorrecta", "La cantidad no puede ser menor a 1", "warning");
                     return false;
                 } else {
-                    $productos = $filter('filter')($scope.productos_facturar, {id_producto: id});
-                    if ($productos.length > 0) {
-                        if(parseFloat(data.cantidad) <= parseFloat($productos[0].total_existencias + $productos[0].cantidad)) {
-                            $productos[0].total_existencias = parseFloat($productos[0].total_existencias + $productos[0].cantidad) - data.cantidad;
-                            $productos[0].cantidad = data.cantidad;
-                            $productos[0].sub_total = parseFloat($productos[0].cantidad) * parseFloat($productos[0].precio_venta);
-                            $scope.total = $scope.productos_facturar.sum("sub_total");
-                            $scope.productos = [];
-                            $scope.search_codigo_origen = '';
-                            return true;
-                        } else {
-                            $scope.showAlert('alert-warning','La cantidad de ' + data.cantidad + ' sobrepasa las existencias ' + ($productos[0].total_existencias + $productos[0].cantidad), 2500);
-                            return false;
+                    $productos = $filter('filter')($scope.productos_facturar, {id_producto: id, id_sucursal: idSuc});
+                    if(!$scope.lastVentaSelected){
+                        if ($productos.length > 0) {
+                            if(parseFloat(data.cantidad) <= parseFloat($productos[0].total_existencias + $productos[0].cantidad)) {
+                                $productos[0].total_existencias = parseFloat($productos[0].total_existencias + $productos[0].cantidad) - data.cantidad;
+                                $productos[0].cantidad = data.cantidad;
+                                $productos[0].sub_total = parseFloat($productos[0].cantidad) * parseFloat($productos[0].precio_venta);
+                                $scope.total = $scope.productos_facturar.sum("sub_total");
+                                $scope.productos = [];
+                                $scope.search_codigo_origen = '';
+                                return true;
+                            } else {
+                                $scope.showAlert('alert-warning','La cantidad de ' + data.cantidad + ' sobrepasa las existencias ' + ($productos[0].total_existencias + $productos[0].cantidad), 2500);
+                                return false;
+                            }
+                        }
+                    } else {
+                        if ($productos.length > 0) {
+                            if(parseFloat(data.cantidad) <= parseFloat($productos[0].cantidad_original)) {
+                                $productos[0].total_existencias = parseFloat($productos[0].total_existencias + $productos[0].cantidad) - data.cantidad;
+                                $productos[0].cantidad = data.cantidad;
+                                $productos[0].sub_total = parseFloat($productos[0].cantidad) * parseFloat($productos[0].precio_venta);
+                                $scope.total = $scope.productos_facturar.sum("sub_total");
+                                $scope.productos = [];
+                                $scope.search_codigo_origen = '';
+                                return true;
+                            } else {
+                                swal("Cantidad incorrecta", "La cantidad de pedidos solo puede ser menor a la solicitada", "warning");
+                                return false;
+                            }
                         }
                     }
                 }
@@ -361,18 +416,25 @@ class TrxVenta extends FastTransaction {
 
             $scope.removeRow = function(index, idProd, idSuc){
                 console.log(`Quitando prod ${idProd} y Suc ${idSuc}`);
-                console.log($scope.productos_facturar);
-                var $r = $scope.productos_facturar.filter(p => p.id_producto !== idProd || p.id_sucursal !== idSuc);
-                $scope.productos_facturar = $r;
-                $scope.productos = [];
-                $scope.search_codigo_origen = "";
-                $scope.total = $scope.productos_facturar.sum("sub_total");
+                if(!$scope.lastVentaSelected){
+                    var $r = $scope.productos_facturar.filter(p => p.id_producto !== idProd || p.id_sucursal !== idSuc);
+                    $scope.productos_facturar = $r;
+                    $scope.productos = [];
+                    $scope.search_codigo_origen = "";
+                    $scope.total = $scope.productos_facturar.sum("sub_total");
+                } else {
+                    var $r = $scope.productos_facturar.find(p => p.id_producto == idProd && p.id_sucursal == idSuc);
+                    $r.mostrar = 0;
+                    $scope.productos = [];
+                    $scope.search_codigo_origen = "";
+                    $scope.total = $scope.productos_facturar.sum("sub_total");
+                }
             };
 
             $scope.$watch('search_codigo_origen', function(val){
                 var search = val.toLowerCase();
-                $scope.productos = [];
                 if (val.length >= 2 && $scope.bodegaSel) {
+                    $scope.productos = [];
                     $('#loading').show();
                     $http.get($scope.ajaxUrl + '&act=getProductos&key=' + search + '&bod=' + $scope.bodegaSel.id_sucursal).success(function (response) {
 
@@ -391,85 +453,98 @@ class TrxVenta extends FastTransaction {
                                 productos[i].total_existencias -= $r.cantidad; 
                             }
                             $scope.productos = productos;
-                            $scope.productos.length == 1 && $scope.agregarUno($scope.productos[0], true);
+                            //$scope.productos.length == 1 && $scope.agregarUno($scope.productos[0], true);
                         }
                     });
                 }
             });
 
+            $("#producto").keyup(function(ev) {
+                // 13 is ENTER
+                if (ev.which === 13 && $scope.productos.length == 1) {
+                    $scope.agregarUno($scope.productos[0], true);
+                    $scope.$apply();
+                }
+            });
+
             $scope.agregarUno = function(prod, resetAfter) {
-                var restoExistencias = prod.total_existencias - prod.cantidad;
-                if (restoExistencias > 0) {
+                if(!$scope.preventProductoSearch){
+                    var restoExistencias = prod.total_existencias - prod.cantidad;
+                    if (restoExistencias > 0) {
 
-                    $productos = $filter('filter')($scope.productos_facturar, {id_producto: prod.id_producto, id_sucursal: prod.id_sucursal});
+                        $productos = $filter('filter')($scope.productos_facturar, {id_producto: prod.id_producto, id_sucursal: prod.id_sucursal});
 
-                    if ($productos.length > 0) {
-                        $productos[0].total_existencias -= 1;
-                        $productos[0].cantidad = parseFloat($productos[0].cantidad) + 1;
-                        $productos[0].sub_total = parseFloat($productos[0].cantidad) * parseFloat($productos[0].precio_venta);
-                    } else {
-                        let agregar = Object.assign({}, prod);
-                        agregar.total_existencias -= 1;
-                        agregar.cantidad = 1;
-                        if($scope.lastClienteSelected.tipo_precio && $scope.lastClienteSelected.tipo_precio.porcentaje_descuento){
-                            agregar.precio_venta = agregar.precio_original - parseFloat(agregar.precio_original * ($scope.lastClienteSelected.tipo_precio.porcentaje_descuento/100));
-                            agregar.sub_total = parseFloat(agregar.precio_venta);  
+                        if ($productos.length > 0) {
+                            $productos[0].total_existencias -= 1;
+                            $productos[0].cantidad = parseFloat($productos[0].cantidad) + 1;
+                            $productos[0].sub_total = parseFloat($productos[0].cantidad) * parseFloat($productos[0].precio_venta);
                         } else {
-                            agregar.sub_total = parseFloat(prod.precio_venta);
+                            let agregar = Object.assign({}, prod);
+                            agregar.total_existencias -= 1;
+                            agregar.cantidad = 1;
+                            if($scope.lastClienteSelected.tipo_precio && $scope.lastClienteSelected.tipo_precio.porcentaje_descuento){
+                                agregar.precio_venta = agregar.precio_original - parseFloat(agregar.precio_original * ($scope.lastClienteSelected.tipo_precio.porcentaje_descuento/100));
+                                agregar.sub_total = parseFloat(agregar.precio_venta);  
+                            } else {
+                                agregar.sub_total = parseFloat(prod.precio_venta);
+                            }
+                            console.log("Agregando prod");
+                            console.log("TotalExistencias");
+                            $scope.productos_facturar.push(agregar);
                         }
-                        console.log("Agregando prod");
-                        console.log("TotalExistencias");
-                        $scope.productos_facturar.push(agregar);
+                        prod.total_existencias -= 1;
+                    } else {
+                        console.log("No más unidades");
+                        $scope.showAlert('alert-danger', 'No puede vender mas de las unidades (' + prod.total_existencias + ') de este producto ' + prod.nombre, 2500);
                     }
-                    prod.total_existencias -= 1;
-                } else {
-                    console.log("No más unidades");
-                    $scope.showAlert('alert-danger', 'No puede vender mas de las unidades (' + prod.total_existencias + ') de este producto ' + prod.nombre, 2500);
+                    $productos_calc = $filter('filter')($scope.productos_facturar, {mostrar: 1});
+                    $scope.total = $productos_calc.sum("sub_total");
+                    if(resetAfter){
+                        //$scope.productos = [];
+                        $("#producto").select();
+                    }
                 }
-                $productos_calc = $filter('filter')($scope.productos_facturar, {mostrar: 1});
-                $scope.total = $productos_calc.sum("sub_total");
-                if(resetAfter){
-                    //$scope.productos = [];
-                    $("#producto").select();
-                }
+                
             };
 
             $scope.agregarVarios = function(prod) {
-                var restoExistencias = prod.total_existencias - prod.cant_vender;
-                console.log(restoExistencias);
-                if (restoExistencias >= 0) {
+                if(!$scope.preventProductoChange){
+                    var restoExistencias = prod.total_existencias - prod.cant_vender;
+                    console.log(restoExistencias);
+                    if (restoExistencias >= 0) {
 
-                    $productos = $filter('filter')($scope.productos_facturar, {id_producto: prod.id_producto});
+                        $productos = $filter('filter')($scope.productos_facturar, {id_producto: prod.id_producto});
 
-                    if ($productos.length > 0) {
-                        $productos[0].total_existencias -= prod.cant_vender;
-                        $productos[0].cantidad = parseFloat($productos[0].cantidad) + prod.cant_vender;
-                        $productos[0].sub_total = parseFloat($productos[0].cantidad) * parseFloat($productos[0].precio_venta);
-                    } else {
-                        let agregar = Object.assign({}, prod);
-                        agregar.total_existencias -= prod.cant_vender;
-                        agregar.cantidad = parseInt(prod.cantidad);
-                        if($scope.lastClienteSelected.tipo_precio && $scope.lastClienteSelected.tipo_precio.porcentaje_descuento){
-                            agregar.precio_venta = agregar.precio_original - parseFloat(agregar.precio_original * ($scope.lastClienteSelected.tipo_precio.porcentaje_descuento/100))  
-                            agregar.sub_total = parseFloat(agregar.precio_venta) * parseInt(prod.cantidad);
+                        if ($productos.length > 0) {
+                            $productos[0].total_existencias -= prod.cant_vender;
+                            $productos[0].cantidad = parseFloat($productos[0].cantidad) + prod.cant_vender;
+                            $productos[0].sub_total = parseFloat($productos[0].cantidad) * parseFloat($productos[0].precio_venta);
                         } else {
-                            agregar.sub_total = parseFloat(prod.precio_venta) * parseInt(prod.cantidad);
+                            let agregar = Object.assign({}, prod);
+                            agregar.total_existencias -= prod.cant_vender;
+                            agregar.cantidad = parseInt(prod.cantidad);
+                            if($scope.lastClienteSelected.tipo_precio && $scope.lastClienteSelected.tipo_precio.porcentaje_descuento){
+                                agregar.precio_venta = agregar.precio_original - parseFloat(agregar.precio_original * ($scope.lastClienteSelected.tipo_precio.porcentaje_descuento/100))  
+                                agregar.sub_total = parseFloat(agregar.precio_venta) * parseInt(prod.cantidad);
+                            } else {
+                                agregar.sub_total = parseFloat(prod.precio_venta) * parseInt(prod.cantidad);
+                            }
+                            $scope.productos_facturar.push(agregar);
                         }
-                        $scope.productos_facturar.push(agregar);
+                        prod.total_existencias -= prod.cant_vender;
+                    } else {
+                        $scope.showAlert('alert-danger','No puede vender mas de las unidades (' + prod.total_existencias + ') de este producto ' + prod.nombre, 2500);
                     }
-                    prod.total_existencias -= prod.cant_vender;
-                } else {
-                    $scope.showAlert('alert-danger','No puede vender mas de las unidades (' + prod.total_existencias + ') de este producto ' + prod.nombre, 2500);
-                }
 
-                if($scope.lastClienteSelected.tipo_precio && $scope.lastClienteSelected.tipo_precio.porcentaje_descuento){
-                    for(let i = 0; $scope.productos_facturar.length > i; i++){
-                        $scope.productos_facturar[i].precio_venta = $scope.productos_facturar[i].precio_original - parseFloat($scope.productos_facturar[i].precio_original * (r.porcentaje_descuento/100))  
-                        $scope.productos_facturar[i].sub_total = $scope.productos_facturar[i].precio_venta * $scope.productos_facturar[i].cantidad;
+                    if($scope.lastClienteSelected.tipo_precio && $scope.lastClienteSelected.tipo_precio.porcentaje_descuento){
+                        for(let i = 0; $scope.productos_facturar.length > i; i++){
+                            $scope.productos_facturar[i].precio_venta = $scope.productos_facturar[i].precio_original - parseFloat($scope.productos_facturar[i].precio_original * (r.porcentaje_descuento/100))  
+                            $scope.productos_facturar[i].sub_total = $scope.productos_facturar[i].precio_venta * $scope.productos_facturar[i].cantidad;
+                        }
                     }
+                    $productos_calc = $filter('filter')($scope.productos_facturar, {mostrar: 1});
+                    $scope.total = $productos_calc.sum("sub_total");
                 }
-                $productos_calc = $filter('filter')($scope.productos_facturar, {mostrar: 1});
-                $scope.total = $productos_calc.sum("sub_total");
             };
 
             $scope.cambioMoneda = function() {
@@ -797,10 +872,11 @@ class TrxVenta extends FastTransaction {
 
         $dsClientes = $this->db->query_select('clientes');
 
+        
+
         foreach ($dsClientes as $p) {
             $resultSet[] = array('id_tipo_precio' => $p['id_tipo_precio'], 'id_cliente' => $p['id_cliente'], 'identificacion' => $p['identificacion'], 'nombres' => $p['nombres'], 'apellidos' => $p['apellidos']);
         }
-
         echo json_encode(array('data' => $resultSet));
     }
 
@@ -813,30 +889,30 @@ class TrxVenta extends FastTransaction {
     {
         $bod = getParam("bod");
         $queryVentas = "      
-            SELECT    v.id_venta, v.total, CONCAT(c.nombres,' ',c.apellidos) AS nombre_cliente, v.fecha_creacion
+            SELECT    v.id_venta, v.total, CONCAT(c.nombres,' ',c.apellidos) AS nombre_cliente, v.fecha_creacion, v.id_cliente, v.estado
             FROM	  trx_venta v
             JOIN       clientes c on c.id_cliente=v.id_cliente 
             WHERE     v.estado = 'P'
             AND v.id_venta IN (select id_venta FROM trx_venta_detalle where id_sucursal=%s)" ;
 
         $ventas = $this->db->queryToArray(sprintf($queryVentas, $bod));
+
         echo json_encode(array('data' => $ventas));
     }
 
     public function getDetalleVenta(){
         $id_venta = getParam("id_venta");
-        $queryProductos = " SELECT	vd.id_venta_detalle, p.id_producto, p.nombre, p.descripcion, p.precio_venta, p.imagen,
-                                    p.codigo_origen, vd.cantidad, (vd.cantidad * p.precio_venta) AS sub_total,
-                                    (sum(t.haber) - sum(t.debe)) AS total_existencias, 1 AS mostrar, t.id_sucursal
+        $queryProductos = " SELECT	vd.id_venta_detalle, p.id_producto, p.nombre, p.descripcion, p.precio_venta precio_original, p.imagen,p.codigo,
+                                    p.codigo_origen, vd.cantidad, vd.cantidad cantidad_original, (vd.cantidad * vd.precio_venta) AS sub_total,vd.precio_venta,
+                                    t.total_existencias AS total_existencias, 1 AS mostrar, vd.id_sucursal, s.nombre nombre_sucursal
                             FROM	trx_venta_detalle vd
                                     LEFT JOIN producto p
                                     ON p.id_producto = vd.id_producto
-                                    LEFT JOIN trx_transacciones t
+                                    LEFT JOIN reporte_inventario t
                                     ON t.id_producto = vd.id_producto
                                     AND t.id_sucursal = vd.id_sucursal
-                            WHERE	vd.id_venta = " . $id_venta .
-                          " GROUP BY
-                                    vd.id_producto";
+                                    LEFT JOIN sucursales s on s.id_sucursal=vd.id_sucursal
+                            WHERE	vd.id_venta = " . $id_venta; 
 
         $productos = $this->db->queryToArray($queryProductos);
 
@@ -982,9 +1058,50 @@ class TrxVenta extends FastTransaction {
         return true;
     }
 
+    public function anularVenta(){
+        $id = getParam("id_venta");
+        $fecha = new DateTime();
+        $user = AppSecurity::$UserData['data'];
+        $dsEmpleado = decode_email_address($this->user['ID']);
+        $dsCuentaVenta = Collection::get($this->db, 'cuentas', 'lower(nombre) = "venta"')->single();
+        $dsCuentaReingreso = Collection::get($this->db, 'cuentas', 'lower(nombre) = "reingreso"')->single();
+        $dsMoneda = Collection::get($this->db, 'monedas', 'moneda_defecto = 1')->single();
+        $venta = $this->db->query_select("trx_venta", sprintf("id_venta=%s", $id));
+        if(count($venta) > 0){
+            $this->db->query("START TRANSACTION");
+            try {
+                $venta = $venta[0];
+                $detalles = $this->db->query_select("trx_venta_detalle", sprintf("id_venta=%s", $id));
+                foreach($detalles as $prod){
+                    $transaccion = [
+                        'id_cuenta' => sqlValue($dsCuentaVenta['id_cuenta'], 'int'),
+                        'id_sucursal' => sqlValue($prod['id_sucursal'], 'int'),
+                        'descripcion' => sqlValue('Anulación pedido', 'text'),
+                        'id_producto' => sqlValue($prod['id_producto'], 'int'),
+                        'haber' => sqlValue($prod['cantidad'], 'float'),
+                        'debe' => sqlValue('0', 'float'),
+                        'fecha_creacion' => sqlValue($fecha->format('Y-m-d H:i:s'), 'date')
+                    ];
+
+                    $this->db->query_insert('trx_transacciones', $transaccion);
+                }
+                $ventaUpd = [
+                    "estado" => sqlValue('A', 'text'),
+                    'es_anulado' => 1
+                ];
+                $this->db->query_update("trx_venta", $ventaUpd, sprintf("id_venta=%s", $venta['id_venta']));
+                $this->db->query("COMMIT");
+                echo json_encode(['result' => 1]);
+                
+            }catch(Exception $e){
+                $this->db->query("ROLLBACK");
+                echo json_encode(['result' => 0]);
+            }
+        }
+    }
+
     public function doSave($data)
     {
-        //print_r($data);
         $fecha = new DateTime();
         $user = AppSecurity::$UserData['data'];
         $dsEmpleado = decode_email_address($this->user['ID']);
@@ -1014,8 +1131,7 @@ class TrxVenta extends FastTransaction {
 
             if($prod['mostrar'] == "1") {
 
-                if($data['id_venta'] > 0) {
-
+                if($data['id_venta'] > 0 && isset($prod['id_venta_detalle']) && !isEmpty($prod['id_venta_detalle'])) {
                     $venta_detalle = [
                         'cantidad' => sqlValue($prod['cantidad'], 'float'),
                         'precio_venta' => sqlValue($prod['precio_venta'], 'float'),
@@ -1024,6 +1140,19 @@ class TrxVenta extends FastTransaction {
                     ];
 
                     $this->db->query_update('trx_venta_detalle', $venta_detalle, sprintf('id_venta_detalle = %s', $prod['id_venta_detalle']));
+                    if($prod['cantidad_original'] > $prod['cantidad']){
+                        $transaccion = [
+                            'id_cuenta' => sqlValue($dsCuentaVenta['id_cuenta'], 'int'),
+                            'id_sucursal' => sqlValue($prod['id_sucursal'], 'int'),
+                            'descripcion' => sqlValue('devolución exceso pedido', 'text'),
+                            'id_producto' => sqlValue($prod['id_producto'], 'int'),
+                            'haber' => sqlValue($prod['cantidad_original'] - $prod['cantidad'], 'float'),
+                            'debe' => sqlValue('0', 'float'),
+                            'fecha_creacion' => sqlValue($fecha->format('Y-m-d H:i:s'), 'date')
+                        ];
+    
+                        $this->db->query_insert('trx_transacciones', $transaccion);
+                    }
                 } else {
                     $venta_detalle = [
                         'id_venta' => sqlValue($id_venta, 'int'),
@@ -1035,27 +1164,21 @@ class TrxVenta extends FastTransaction {
                         'usuario_creacion' => sqlValue(self_escape_string($user['FIRST_NAME']), 'text')
                     ];
 
+                    $transaccion = [
+                        'id_cuenta' => sqlValue($dsCuentaVenta['id_cuenta'], 'int'),
+                        'id_sucursal' => sqlValue($prod['id_sucursal'], 'int'),
+                        'descripcion' => sqlValue('Venta', 'text'),
+                        'id_moneda' => sqlValue($dsMoneda['id_moneda'], 'int'),
+                        'id_producto' => sqlValue($prod['id_producto'], 'int'),
+                        'debe' => sqlValue($prod['cantidad'], 'float'),
+                        'haber' => sqlValue('0', 'float'),
+                        'fecha_creacion' => sqlValue($fecha->format('Y-m-d H:i:s'), 'date'),
+                        'id_cliente' => sqlValue($data['id_cliente'], 'int')
+                    ];
+
                     $this->db->query_insert('trx_venta_detalle', $venta_detalle);
+                    $this->db->query_insert('trx_transacciones', $transaccion);
                 }
-
-                $transaccion = [
-                    'id_cuenta' => sqlValue($dsCuentaVenta['id_cuenta'], 'int'),
-                    'id_sucursal' => sqlValue($prod['id_sucursal'], 'int'),
-                    'descripcion' => sqlValue('Venta', 'text'),
-                    'id_moneda' => sqlValue($dsMoneda['id_moneda'], 'int'),
-                    'id_producto' => sqlValue($prod['id_producto'], 'int'),
-                    'debe' => sqlValue($prod['cantidad'], 'float'),
-                    'haber' => sqlValue('0', 'float'),
-                    'fecha_creacion' => sqlValue($fecha->format('Y-m-d H:i:s'), 'date'),
-                    'id_cliente' => sqlValue($data['id_cliente'], 'int')
-                ];
-
-                $this->db->query_insert('trx_transacciones', $transaccion);
-                $trxId = $this->db->max_id('trx_transacciones', 'id_transaccion');
-                $ventaUpdate = [
-                    "id_transaccion" => sqlValue($trxId, "int")
-                ];
-                $this->db->query_update("trx_venta", $ventaUpdate, sprintf("id_venta=%s", $id_venta)); 
             } else {
 
                 $venta_detalle = [
@@ -1070,21 +1193,16 @@ class TrxVenta extends FastTransaction {
                 $transaccion = [
                     'id_cuenta' => sqlValue($dsCuentaVenta['id_cuenta'], 'int'),
                     'id_sucursal' => sqlValue($prod['id_sucursal'], 'int'),
-                    'descripcion' => sqlValue('Ingreso de venta', 'text'),
+                    'descripcion' => sqlValue('Devolucion eliminacion pedido', 'text'),
                     'id_moneda' => sqlValue($dsMoneda['id_moneda'], 'int'),
                     'id_producto' => sqlValue($prod['id_producto'], 'int'),
                     'debe' => sqlValue('0', 'float'),
-                    'haber' => sqlValue($prod['cantidad'], 'float'),
+                    'haber' => sqlValue($prod['cantidad_original'], 'float'),
                     'fecha_creacion' => sqlValue($fecha->format('Y-m-d H:i:s'), 'date'),
                     'id_cliente' => sqlValue($data['id_cliente'], 'int')
                 ];
 
                 $this->db->query_insert('trx_transacciones', $transaccion);
-                $trxId = $this->db->max_id('trx_transacciones', 'id_transaccion');
-                $ventaUpdate = [
-                    "id_transaccion" => sqlValue($trxId, "int")
-                ];
-                $this->db->query_update("trx_venta", $ventaUpdate, sprintf("id_venta=%s", $id_venta)); 
             }
         }
 
@@ -1181,5 +1299,6 @@ class TrxVenta extends FastTransaction {
         $this->r = 1;
         $this->msg = 'Venta realizada con éxito';
         $this->returnData = array('id_venta' => $id_venta);
+        
     }
 }

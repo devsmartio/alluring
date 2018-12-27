@@ -31,5 +31,6 @@ error_reporting(E_ALL);
 ini_set('display_errors', DEBUG ? 'On' : 'Off');
 //ini_set('open_basedir', TEMP_DIR);
 //Run the application
+require_once VENDOR . DS . 'autoload.php';
 include_once SYSTEM . '/AppController.php';
 AppController::getApp()->run();

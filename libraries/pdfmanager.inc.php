@@ -10,6 +10,9 @@
  *
  * @author Bryan Cruz
  */
+
+use Dompdf\Dompdf;
+
 class PDFManager {
     private static $selfInstance = null; 
     private $user;
@@ -37,7 +40,14 @@ class PDFManager {
     
     public function generatePdf(){
         $template = getParam('tmp');
+        $orientation = 'portrait';
         switch($template){
+            case "PD": {
+                $ventaId = getParam("id_venta");
+                $template = "print_pedido_detalle.phtml";
+                $orientation = 'landscape';
+                break;
+            }
             case "VT": {
                 $ventaId = getParam("id_venta");
                 $template = "print_venta.phtml";
@@ -72,11 +82,10 @@ class PDFManager {
         }
         
         ob_start();
-        require_once(LIB . DS . "dompdf-master/dompdf_config.inc.php");
         require PDF_TEMPLATE . "/$template";
-        $dompdf = new DOMPDF();
-        $dompdf->set_paper('letter');
-        $dompdf->load_html(ob_get_clean());
+        $dompdf = new Dompdf();
+        $dompdf->setPaper('letter', $orientation);
+        $dompdf->loadHtml(ob_get_clean());
         $dompdf->render();
         $dompdf->stream("imprimible.pdf", array("Attachment" => false));
         exit(0);

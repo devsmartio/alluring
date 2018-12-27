@@ -1,0 +1,1299 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="catalogoApp">
+<head>
+	<title>Alluring Concept</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="vendor/bootstrap/css/bootstrap.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="fonts/font-awesome-4.7.0/css/font-awesome.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="fonts/themify/themify-icons.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="fonts/Linearicons-Free-v1.0.0/icon-font.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="fonts/elegant-font/html-css/style.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="vendor/animate/animate.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="vendor/css-hamburgers/hamburgers.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="vendor/animsition/css/animsition.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="vendor/select2/select2.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="vendor/slick/slick.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="vendor/noui/nouislider.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="css/util.css">
+	<link rel="stylesheet" type="text/css" href="css/main.css">
+<!--===============================================================================================-->
+</head>
+<body class="animsition" ng-cloak ng-controller="ProductosCtrl">
+	<!-- Header -->
+	<header class="header1" >
+		<!-- Header desktop -->
+		<div class="container-menu-header">
+			
+
+			<div class="wrap_header">
+				<!-- Logo -->
+				<a href="index.html" class="logo">
+					<img src="images/icons/logo.png" alt="IMG-LOGO">
+				</a>
+
+				<!-- Menu -->
+				<div class="wrap_menu">
+					<nav class="menu">
+						<ul class="main_menu">
+							<!--<li>-->
+								<!--<a href="index.html">Home</a>-->
+								<!--<ul class="sub_menu">-->
+									<!--<li><a href="index.html">Homepage V1</a></li>-->
+									<!--<li><a href="home-02.html">Homepage V2</a></li>-->
+									<!--<li><a href="home-03.html">Homepage V3</a></li>-->
+								<!--</ul>-->
+							</li>
+
+							<li>
+								<a href="product.html">Catálogo</a>
+							</li>
+
+							<!--<li class="sale-noti">-->
+								<!--<a href="product.html">Sale</a>-->
+							<!--</li>-->
+
+							<!--<li>-->
+								<!--<a href="cart.html">Features</a>-->
+							<!--</li>-->
+
+							<!--<li>-->
+								<!--<a href="blog.html">Blog</a>-->
+							<!--</li>-->
+
+							<!--<li>-->
+								<!--<a href="about.html">About</a>-->
+							<!--</li>-->
+
+							<!--<li>-->
+								<!--<a href="contact.html">Contact</a>-->
+							<!--</li>-->
+						</ul>
+					</nav>
+				</div>
+
+				<!-- Header Icon -->
+				<div class="header-icons">
+						<a href="#" class="header-wrapicon1 dis-block" ng-click="login()" ng-show="!user">
+							<img src="images/icons/icon-header-01.png" class="header-icon1" alt="ICON">
+						</a>
+						<div ng-show="user">
+							{{user.nombres}} {{user.apellidos}}
+							<a href="#" class="header-wrapicon1 dis-block" ng-click="logout()" ng-show="user">
+								Salir
+							</a>
+						</div>
+		
+							<span class="linedivide1"></span>
+							<div class="badge badge-secondary">Total: {{cart.total_descuento || cart.total | currency : 'Q' : 2}}</div>
+							<span class="linedivide1"></span>
+					<div class="header-wrapicon2">
+						<img src="images/icons/icon-header-02.png" class="header-icon1 js-show-header-dropdown" alt="ICON">
+						<span class="header-icons-noti">{{cart.productos.length}}</span>
+
+						<!-- Header cart noti -->
+						<div class="header-cart header-dropdown">
+							<ul class="header-cart-wrapitem">
+								<li class="header-cart-item" ng-repeat="p in cart.productos track by $index">
+									<div class="header-cart-item-img" ng-click="removeAll(p)">
+										<img  ng-src="{{p.imageUrl}}?rand={{rand}}" alt="IMG" onerror="this.src = 'http://192.168.0.22/alluring/media/uploads/no-image.jpg'">
+									</div>
+
+									<div class="header-cart-item-txt">
+										<a href="#" class="header-cart-item-name">
+											{{p.codigo}} - {{p.descripcion}}
+										</a>
+										<div class="flex-w bo5 of-hidden w-size17">
+												<button class="btn-num-product-down color1 flex-c-m size7 bg8 eff2" ng-click="removeOne(p)">
+													<i class="fs-12 fa fa-minus" aria-hidden="true"></i>
+												</button>
+			
+												<input class="size8 m-text18 t-center num-product" ng-class="{'text-red': p.cantidad_vender == p.total_existencias}" type="number" name="num-product1" ng-model="p.cantidad_vender">
+			
+												<button class="btn-num-product-up color1 flex-c-m size7 bg8 eff2" ng-click="addOne(p)">
+													<i class="fs-12 fa fa-plus" aria-hidden="true"></i>
+												</button>
+											</div>
+										<span class="header-cart-item-info">
+											{{p.cantidad_vender}} x <span ng-show="p.precio_descuento" style="color: red; font-size: 10px"  class="fs-10 block2-oldprice m-text7">{{p.precio_venta * p.cantidad_vender | currency : 'Q' : 2}}&nbsp;</span> {{p.cantidad_vender * (p.precio_descuento || p.precio_venta) | currency : 'Q' : 2}}
+											
+										</span>
+									</div>
+								</li>
+							</ul>
+
+							<div class="header-cart-total">
+								Total: {{cart.total_descuento || cart.total | currency : 'Q' : 2}}
+							</div>
+
+							<div class="header-cart-buttons" ng-show="cart.productos.length">
+								<div class="header-cart-wrapbtn">
+									<!-- Button -->
+									<!--a href="cart.html" class="flex-c-m size1 bg1 bo-rad-20 hov1 s-text1 trans-0-4">
+										Carrito
+									</a-->
+								</div>
+
+								<div class="header-cart-wrapbtn" ng-click="checkout()">
+									<!-- Button -->
+									<a href="#" class="flex-c-m size1 bg1 bo-rad-20 hov1 s-text1 trans-0-4">
+										Finalizar
+									</a>
+								</div>
+							</div>
+
+							<div class="header-cart-buttons" ng-show="!cart.productos.length">
+									<i>No hay items en tu carrito aún</i>
+								</div>
+						</div>
+					</div>
+					
+				</div>
+			</div>
+		</div>
+
+		<!-- Header Mobile -->
+		<div class="wrap_header_mobile " >
+			<!-- Logo moblie -->
+			<a href="index.html" class="logo-mobile">
+				<img src="images/icons/logo.png" class="img-logo" alt="IMG-LOGO">
+			</a>
+
+			<!-- Button show menu -->
+			<div class="btn-show-menu">
+				<!-- Header Icon mobile -->
+				<div class="header-icons-mobile">
+						<a href="#" class="header-wrapicon1 dis-block" ng-click="login()" ng-show="!user">
+								<img src="images/icons/icon-header-01.png" class="header-icon1" alt="ICON">
+							</a>
+							<div ng-show="user">
+								{{user.nombres}} {{user.apellidos}}
+								<a href="#" class="header-wrapicon1 dis-block" ng-click="logout()" ng-show="user">
+									Salir
+								</a>
+							</div>
+
+					<span class="linedivide2"></span>
+					<div class="badge badge-secondary">Total: {{cart.total_descuento || cart.total | currency : 'Q' : 2}}</div>
+					<span class="linedivide2"></span>
+					<div class="header-wrapicon2">
+						<img src="images/icons/icon-header-02.png" class="header-icon1 js-show-header-dropdown" alt="ICON">
+						<span class="header-icons-noti">{{cart.productos.length}}</span>
+						
+
+						<!-- Header cart noti -->
+						<div class="header-cart header-dropdown">
+							<ul class="header-cart-wrapitem">
+								<li class="header-cart-item" ng-repeat="p in cart.productos track by $index">
+									<div class="header-cart-item-img" ng-click="removeAll(p)">
+										<img   ng-src="{{p.imageUrl}}?rand={{rand}}" alt="IMG" onerror="this.src = 'http://192.168.0.22/alluring/media/uploads/no-image.jpg'">
+									</div>
+
+									<div class="header-cart-item-txt">
+										<a href="#" class="header-cart-item-name">
+											{{p.codigo}} - {{p.descripcion}}
+										</a>
+										<div class="flex-w bo5 of-hidden w-size17">
+												<button class="btn-num-product-down color1 flex-c-m size7 bg8 eff2" ng-click="removeOne(p)">
+													<i class="fs-12 fa fa-minus" aria-hidden="true"></i>
+												</button>
+			
+												<input class="size8 m-text18 t-center num-product" ng-class="{'text-red': p.cantidad_vender == p.total_existencias}" type="number" name="num-product1" ng-model="p.cantidad_vender">
+			
+												<button class="btn-num-product-up color1 flex-c-m size7 bg8 eff2" ng-click="addOne(p)">
+													<i class="fs-12 fa fa-plus" aria-hidden="true"></i>
+												</button>
+											</div>
+										<span class="header-cart-item-info">
+											{{p.cantidad_vender}} x <span ng-show="p.precio_descuento" style="color: red; font-size: 10px"  class="fs-10 block2-oldprice m-text7">{{p.precio_venta * p.cantidad_vender | currency : 'Q' : 2}}&nbsp;</span> {{p.cantidad_vender * (p.precio_descuento || p.precio_venta) | currency : 'Q' : 2}}
+												
+										</span>
+									</div>
+								</li>
+							</ul>
+
+							<div class="header-cart-total">
+								Total: {{ cart.total_descuento || cart.total | currency : 'Q' : 2}}
+							</div>
+
+							<div class="header-cart-buttons" ng-show="cart.productos.length">
+								<div class="header-cart-wrapbtn">
+									<!-- Button -->
+									<!--a href="cart.html" class="flex-c-m size1 bg1 bo-rad-20 hov1 s-text1">
+										Carrito
+									</a-->
+								</div>
+
+								<div class="header-cart-wrapbtn" ng-click="checkout()">
+									<!-- Button -->
+									<a href="#" class="flex-c-m size1 bg1 bo-rad-20 hov1 s-text1 ">
+										Finalizar
+									</a>
+								</div>
+							</div>
+
+							<div class="header-cart-buttons" ng-show="!cart.productos.length">
+									<i>No hay items en tu carrito aún</i>
+								</div>
+						</div>
+						
+					</div>
+					
+				</div>
+
+				<div class="btn-show-menu-mobile hamburger hamburger--squeeze" onclick="window.scrollTo(0, 0);">
+					<span class="hamburger-box">
+						<span class="hamburger-inner"></span>
+					</span>
+				</div>
+			</div>
+		</div>
+
+		<!-- Menu Mobile -->
+		<div class="wrap-side-menu p-t-100-xs">
+				<nav class="side-menu">
+					<ul class="main-menu">
+						
+						<li class="item-menu-mobile">
+							<a href="">Categorías</a>
+						</li>
+						<li ng-repeat="c in categorias" ng-click="setCategoria(c)" class="item-menu-mobile">
+								<a href="" >{{c.nombre}}</a>
+						</li>
+					</ul>
+				</nav>
+			</div>
+
+	</header>
+
+	<!-- Title Page -->
+	<!--<section class="bg-title-page p-t-50 p-b-40 flex-col-c-m" style="background-image: url(images/heading-pages-02.jpg);">-->
+		<!--<h2 class="l-text2 t-center">-->
+			<!--Women-->
+		<!--</h2>-->
+		<!--<p class="m-text13 t-center">-->
+			<!--New Arrivals Women Collection 2018-->
+		<!--</p>-->
+	<!--</section>-->
+
+
+	<!-- Content page -->
+	<section class="bgwhite p-b-5  p-t-0-lg p-t-100-xs">
+		<div class="container">
+			<div class="row">
+				<div class="col-sm-6 col-md-4 col-lg-3 p-b-50" id="categoriasCont">
+					<div class="leftbar p-r-20 p-r-0-sm">
+						<!--  -->
+						<h4 class="m-text14 p-b-7">
+							Categorías
+						</h4>
+
+						<ul class="p-b-54">
+							<li class="p-t-4" ng-repeat="c in categorias">
+								<a href="#" class="s-text13" ng-class="{active1:c.selected}" ng-click="setCategoria(c)">
+									{{c.nombre}}
+								</a>
+							</li>
+						</ul>
+
+						<!-- 
+						<h4 class="m-text14 p-b-32">
+							Filtros
+						</h4>
+
+						<div class="filter-price p-t-22 p-b-50 bo3">
+							<div class="m-text15 p-b-17">
+								Price
+							</div>
+
+							<div class="wra-filter-bar">
+								<div id="filter-bar"></div>
+							</div>
+
+							<div class="flex-sb-m flex-w p-t-16">
+								<div class="w-size11">
+									 
+									<button class="flex-c-m size4 bg7 bo-rad-15 hov1 s-text14 trans-0-4">
+										Filter
+									</button>
+								</div>
+
+								<div class="s-text3 p-t-10 p-b-10">
+									Range: $<span id="value-lower">610</span> - $<span id="value-upper">980</span>
+								</div>
+							</div>
+						</div>
+
+						<div class="filter-color p-t-22 p-b-50 bo3">
+							<div class="m-text15 p-b-12">
+								Color
+							</div>
+
+							<ul class="flex-w">
+								<li class="m-r-10">
+									<input class="checkbox-color-filter" id="color-filter1" type="checkbox" name="color-filter1">
+									<label class="color-filter color-filter1" for="color-filter1"></label>
+								</li>
+
+								<li class="m-r-10">
+									<input class="checkbox-color-filter" id="color-filter2" type="checkbox" name="color-filter2">
+									<label class="color-filter color-filter2" for="color-filter2"></label>
+								</li>
+
+								<li class="m-r-10">
+									<input class="checkbox-color-filter" id="color-filter3" type="checkbox" name="color-filter3">
+									<label class="color-filter color-filter3" for="color-filter3"></label>
+								</li>
+
+								<li class="m-r-10">
+									<input class="checkbox-color-filter" id="color-filter4" type="checkbox" name="color-filter4">
+									<label class="color-filter color-filter4" for="color-filter4"></label>
+								</li>
+
+								<li class="m-r-10">
+									<input class="checkbox-color-filter" id="color-filter5" type="checkbox" name="color-filter5">
+									<label class="color-filter color-filter5" for="color-filter5"></label>
+								</li>
+
+								<li class="m-r-10">
+									<input class="checkbox-color-filter" id="color-filter6" type="checkbox" name="color-filter6">
+									<label class="color-filter color-filter6" for="color-filter6"></label>
+								</li>
+
+								<li class="m-r-10">
+									<input class="checkbox-color-filter" id="color-filter7" type="checkbox" name="color-filter7">
+									<label class="color-filter color-filter7" for="color-filter7"></label>
+								</li>
+							</ul>
+						</div-->
+
+						
+					</div>
+				</div>
+
+				<div class="col-sm-6 col-md-8 col-lg-9 p-b-50" id="productoCont">
+					<!--  -->
+					<div class="flex-sb-m flex-w p-b-5">
+						<div class="flex-w">
+							<div class="rs2-select2 bo4 of-hidden w-size12 m-t-5 m-b-5 m-r-10">
+								<select class="selection-2" name="sorting" ng-model="sort" ng-options="s.value as s.label for s in sortTypes" ng-change="setSorting()">
+									<option value="">-- Elija una opción --</option>
+								</select>
+							</div>
+
+							<div class="search-product pos-relative bo4 of-hidden m-t-5 m-b-5 m-r-10" style="height: 60px">
+									<input class="s-text7 size6 p-l-23 p-r-50" type="text" name="search-product" ng-model="filter" placeholder="Buscar..." >
+	
+								<button class="flex-c-m size5 ab-r-m color2 color0-hov trans-0-4" ng-click="setProductosShow()">
+									<i class="fs-12 fa fa-search" aria-hidden="true"></i>
+								</button>
+							</div>
+						</div>
+
+						<span class="s-text8 p-t-5 p-b-5">
+							Mostrando {{(!productosFilter.length ? 0 : start+1)}}–{{getPageEnd()}} de {{productosFilter.length}} resultados
+						</span>
+					</div>
+
+					<!-- Pagination top -->
+					<div class="pagination flex-m flex-w p-b-26">
+						<a href="#productoCont" ng-repeat="p in pages" class="item-pagination flex-c-m trans-0-4" ng-class="{'active-pagination':p.selected}" ng-click="setPage(p)">{{p.num}}</a>
+					</div>
+					<!-- Product -->
+					<div class="row" ng-show="productosFilter.length">
+						<div class="col-sm-12 col-md-6 col-lg-4 p-b-50" ng-repeat="p in productosShow">
+							<!-- Block2 -->
+							<div class="block2">
+								<!-- ADD block2-labelnew for new -->
+								<div class="block2-img wrap-pic-w of-hidden pos-relative ">
+									
+									<img style="cursor: pointer" ng-click="showBigImage(p)" ng-src="{{p.imageUrl}}?rand={{rand}}" alt="{{p.codigo}} - {{p.descripcion}}" onerror="this.src = 'http://192.168.0.22/alluring/media/uploads/no-image.jpg'">
+
+									<!--div class="block2-overlay trans-0-4">
+										<div class="block2-btn-addcart w-size1 trans-0-4">
+											
+											
+										</div>
+									</div-->
+								</div>
+
+								<div class="block2-txt p-t-20" ng-class="{'block2-labelsale':p.precio_descuento&&!user}">
+									<a href="#" class="block2-name dis-block s-text3 p-b-5">
+										{{p.codigo}} - {{p.descripcion}} 
+									</a>
+									<span class="p-r-5" ng-class="{'block2-oldprice m-text7': p.precio_descuento, 'block2-price m-text6': !p.precio_descuento}">
+											<span class="badge" ng-class="{'badge-success':p.total_existencias >= 10,'badge-warning':p.total_existencias >= 5 && p.total_existencias < 10, 'badge-danger': p.total_existencias < 5}">Hay {{p.total_existencias}}{{p.total_existencias < 5 ? '!' : ''}}</span>
+											&nbsp;&nbsp;{{p.precio_venta | currency: 'Q' : 2}}
+									</span>
+
+									<span class="block2-newprice m-text8 p-r-5" ng-if="p.precio_descuento">
+										{{p.precio_descuento | currency : 'Q' : 2}}
+									</span>
+
+									<span class="badge badge-warning" ng-show="p.precio_descuento&&!user">
+										-{{p.porcentaje_descuento ? p.porcentaje_descuento + '%' : ''}}
+										<span ng-show="p.cantidad_descuento">{{p.cantidad_descuento | number : 2}}</span>
+									</span>
+
+									
+									<div class="flex-sb">
+											<button class="flex-c-m size1 bg4 bo-rad-23 hov1 s-text14 btn-add m-t-10"  ng-click="addToCart(p)">
+													Agregar uno
+												</button>&nbsp;&nbsp;
+												<button class="flex-c-m size1 bg4 bo-rad-23 hov1 s-text14 btn-add m-t-10"  ng-click="addToCartAll(p)">
+													Agregar todos
+												</button>
+									</div>
+									
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div class="row" ng-if="!productosFilter.length">
+						<i>No hay productos que satisfagan su búsqueda</i>
+					</div>
+
+					<!-- Pagination -->
+					<div class="pagination flex-m flex-w p-t-26">
+						<a href="#productoCont" ng-repeat="p in pages" class="item-pagination flex-c-m trans-0-4" ng-class="{'active-pagination':p.selected}" ng-click="setPage(p)">{{p.num}}</a>
+					</div>
+				</div>
+			</div>
+		</div>
+	</section>
+
+
+	<!-- Footer -->
+	<footer class="bg6 p-t-45 p-b-43 p-l-45 p-r-45">
+		<div class="flex-w p-b-90">
+			<!--<div class="w-size6 p-t-30 p-l-15 p-r-15 respon3">-->
+				<!--<h4 class="s-text12 p-b-30">-->
+					<!--GET IN TOUCH-->
+				<!--</h4>-->
+
+				<!--<div>-->
+					<!--<p class="s-text7 w-size27">-->
+						<!--Any questions? Let us know in store at 8th floor, 379 Hudson St, New York, NY 10018 or call us on (+1) 96 716 6879-->
+					<!--</p>-->
+
+					<!--<div class="flex-m p-t-30">-->
+						<!--<a href="#" class="fs-18 color1 p-r-20 fa fa-facebook"></a>-->
+						<!--<a href="#" class="fs-18 color1 p-r-20 fa fa-instagram"></a>-->
+						<!--<a href="#" class="fs-18 color1 p-r-20 fa fa-pinterest-p"></a>-->
+						<!--<a href="#" class="fs-18 color1 p-r-20 fa fa-snapchat-ghost"></a>-->
+						<!--<a href="#" class="fs-18 color1 p-r-20 fa fa-youtube-play"></a>-->
+					<!--</div>-->
+				<!--</div>-->
+			<!--</div>-->
+
+			<!--<div class="w-size7 p-t-30 p-l-15 p-r-15 respon4">-->
+				<!--<h4 class="s-text12 p-b-30">-->
+					<!--Categories-->
+				<!--</h4>-->
+
+				<!--<ul>-->
+					<!--<li class="p-b-9">-->
+						<!--<a href="#" class="s-text7">-->
+							<!--Men-->
+						<!--</a>-->
+					<!--</li>-->
+
+					<!--<li class="p-b-9">-->
+						<!--<a href="#" class="s-text7">-->
+							<!--Women-->
+						<!--</a>-->
+					<!--</li>-->
+
+					<!--<li class="p-b-9">-->
+						<!--<a href="#" class="s-text7">-->
+							<!--Dresses-->
+						<!--</a>-->
+					<!--</li>-->
+
+					<!--<li class="p-b-9">-->
+						<!--<a href="#" class="s-text7">-->
+							<!--Sunglasses-->
+						<!--</a>-->
+					<!--</li>-->
+				<!--</ul>-->
+			<!--</div>-->
+
+			<!--<div class="w-size7 p-t-30 p-l-15 p-r-15 respon4">-->
+				<!--<h4 class="s-text12 p-b-30">-->
+					<!--Links-->
+				<!--</h4>-->
+
+				<!--<ul>-->
+					<!--<li class="p-b-9">-->
+						<!--<a href="#" class="s-text7">-->
+							<!--Search-->
+						<!--</a>-->
+					<!--</li>-->
+
+					<!--<li class="p-b-9">-->
+						<!--<a href="#" class="s-text7">-->
+							<!--About Us-->
+						<!--</a>-->
+					<!--</li>-->
+
+					<!--<li class="p-b-9">-->
+						<!--<a href="#" class="s-text7">-->
+							<!--Contact Us-->
+						<!--</a>-->
+					<!--</li>-->
+
+					<!--<li class="p-b-9">-->
+						<!--<a href="#" class="s-text7">-->
+							<!--Returns-->
+						<!--</a>-->
+					<!--</li>-->
+				<!--</ul>-->
+			<!--</div>-->
+
+			<!--<div class="w-size7 p-t-30 p-l-15 p-r-15 respon4">-->
+				<!--<h4 class="s-text12 p-b-30">-->
+					<!--Help-->
+				<!--</h4>-->
+
+				<!--<ul>-->
+					<!--<li class="p-b-9">-->
+						<!--<a href="#" class="s-text7">-->
+							<!--Track Order-->
+						<!--</a>-->
+					<!--</li>-->
+
+					<!--<li class="p-b-9">-->
+						<!--<a href="#" class="s-text7">-->
+							<!--Returns-->
+						<!--</a>-->
+					<!--</li>-->
+
+					<!--<li class="p-b-9">-->
+						<!--<a href="#" class="s-text7">-->
+							<!--Shipping-->
+						<!--</a>-->
+					<!--</li>-->
+
+					<!--<li class="p-b-9">-->
+						<!--<a href="#" class="s-text7">-->
+							<!--FAQs-->
+						<!--</a>-->
+					<!--</li>-->
+				<!--</ul>-->
+			<!--</div>-->
+
+			<!--<div class="w-size8 p-t-30 p-l-15 p-r-15 respon3">-->
+				<!--<h4 class="s-text12 p-b-30">-->
+					<!--Newsletter-->
+				<!--</h4>-->
+
+				<!--<form>-->
+					<!--<div class="effect1 w-size9">-->
+						<!--<input class="s-text7 bg6 w-full p-b-5" type="text" name="email" placeholder="email@example.com">-->
+						<!--<span class="effect1-line"></span>-->
+					<!--</div>-->
+
+					<!--<div class="w-size2 p-t-20">-->
+						<!--&lt;!&ndash; Button &ndash;&gt;-->
+						<!--<button class="flex-c-m size2 bg4 bo-rad-23 hov1 m-text3 trans-0-4">-->
+							<!--Subscribe-->
+						<!--</button>-->
+					<!--</div>-->
+
+				<!--</form>-->
+			<!--</div>-->
+		</div>
+
+		<!--<div class="t-center p-l-15 p-r-15">-->
+			<!--<a href="#">-->
+				<!--<img class="h-size2" src="images/icons/paypal.png" alt="IMG-PAYPAL">-->
+			<!--</a>-->
+
+			<!--<a href="#">-->
+				<!--<img class="h-size2" src="images/icons/visa.png" alt="IMG-VISA">-->
+			<!--</a>-->
+
+			<!--<a href="#">-->
+				<!--<img class="h-size2" src="images/icons/mastercard.png" alt="IMG-MASTERCARD">-->
+			<!--</a>-->
+
+			<!--<a href="#">-->
+				<!--<img class="h-size2" src="images/icons/express.png" alt="IMG-EXPRESS">-->
+			<!--</a>-->
+
+			<!--<a href="#">-->
+				<!--<img class="h-size2" src="images/icons/discover.png" alt="IMG-DISCOVER">-->
+			<!--</a>-->
+
+			<!--<div class="t-center s-text8 p-t-20">-->
+				<!--Copyright © 2018 All rights reserved. | This template is made with <i class="fa fa-heart-o" aria-hidden="true"></i> by <a href="https://colorlib.com" target="_blank">Colorlib</a>-->
+			<!--</div>-->
+		<!--</div>-->
+	</footer>
+
+
+
+	<!-- Back to top -->
+	<div class="btn-back-to-top bg0-hov" id="myBtn">
+		<span class="symbol-btn-back-to-top">
+			<i class="fa fa-angle-double-up" aria-hidden="true"></i>
+		</span>
+	</div>
+
+	<!-- Container Selection -->
+	<div id="dropDownSelect1"></div>
+	<div id="dropDownSelect2"></div>
+
+
+
+<!--===============================================================================================-->
+	<script type="text/javascript" src="vendor/jquery/jquery-3.2.1.min.js"></script>
+<!--===============================================================================================-->
+	<script type="text/javascript" src="vendor/animsition/js/animsition.min.js"></script>
+<!--===============================================================================================-->
+	<script type="text/javascript" src="vendor/bootstrap/js/popper.js"></script>
+	<script type="text/javascript" src="vendor/bootstrap/js/bootstrap.min.js"></script>
+<!--===============================================================================================-->
+	<script type="text/javascript" src="vendor/select2/select2.min.js"></script>
+	<script type="text/javascript">
+		$(".selection-1").select2({
+			minimumResultsForSearch: 20,
+			dropdownParent: $('#dropDownSelect1')
+		});
+
+		$(".selection-2").select2({
+			minimumResultsForSearch: 20,
+			dropdownParent: $('#dropDownSelect2')
+		});
+	</script>
+<!--===============================================================================================-->
+	<script type="text/javascript" src="vendor/daterangepicker/moment.min.js"></script>
+	<script type="text/javascript" src="vendor/daterangepicker/daterangepicker.js"></script>
+<!--===============================================================================================-->
+	<script type="text/javascript" src="vendor/slick/slick.min.js"></script>
+	<script type="text/javascript" src="js/slick-custom.js"></script>
+<!--===============================================================================================-->
+	<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/sweetalert2@7.29.2/dist/sweetalert2.all.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/promise-polyfill"></script>
+
+<!--===============================================================================================-->
+	<script type="text/javascript" src="vendor/noui/nouislider.min.js"></script>
+	<script type="text/javascript">
+		/*[ No ui ]
+	    ===========================================================*/
+	    var filterBar = document.getElementById('filter-bar');
+
+	    noUiSlider.create(filterBar, {
+	        start: [ 50, 200 ],
+	        connect: true,
+	        range: {
+	            'min': 50,
+	            'max': 200
+	        }
+	    });
+
+	    var skipValues = [
+	    document.getElementById('value-lower'),
+	    document.getElementById('value-upper')
+	    ];
+
+	    filterBar.noUiSlider.on('change', function( values, handle ) {
+			console.log(values);
+	        skipValues[handle].innerHTML = Math.round(values[handle]) ;
+	    });
+	</script>
+	<script src="js/angular.min.js"></script>
+	<script>
+		const sum = (arr, field) => {
+			let sum = 0;
+
+			for(let i = 0; arr.length > i; i++){
+				sum += arr[i][field] || 0;
+			}
+			return sum;
+		}
+
+		var app = angular.module("catalogoApp", []);
+		const apiUrl = "http://192.168.0.22:3001";
+		app.controller("ProductosCtrl", function($scope, $http, $filter){
+			//DEFAULTS
+			$scope.rand = Math.random();
+			$scope.cart = {
+				productos: [],
+				total: 0
+			}
+			$scope.itemsPerPage = 15;
+			$scope.page = {};
+			$scope.sort = "none";
+			$scope.start = 0;
+			$scope.end = 0;
+			$scope.productosOr = [];
+			$scope.productosSort = [];
+			$scope.productosShow = [];
+			$scope.productosFilter = [];
+			$scope.filters = [];
+			$scope.categorias = [];
+			$scope.categoria = {};
+			$scope.filter = "";
+
+			$scope.sortTypes = [{
+				label: "Precio (menor a mayor)",
+				value: "priceAsc"
+			},{
+				label: "Precio (mayor a menor)",
+				value: "priceDesc"
+			}]
+
+			const getPage = (arr, page, amount) => {
+				$scope.start = Math.max(((page - 1) * amount),0);
+				$scope.end = $scope.start + amount;
+				return arr.slice($scope.start, $scope.end);
+			}
+
+			const objNumSort = (arr, field, type) => {
+				switch(type){
+					case 'asc':
+						return arr.sort((a,b) => a[field] - b[field]);
+					case 'desc':
+						return arr.sort((a,b) => b[field] - a[field]);
+					default:
+						return arr;
+				} 
+			}
+
+
+			const getCart = () => {
+				let cart = localStorage.getItem("alluring-cart");
+				try {
+					return cart ? JSON.parse(cart) : {
+						productos: [],
+						total: 0
+					};
+				} catch {
+					return {
+						productos: [],
+						total: 0
+					}
+				}
+			}
+
+			const getUser = () => {
+				let user = localStorage.getItem("alluring-user");
+				try {
+					return user ? JSON.parse(user) : null;
+				} catch {
+					return null
+				}
+			}
+
+			const login = () => {
+				let options = {
+					title: 'Ingrese sus credenciales',
+					showCancelButton: true,
+					cancelButtonText: "Cancelar",
+					confirmButtonText: "Ingresar",
+					showCloseButton: true,
+					showLoaderOnConfirm: true,
+					html:
+					  '<input id="username" class="swal2-input" placeholder="Usuario">' +
+					  '<input id="password" type="password" class="swal2-input" placeholder="Contraseña">',
+					focusConfirm: false,
+					preConfirm: () => {
+					  let values =  [
+						document.getElementById('username').value,
+						document.getElementById('password').value
+					  ]
+					  if(values.filter(v => !(!v)).length != 2){
+						  swal.showValidationMessage("Todos los campos son requeridos");
+					  } else {
+						  return values;
+					  }
+					}
+				  };
+				swal(options).then(form => {
+					console.log(form);
+					let formValues = {
+						user: form.value[0],
+						pass: form.value[1]
+					};
+					$http.post(`${apiUrl}/login`, formValues).success(response => {
+						console.log(response);
+						swal({
+							type: "success",
+							title: "Ingresado exitosamente",
+							text: `¡Bienvenido ${response.nombres} ${response.apellidos}!`
+						})
+						$scope.user = response;
+						localStorage.setItem("alluring-user",JSON.stringify(response));
+						$scope.applyDiscount();
+					}).catch(err => {
+						let title = "";
+						let content = "";
+						let type = "warning";
+						if(err.status == 404){
+							title = "Usuario no encontrado";
+							content = "Revise sus credenciales";
+						} else {
+							title = "Oh oh";
+							content = "Ocurrió un error al ingresar";
+							type = "error";
+						}
+						swal({
+							type: type,
+							title: title,
+							text: content
+						}).then(_ => {
+							login();
+						});
+					})
+				})
+			}
+			$scope.login = login;
+
+			$scope.logout = () => {
+				swal({
+					type: "warning",
+					title: "Salir",
+					text: "¿Seguro que deseas salir?",
+					showCancelButton: true,
+					cancelButtonText: "Cancelar",
+					confirmButtonText: "Si"
+				}).then(val => {
+					if(val.value){
+						$scope.user = null;
+						localStorage.setItem("alluring-user", "");
+						$scope.applyDiscount();
+						$scope.$apply();
+					}
+				})
+			}
+
+			$scope.cart = getCart();
+			$scope.user = getUser();
+
+			$scope.filterProductos = prods => {
+				let res = [...prods];
+				for(let i = 0; $scope.filters.length > i; i++){
+					res = $scope.filters[i](res)
+				}
+				return res;
+			}
+
+			//AGREGANDO FILTROS
+			//Categorias
+			$scope.filters.push(arr => $scope.categoria.id_tipo ? arr.filter(i => i.id_tipo == $scope.categoria.id_tipo) : arr);
+			//Texto
+			$scope.filters.push(arr => {
+				console.log("FILTERING", $scope.filter);
+				return $scope.filter ? $filter('filter')(arr, $scope.filter) : arr;
+			});
+
+			$scope.setProductosShow = _ => {
+				$scope.updateCart();
+				$scope.applyDiscount();
+				$scope.productosFilter = $scope.filterProductos($scope.productosOr);
+				$scope.setSorting();
+			}
+
+			$scope.updateCart = _ => {
+				angular.forEach($scope.cart.productos, p => {
+					let newProd = $scope.productosOr.find(i => p.id_producto == i.id_producto && p.id_sucursal == i.id_sucursal);
+					if(newProd){
+						p.total_existencias = newProd.total_existencias;
+						if(p.total_existencias < p.cantidad_vender){
+							p.cantidad_vender = p.total_existencias;
+						}
+					}
+				})
+			}
+
+			$scope.setSorting = _ => {
+				$scope.productosSort = $scope.sortProductos($scope.productosFilter);
+				$scope.pages = [];
+				if($scope.productosFilter.length){
+					for(let i = 0; Math.ceil($scope.productosFilter.length/$scope.itemsPerPage) > i; i++){
+						$scope.pages.push({num: i + 1, selected: false});
+					}
+					$scope.setPage($scope.pages[0]);
+				}
+			}
+
+			$scope.setPage = page => {
+				console.log(page);
+				$scope.page = page;
+				$scope.pages.forEach(p => {
+					p.selected = false;
+				})
+				$scope.page.selected = true;
+				$scope.productosShow = getPage($scope.productosSort, $scope.page.num, $scope.itemsPerPage);
+			}
+
+			$scope.getPageEnd = _ => {
+				return Math.min($scope.end, $scope.productosFilter.length);
+			}
+
+			$scope.sortProductos = prods => {
+				let res = [...prods];
+				switch($scope.sort){
+					case "priceAsc":
+						return objNumSort(res, "precio_venta", 'asc');
+					case "priceDesc":
+						return objNumSort(res, "precio_venta", 'desc');
+					default:
+						return res;
+				}
+			}
+
+			$scope.applyDiscount = () => {
+				if($scope.user && $scope.user.porcentaje_descuento){
+					$scope.productosOr.forEach(p => {
+						let pv = p.precio_venta;
+						let des = $scope.user.porcentaje_descuento;
+						p.precio_descuento = pv - (pv * (des / 100)); 
+					})
+					$scope.cart.total_descuento = 0;
+					$scope.cart.productos.forEach(p => {
+						let pv = p.precio_venta;
+						let des = $scope.user.porcentaje_descuento;
+						p.precio_descuento = pv - (pv * (des / 100)); 
+						$scope.cart.total_descuento += p.precio_descuento * p.cantidad_vender;
+					})
+					//$scope.cart.total_descuento = $scope.cart.productos.sum("precio_descuento");
+					localStorage.setItem("alluring-cart", JSON.stringify($scope.cart));
+				} else {
+					$scope.productosOr.forEach(p => {
+						let pv = p.precio_venta;
+						if(p.descuento_producto_cantidad || p.descuento_producto_porcentaje){
+							p.precio_descuento = p.descuento_producto_cantidad ? pv - p.descuento_producto_cantidad : pv - (pv * (p.descuento_producto_porcentaje / 100));
+							p.porcentaje_descuento = p.descuento_producto_porcentaje;
+							p.cantidad_descuento = p.descuento_producto_cantidad;
+						} else if(p.descuento_categoria_cantidad || p.descuento_categoria_porcentaje){
+							p.precio_descuento = p.descuento_categoria_cantidad ? pv - p.descuento_categoria_cantidad : pv - (pv * (p.descuento_categoria_porcentaje / 100));	
+							p.porcentaje_descuento = p.descuento_categoria_porcentaje;
+							p.cantidad_descuento = p.descuento_categoria_cantidad;
+						} else if(p.descuento_general_cantidad || p.descuento_general_porcentaje){
+							p.precio_descuento = p.descuento_general_cantidad ? pv - p.descuento_general_cantidad : pv - (pv * (p.descuento_general_porcentaje / 100));	
+							p.porcentaje_descuento = p.descuento_general_porcentaje;
+							p.cantidad_descuento = p.descuento_general_cantidad;
+						} else {
+							p.precio_descuento = 0;
+							p.porcentaje_descuento = 0;
+							p.cantidad_descuento = 0;
+						}
+					})
+					$scope.cart.total_descuento = 0;
+					$scope.cart.productos.forEach(pr => {
+						let p = $scope.productosOr.find(prod => prod.id_producto == pr.id_producto && prod.id_sucursal == pr.id_sucursal);
+						if(p){
+							pr = {...p, cantidad_vender: pr.cantidad_vender}; 
+							$scope.cart.total_descuento += pr.precio_descuento * pr.cantidad_vender;
+						}
+					})
+					//$scope.cart.total_descuento = $scope.cart.productos.sum("precio_descuento");
+					localStorage.setItem("alluring-cart", JSON.stringify($scope.cart));
+				}
+			}
+
+			$scope.removeDiscount = () => {
+				$scope.productosOr.forEach(p => {
+					p.precio_descuento = 0;
+				})
+
+				$scope.cart.productos.forEach(p => {
+					p.precio_descuento = 0; 
+				})
+			}
+
+			$scope.setCategoria = c => {
+				$scope.categorias.forEach(ct => {
+					ct.selected = false;
+				})
+				c.selected = true;
+				$scope.categoria = c;
+				$scope.setProductosShow();
+				if($(".btn-show-menu-mobile").hasClass("is-active")){
+					$(".btn-show-menu-mobile").trigger("click");
+				}
+			}
+
+			$scope.addToCart = addedProd => {
+				let prod = $scope.cart.productos.find(p => p.id_producto == addedProd.id_producto);
+				if(prod){
+					if(prod.cantidad_vender >= prod.total_existencias){
+						swal({text:`No hay más ${prod.descripcion} para agregar`, title:"¡Oh oh!", type:"error",toast:true,timer:1500,position: 'top-end', showConfirmButton: false});
+					} else {
+						prod.cantidad_vender += 1;
+						swal({text:addedProd.descripcion, title:"¡Agregado al pedido!", type:"success",toast:true,timer:1500,position: 'top-end', showConfirmButton: false});
+					}
+				} else {
+					$scope.cart.productos.push({
+						...addedProd,
+						cantidad_vender: 1
+					})
+					swal({text:addedProd.descripcion, title:"¡Agregado al pedido!", type:"success",toast:true,timer:1500,position: 'top-end', showConfirmButton: false});
+				}
+				localStorage.setItem("alluring-cart", JSON.stringify($scope.cart));
+			}
+
+			$scope.addToCartAll = addedProd => {
+				let prod = $scope.cart.productos.find(p => p.id_producto == addedProd.id_producto);
+				if(prod){
+					if(prod.cantidad_vender >= prod.total_existencias){
+						swal({text:`No hay más ${prod.descripcion} para agregar`, title:"¡Oh oh!", type:"error",toast:true,timer:1500,position: 'top-end', showConfirmButton: false});
+					} else {
+						prod.cantidad_vender += prod.total_existencias;
+						swal({text:addedProd.descripcion, title:"¡Agregado al pedido!", type:"success",toast:true,timer:1500,position: 'top-end', showConfirmButton: false});
+					}
+				} else {
+					$scope.cart.productos.push({
+						...addedProd,
+						cantidad_vender: addedProd.total_existencias
+					})
+					swal({text:addedProd.descripcion, title:"¡Agregado al pedido!", type:"success",toast:true,timer:1500,position: 'top-end', showConfirmButton: false});
+				}
+				localStorage.setItem("alluring-cart", JSON.stringify($scope.cart));
+			}
+
+			$scope.removeAll = prod => {
+				swal({
+					type: "warning",
+					title: "Eliminar",
+					text: `¿Seguro que deseas eliminar ${prod.descripcion} de tu pedido?`,
+					showCancelButton: true,
+					cancelButtonText: "Cancelar",
+					confirmButtonText: "Confirmar"
+				}).then(conf => {
+					console.log(conf);
+					if(conf.value){
+						let $r = $scope.cart.productos.filter(p => p.id_producto != prod.id_producto || p.id_sucursal != prod.id_sucursal);
+						$scope.cart.productos = $r;
+						$scope.$apply();
+						$(".header-wrapicon2").click();
+					}
+				})
+			}
+
+			$scope.addOne = p => {
+				console.log("ADDING:", p.codigo);
+				p.cantidad_vender = Math.min(p.cantidad_vender + 1, p.total_existencias);
+			}
+
+			$scope.removeOne = prod => {
+				console.log("REMOVING:", prod.codigo);
+				if(prod.cantidad_vender == 1){
+					swal({
+						type: "warning",
+						title: "Eliminar",
+						text: `¿Seguro que deseas eliminar ${prod.descripcion} de tu pedido?`,
+						showCancelButton: true,
+						cancelButtonText: "Cancelar",
+						confirmButtonText: "Confirmar"
+					}).then(conf => {
+						console.log(conf);
+						if(conf.value){
+							let $r = $scope.cart.productos.filter(p => p.id_producto != prod.id_producto || p.id_sucursal != prod.id_sucursal);
+							$scope.cart.productos = $r;
+							$scope.$apply();
+							$(".header-wrapicon2").click();
+						}
+					})
+				} else {
+					prod.cantidad_vender -= 1;
+				}
+			}
+
+			$scope.showBigImage = prod => {
+				if($('.wrap_header_mobile').is(":hidden")){
+					swal({
+						html: `<img style='width: 100%' src='${prod.imageUrl}?rand=${$scope.rand}'/>`,
+						width: '60%',
+						showConfirmButton: false,
+						allowOutsideClick: true,
+						showCloseButton: true
+					})
+				}
+			}
+
+			$scope.clearCart = () => {
+				$scope.cart.productos = [];
+				$scope.$apply();
+			}
+
+			$scope.checkout = _ => {
+				let id = $scope.user && $scope.user.id_cliente ? $scope.user.cliente : null;
+				let nombres = $scope.user && $scope.user.nombres ? $scope.user.nombres : null;
+				let apellidos = $scope.user && $scope.user.apellidos ? $scope.user.apellidos : null;
+				let correo = $scope.user && $scope.user.correo ? $scope.user.correo : null;
+				let telefono = $scope.user && $scope.user.telefono ? $scope.user.telefono : null;
+				let html = `
+					<input class="swal2-input" type="hidden" value="${id || ""}" id="id_cliente"/>
+					<input placeholder="Nombres"  class="swal2-input" id="cliente_nombres" type="text" value="${nombres || ""}"/>
+					<input placeholder="Apellidos" class="swal2-input" id="cliente_apellidos" type="text" value="${apellidos || ""}"/>
+					<input placeholder="Teléfono" class="swal2-input" id="cliente_telefono" type="int" value="${telefono || ""}"/> 
+					<input placeholder="Correo" class="swal2-input" id="cliente_correo" type="email" value="${correo || ""}"/> 
+				`;
+				let title = $scope.user && $scope.user.id_cliente ? "Se enviará tu pedido con los siguientes datos:" : "Danos tus datos para enviar tu pedido";
+				let options = {
+					title: title,
+					showCancelButton: true,
+					cancelButtonText: "Cancelar",
+					confirmButtonText: "Enviar",
+					showCloseButton: true,
+					showLoaderOnConfirm: true,
+					html: html,
+					focusConfirm: false,
+					preConfirm: () => {
+					  let values =  [
+						document.getElementById('id_cliente').value,
+						document.getElementById('cliente_nombres').value,
+						document.getElementById('cliente_apellidos').value,
+						document.getElementById('cliente_telefono').value
+					  ]
+					 let correo = document.getElementById('cliente_correo').value || "";	
+					  if(values.filter(v => !(!v)).length < 3){
+						  swal.showValidationMessage("Nombres, apellidos y número de teléfono son requeridos");
+					  } else if(correo && !/^([a-zA-Z0-9_\-\.]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([a-zA-Z0-9\-]+\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\]?)$/.test(correo)) {
+						  swal.showValidationMessage("El correo ingresado no es válido");
+					  } else {
+						return [...values, correo];
+					  }
+					}
+				  };
+				swal(options).then(form => {
+					let pedido = {
+						cliente:{
+							id_cliente: $scope.user && $scope.user.id_cliente ? $scope.user.id_cliente : "",
+							nombres: form.value[1],
+							apellidos: form.value[2],
+							correo: form.value[4],
+							telefono: form.value[3]
+						},
+						cart: $scope.cart
+					}
+					$http.post(`${apiUrl}/orders`, pedido).success(response => {
+						console.log(response);
+						swal({text: "Gracias por hacer su pedido. Muy pronto nos pondremos en contacto contigo", type: "success"});
+						$scope.clearCart();
+						$scope.getProductos();
+					}).catch(err => {
+						let title = "";
+						let content = "";
+						let type = "warning";
+						console.log(err);
+						if(err.status == 400) {
+							title = "¡Parece que se te ha adelantado alguien! ";
+							content = `<p style="margin-bottom: 15px">Los siguientes productos ya no están disponibles:</p>
+							<table class="table table-striped">
+								<tr>
+									<th style="width: 50%">Descripción</th>
+									<th>Pediste</th>
+									<th>Hay</th>
+								</tr>
+							`;
+							let oos = err.data;
+							for(let i = 0; oos.length > i; i++){
+								content+=`<tr><td style="text-align: left">${oos[i].descripcion}</td><td style="text-align: center">${oos[i].cantidad_vender}</td><td style="text-align: center; color: red">${oos[i].existencia}</td>`
+							}
+							content+="</table><p>Tu pedido ha sido modificado</p>";
+							type = "warning";
+							$scope.getProductos();
+						} else {
+							type = "error"
+							content = "Ocurrió un error al enviar tu orden. Intenta más tarde";
+						}
+						swal({
+							type: type,
+							title: title,
+							html: content
+						})
+					})
+					
+					/*
+					$http.post(`${apiUrl}/login`, formValues).success(response => {
+						console.log(response);
+						swal({
+							type: "success",
+							title: "Ingresado exitosamente",
+							text: `¡Bienvenido ${response.nombres} ${response.apellidos}!`
+						})
+						$scope.user = response;
+						localStorage.setItem("alluring-user",JSON.stringify(response));
+						$scope.applyDiscount();
+					}).catch(err => {
+						let title = "";
+						let content = "";
+						let type = "warning";
+						if(err.status == 404){
+							title = "Usuario no encontrado";
+							content = "Revise sus credenciales";
+						} else {
+							title = "Oh oh";
+							content = "Ocurrió un error al ingresar";
+							type = "error";
+						}
+						swal({
+							type: type,
+							title: title,
+							text: content
+						}).then(_ => {
+							login();
+						});
+					})
+					*/
+				})
+			}
+
+			$scope.$watch('cart.productos', value => {
+				console.log("Productos changed");
+				$scope.cart.total = $scope.cart.total_descuento = 0;
+				angular.forEach($scope.cart.productos, item => {
+					$scope.cart.total+= item.cantidad_vender * item.precio_venta;
+					$scope.cart.total_descuento+= item.cantidad_vender * item.precio_descuento;
+				})
+				console.log("TOTAL:", $scope.cart.total);
+				console.log("TOTAL DESC:", $scope.cart.total_descuento);
+				localStorage.setItem("alluring-cart", JSON.stringify($scope.cart));
+			}, true)
+			
+
+			$scope.getProductos = () => {
+				$http.get(`${apiUrl}/products`).success(productos => {
+					$scope.productosOr = productos;
+					$scope.setProductosShow();
+					$http.get(`${apiUrl}/categories`).success(categorias => {
+						$scope.categorias = [{id_tipo: 0, nombre: "Todas"}, ...categorias].map(c => {
+							return {
+								...c,
+								selected: false
+							}
+						});
+					}, err => {
+						alert("Problema en la conexión. Intente refrescando la página");
+					})
+				}, err => {
+					alert("Problema en la conexión. Intente refrescando la página");
+				})
+			}
+
+			//INIT
+			$scope.getProductos();
+		})
+	</script>
+<!--===============================================================================================-->
+	<script src="js/main.js"></script>
+
+</body>
+</html>

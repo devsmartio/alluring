@@ -636,13 +636,13 @@ class TrxAdministracionClientes extends FastTransaction {
             'factura_direccion' => sqlValue($data['factura_direccion'], 'text'),
             'observaciones' => sqlValue($data['observaciones'], 'text'),
             'catalogo_usuario' => sqlValue($data['catalogo_usuario'], 'text'),
-            'catalogo_password_hash' => sqlValue(md5($data['catalogo_password_hash']), 'text'),
             'fecha_creacion' => sqlValue($fecha->format('Y-m-d H:i:s'), 'date'),
             'usuario_creacion' => sqlValue(self_escape_string($user['FIRST_NAME']), 'text')
         ];
         
 
         if ($data['mod'] == 1) {
+            $cliente['catalogo_password_hash'] = sqlValue(md5($data['catalogo_password_hash']), 'text');
             $this->db->query_insert('clientes', $cliente);
             $id_cliente = $this->db->max_id('clientes', 'id_cliente');
 
@@ -672,6 +672,12 @@ class TrxAdministracionClientes extends FastTransaction {
 
             $this->msg = 'Cliente ingresado con éxito';
         } else if ($data['mod'] == 2) {
+            $oldCliente = $this->db->query_select("clientes", sprintf("id_cliente=%s", $data["id_cliente"]));
+            $oldCliente = $oldCliente[0];
+            if($oldCliente['catalogo_password_hash'] != $data['catalogo_password_hash']) {
+                $cliente['catalogo_password_hash'] = sqlValue(md5($data['catalogo_password_hash']), 'text');
+            }
+            
 
             $this->db->query_update('clientes', $cliente, sprintf('id_cliente = %s', $data['id_cliente']));
 

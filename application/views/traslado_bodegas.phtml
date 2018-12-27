@@ -5,22 +5,49 @@
                 <fieldset>
                     <legend>Bodega Origen:</legend>
                     <div class='form-group form-group-sm'>
-                        <select name="idSucursalOrigen" id="idSucursalOrigen" ng-model="idSucursalOrigen" type="select" required class='form-control' ng-change="filtarProductos()">
-                            <option ng-repeat="sucursal in sucursalesOrigen" value="{{sucursal.id_sucursal}}">{{sucursal.nombre}}</option>
-                        </select>
+                    <select  ng-model="idSucursalOrigen" ng-options="s.id_sucursal as s.nombre for s in sucursalesOrigen" class='form-control' ng-change="filtarProductos()">
+                        <option value="">-- Elija una bodega --</option>
+                    </select>
                     </div>
                 </fieldset>
             </div>
             <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
                 <fieldset>
+                    <legend>Tipo:</legend>
+                    <select ng-model="tipo" class='form-control'>
+                    <option value="">-- Elija una opción --</option>
+                        <option value="cliente">Cliente</option>
+                        <option value="bodega">Bodega</option>
+                    </select>
+                </fieldset>
+            </div>
+            <div class="col-12" ng-show="tipo=='bodega'">
+                <fieldset>
                     <legend>Bodega Destino:</legend>
-                    <select name="idSucursalDestino" id="idSucursalDestino" ng-model="idSucursalDestino" type="select" required class='form-control' ng-change="selBodegaDestino()">
-                        <option ng-repeat="sucursal in sucursalesDestino" value="{{sucursal.id_sucursal}}">{{sucursal.nombre}}</option>
+                    <select  ng-model="idSucursalDestino" ng-options="s.id_sucursal as s.nombre for s in sucursalesDestino" class='form-control'>
+                        <option value="">-- Elija una bodega --</option>
+                    </select>
+                </fieldset>
+            </div>
+            <div class="col-xs-12 col-md-6" ng-show="tipo=='cliente'">
+                <fieldset>
+                    <legend>Cliente:</legend>
+                    <select id="idCliente" ng-change="setBodega()" ng-model="clienteSelected" ng-options="c as c.cliente.nombre_completo for c in clientes" class='form-control' >
+                        <option value="">-- Elija una opción --</option>
+                    </select>
+                </fieldset>
+            </div>
+
+            <div class="col-xs-12 col-md-6" ng-show="tipo=='cliente'">
+                <fieldset>
+                    <legend>Bodega Destino:</legend>
+                    <select id="idBodegaDestino" ng-model="idSucursalDestinoCliente" ng-options="b.id_sucursal as b.nombre for b in clienteSelected.bodegas" class='form-control' >
+                        <option value="">-- Elija una opción --</option>
                     </select>
                 </fieldset>
             </div>
         </div>
-        <div class="row" style="margin-top: 35px;">
+        <div class="row" style="margin-top: 35px;" ng-show="tipo&&idSucursalOrigen">
             <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
                 <div class="row">
                     <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
@@ -32,17 +59,9 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
-                        <div class='checkbox'>
-                            <label>
-                                Es Consignación
-                                <input ng-model="esConsignacion" type="checkbox" name='esConsignacion' placeholder='' />
-                            </label>
-                        </div>
-                    </div>
                 </div>
             </div>
-            <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12" ng-show="esConsignacion">
+            <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12" ng-show="tipo=='cliente'">
                 <div class="row">
                     <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
                         <div class='form-group form-group-sm'>
@@ -52,19 +71,8 @@
                     </div>
                     <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
                         <div class='form-group form-group-sm'>
-                            <label for='porcentajeCompraMinima' class='control-label'>Porcentaje Compra Mínima</label>
+                            <label for='porcentajeCompraMinima' class='control-label'>% compra mínima</label>
                             <input ng-model="porcentajeCompraMinima" type="number" class='form-control' name='porcentajeCompraMinima' placeholder='0' min="1" max="100" size="5"/>
-                        </div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
-                        <div class="form-group form-group-sm">
-                            <label style="display: inline-block">Cliente que Recibe</label>
-                            <select name="idClienteRecibe" id="idClienteRecibe" ng-model="idClienteRecibe" type="select" required class='form-control'>
-                                <option value="">-- Seleccione uno --</option>
-                                <option ng-repeat="cliente in clientesBodegas" value="{{cliente.id_cliente}}">{{cliente.cliente_nombre}}</option>
-                            </select>
                         </div>
                     </div>
                 </div>
@@ -75,27 +83,34 @@
                 <div class='table-responsive'>
                     <table class='table table-striped table-bordered table-sm'>
                         <tr>
+                            <th colspan="7">Pistolear/Buscar: <input class="form-control" ng-model="search" id="pistolearItem"/></th>
+                        </tr>
+                        <tr>
                             <th style="width: 25px;text-align: center;">Código Producto</th>
                             <th style="text-align: center;">Nombre</th>
                             <th style="text-align: center;">Descripción</th>
-                            <th style="text-align: center;">Categoría</th>
+                            <th style="text-align: center;">Precio venta<s/th>
+                            <th style="width: 30%;text-align: center;">Imagen</th>
                             <th style="text-align: center;">Existencia</th>
                             <th style="width: 25px;text-align: center;">Cantidad a Trasladar</th>
                         </tr>
-                        <tr>
+                        <!--tr>
                             <td><input type='text' class='form-control form-control-sm' ng-model="search.codigo_origen"/></td>
                             <td><input type='text' class='form-control form-control-sm' ng-model="search.nombre"/></td>
                             <td><input type='text' class='form-control form-control-sm' ng-model="search.descripcion"/></td>
                             <td><input type='text' class='form-control form-control-sm' ng-model="search.nombre_tipo"/></td>
                             <td></td>
                             <td></td>
-                        </tr>
-                        <tr ng-repeat='row in rows | filter:search | orderBy: sortBy'>
-                            <td ng-bind="row['codigo_origen']"></td>
+                        </tr-->
+                        <tr ng-class="{'bg-secondary':row.cantidad>0}" ng-repeat="row in rows | filter:search | orderBy: '!cantidad'">
+                            <td ng-bind="row['codigo']"></td>
                             <td ng-bind="row['nombre']"></td>
                             <td ng-bind="row['descripcion']"></td>
-                            <td ng-bind="row['nombre_tipo']"></td>
-                            <td ng-bind="row['haber']"></td>
+                            <td >{{row['precio_descuento'] || row['precio_venta'] | currency : 'Q' : 2}}</td>
+                            <td>
+                                <img ng-src="media/uploads/{{row.imagen}}?rand={{rand}}" alt="{{row.codigo}}" class="img-thumbnail w-50">
+                            </td>
+                            <td ng-bind="row['total_existencias']"></td>
                             <td>
                                 <input type="number" class='form-control form-control-sm' name="cantidad" ng-model="row['cantidad']" size="5" min="0">
                             </td>
