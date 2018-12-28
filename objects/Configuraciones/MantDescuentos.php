@@ -117,11 +117,11 @@ class MantDescuentos extends FastMaintenance{
     protected function specialProcessBeforeShow($resultSet){
         $tipos = Collection::get($this->db,"tipo");
         $tiposClientes = Collection::get($this->db,"clientes_tipos_precio");
-        $productos = COllection::get($this->db, 'producto');
+        $productos = Collection::get($this->db, 'producto');
         foreach($resultSet as &$des){
             $tipo = $tipos->find(['id_tipo' => $des['id_tipo']]);
             $des['categoria_name'] = isset($tipo['nombre']) ? $tipo['nombre'] : "";
-            $prod = $productos->find(['id_producto' => $des['id_tipo']]);
+            $prod = $productos->find(['id_producto' => $des['id_producto']]);
             $des['producto_name'] = isset($prod['codigo']) ? $prod['codigo'] . " " . $prod["descripcion"] : "";
             $tipoCliente = $tiposClientes->find(['id_tipo_precio' => $des['id_tipo_precio']]);
             $des['tipo_precio_name'] = isset($tipoCliente['nombre']) ? $tipoCliente['nombre'] : "";

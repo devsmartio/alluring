@@ -97,7 +97,7 @@
 						</div>
 		
 							<span class="linedivide1"></span>
-							<div class="badge badge-secondary">Total: {{cart.total_descuento || cart.total | currency : 'Q' : 2}}</div>
+							<div class="badge badge-secondary">Total: {{cart.total_mixed || 0 | currency : 'Q' : 2}}</div>
 							<span class="linedivide1"></span>
 					<div class="header-wrapicon2">
 						<img src="images/icons/icon-header-02.png" class="header-icon1 js-show-header-dropdown" alt="ICON">
@@ -108,7 +108,7 @@
 							<ul class="header-cart-wrapitem">
 								<li class="header-cart-item" ng-repeat="p in cart.productos track by $index">
 									<div class="header-cart-item-img" ng-click="removeAll(p)">
-										<img  ng-src="{{p.imageUrl}}?rand={{rand}}" alt="IMG" onerror="this.src = 'http://192.168.0.22/alluring/media/uploads/no-image.jpg'">
+										<img  ng-src="{{p.imageUrl}}?rand={{rand}}" alt="IMG" onerror="this.src = 'http://192.168.0.9/alluring/media/uploads/no-image.jpg'">
 									</div>
 
 									<div class="header-cart-item-txt">
@@ -128,6 +128,7 @@
 											</div>
 										<span class="header-cart-item-info">
 											{{p.cantidad_vender}} x <span ng-show="p.precio_descuento" style="color: red; font-size: 10px"  class="fs-10 block2-oldprice m-text7">{{p.precio_venta * p.cantidad_vender | currency : 'Q' : 2}}&nbsp;</span> {{p.cantidad_vender * (p.precio_descuento || p.precio_venta) | currency : 'Q' : 2}}
+											<span class="fs-10">({{p.precio_descuento || p.precio_venta | currency: 'Q' : 2}} c/u)</span>
 											
 										</span>
 									</div>
@@ -135,7 +136,7 @@
 							</ul>
 
 							<div class="header-cart-total">
-								Total: {{cart.total_descuento || cart.total | currency : 'Q' : 2}}
+								Total: {{cart.total_mixed | currency : 'Q' : 2}}
 							</div>
 
 							<div class="header-cart-buttons" ng-show="cart.productos.length">
@@ -186,7 +187,7 @@
 							</div>
 
 					<span class="linedivide2"></span>
-					<div class="badge badge-secondary">Total: {{cart.total_descuento || cart.total | currency : 'Q' : 2}}</div>
+					<div class="badge badge-secondary">Total: {{cart.total_mixed || 0 | currency : 'Q' : 2}}</div>
 					<span class="linedivide2"></span>
 					<div class="header-wrapicon2">
 						<img src="images/icons/icon-header-02.png" class="header-icon1 js-show-header-dropdown" alt="ICON">
@@ -198,7 +199,7 @@
 							<ul class="header-cart-wrapitem">
 								<li class="header-cart-item" ng-repeat="p in cart.productos track by $index">
 									<div class="header-cart-item-img" ng-click="removeAll(p)">
-										<img   ng-src="{{p.imageUrl}}?rand={{rand}}" alt="IMG" onerror="this.src = 'http://192.168.0.22/alluring/media/uploads/no-image.jpg'">
+										<img   ng-src="{{p.imageUrl}}?rand={{rand}}" alt="IMG" onerror="this.src = 'http://192.168.0.9/alluring/media/uploads/no-image.jpg'">
 									</div>
 
 									<div class="header-cart-item-txt">
@@ -218,6 +219,7 @@
 											</div>
 										<span class="header-cart-item-info">
 											{{p.cantidad_vender}} x <span ng-show="p.precio_descuento" style="color: red; font-size: 10px"  class="fs-10 block2-oldprice m-text7">{{p.precio_venta * p.cantidad_vender | currency : 'Q' : 2}}&nbsp;</span> {{p.cantidad_vender * (p.precio_descuento || p.precio_venta) | currency : 'Q' : 2}}
+											<span class="fs-10">({{p.precio_descuento || p.precio_venta | currency: 'Q' : 2}} c/u)</span>
 												
 										</span>
 									</div>
@@ -225,7 +227,7 @@
 							</ul>
 
 							<div class="header-cart-total">
-								Total: {{ cart.total_descuento || cart.total | currency : 'Q' : 2}}
+								Total: {{ cart.total_mixed | currency : 'Q' : 2}}
 							</div>
 
 							<div class="header-cart-buttons" ng-show="cart.productos.length">
@@ -419,7 +421,7 @@
 								<!-- ADD block2-labelnew for new -->
 								<div class="block2-img wrap-pic-w of-hidden pos-relative ">
 									
-									<img style="cursor: pointer" ng-click="showBigImage(p)" ng-src="{{p.imageUrl}}?rand={{rand}}" alt="{{p.codigo}} - {{p.descripcion}}" onerror="this.src = 'http://192.168.0.22/alluring/media/uploads/no-image.jpg'">
+									<img style="cursor: pointer" ng-click="showBigImage(p)" ng-src="{{p.imageUrl}}?rand={{rand}}" alt="{{p.codigo}} - {{p.descripcion}}" onerror="this.src = 'http://192.168.0.9/alluring/media/uploads/no-image.jpg'">
 
 									<!--div class="block2-overlay trans-0-4">
 										<div class="block2-btn-addcart w-size1 trans-0-4">
@@ -429,7 +431,7 @@
 									</div-->
 								</div>
 
-								<div class="block2-txt p-t-20" ng-class="{'block2-labelsale':p.precio_descuento&&!user}">
+								<div class="block2-txt p-t-20" ng-class="{'block2-labelsale':(p.precio_descuento&&!user)||(user&&(p.cantidad_descuento||p.porcentaje_descuento))}">
 									<a href="#" class="block2-name dis-block s-text3 p-b-5">
 										{{p.codigo}} - {{p.descripcion}} 
 									</a>
@@ -442,9 +444,10 @@
 										{{p.precio_descuento | currency : 'Q' : 2}}
 									</span>
 
-									<span class="badge badge-warning" ng-show="p.precio_descuento&&!user">
+									<span class="badge badge-warning" ng-show="(p.precio_descuento&&!user)||(user&&(p.cantidad_descuento||p.porcentaje_descuento))">
 										-{{p.porcentaje_descuento ? p.porcentaje_descuento + '%' : ''}}
 										<span ng-show="p.cantidad_descuento">{{p.cantidad_descuento | number : 2}}</span>
+										<span ng-show="user&&(p.cantidad_descuento||p.porcentaje_descuento)">&nbsp;adicional!</span>
 									</span>
 
 									
@@ -726,8 +729,76 @@
 			return sum;
 		}
 
+		Array.prototype.keySort = function(keys) {
+
+			keys = keys || {};
+
+			// via
+			// https://stackoverflow.com/questions/5223/length-of-javascript-object-ie-associative-array
+			var obLen = function(obj) {
+				var size = 0, key;
+				for (key in obj) {
+					if (obj.hasOwnProperty(key))
+						size++;
+				}
+				return size;
+			};
+
+			// avoiding using Object.keys because I guess did it have IE8 issues?
+			// else var obIx = function(obj, ix){ return Object.keys(obj)[ix]; } or
+			// whatever
+			var obIx = function(obj, ix) {
+				var size = 0, key;
+				for (key in obj) {
+					if (obj.hasOwnProperty(key)) {
+						if (size == ix)
+							return key;
+						size++;
+					}
+				}
+				return false;
+			};
+
+			var keySort = function(a, b, d) {
+				d = d !== null ? d : 1;
+				// a = a.toLowerCase(); // this breaks numbers
+				// b = b.toLowerCase();
+				if (a == b)
+					return 0;
+				return a > b ? 1 * d : -1 * d;
+			};
+
+			var KL = obLen(keys);
+
+			if (!KL)
+				return this.sort(keySort);
+
+			for ( var k in keys) {
+				// asc unless desc or skip
+				keys[k] = 
+						keys[k] == 'desc' || keys[k] == -1  ? -1 
+					: (keys[k] == 'skip' || keys[k] === 0 ? 0 
+					: 1);
+			}
+
+			this.sort(function(a, b) {
+				var sorted = 0, ix = 0;
+
+				while (sorted === 0 && ix < KL) {
+					var k = obIx(keys, ix);
+					if (k) {
+						var dir = keys[k];
+						sorted = keySort(a[k], b[k], dir);
+						ix++;
+					}
+				}
+				return sorted;
+			});
+			return this;
+			};
+
 		var app = angular.module("catalogoApp", []);
-		const apiUrl = "http://192.168.0.22:3001";
+		const apiUrl = "http://192.168.0.9:3001";
 		app.controller("ProductosCtrl", function($scope, $http, $filter){
 			//DEFAULTS
 			$scope.rand = Math.random();
@@ -748,6 +819,7 @@
 			$scope.categorias = [];
 			$scope.categoria = {};
 			$scope.filter = "";
+			$scope.isMixed = false;
 
 			$scope.sortTypes = [{
 				label: "Precio (menor a mayor)",
@@ -959,23 +1031,50 @@
 
 			$scope.applyDiscount = () => {
 				if($scope.user && $scope.user.porcentaje_descuento){
+					$scope.user.descuentos = $scope.user.descuentos.keySort({id_producto: 'desc', id_tipo:'desc'});
+					console.log($scope.user.descuentos);
 					$scope.productosOr.forEach(p => {
 						let pv = p.precio_venta;
 						let des = $scope.user.porcentaje_descuento;
-						p.precio_descuento = pv - (pv * (des / 100)); 
+						p.precio_descuento = pv - (pv * (des / 100));
+						p.cantidad_descuento = 0;
+						p.porcentaje_descuento = 0;
+						$scope.user.descuentos.forEach(d => {
+							if(d.id_producto == p.id_producto){
+								p.precio_descuento = d.cantidad ? p.precio_descuento - d.cantidad : p.precio_descuento - (pv * (d.porcentaje_descuento / 100));
+								p.cantidad_descuento = d.cantidad;
+								p.porcentaje_descuento = d.porcentaje_descuento;
+							} else if(d.id_tipo == p.id_tipo && (!p.cantidad_descuento && !p.porcentaje_descuento)){
+								p.precio_descuento = d.cantidad ? p.precio_descuento - d.cantidad : p.precio_descuento - (pv * (d.porcentaje_descuento / 100));
+								p.cantidad_descuento = d.cantidad;
+								p.porcentaje_descuento = d.porcentaje_descuento;
+							} else if(!d.id_producto && !d.id_tipo && (!p.cantidad_descuento && !p.porcentaje_descuento)){
+								p.precio_descuento = d.cantidad ? p.precio_descuento - d.cantidad : p.precio_descuento - (pv * (d.porcentaje_descuento / 100));
+								p.cantidad_descuento = d.cantidad;
+								p.porcentaje_descuento = d.porcentaje_descuento;
+							}
+						})
 					})
+					
 					$scope.cart.total_descuento = 0;
-					$scope.cart.productos.forEach(p => {
-						let pv = p.precio_venta;
-						let des = $scope.user.porcentaje_descuento;
-						p.precio_descuento = pv - (pv * (des / 100)); 
-						$scope.cart.total_descuento += p.precio_descuento * p.cantidad_vender;
+					let tempCart = [...$scope.cart.productos];
+					$scope.cart.productos = [];
+					tempCart.forEach(pr => {
+						let p = $scope.productosOr.find(prod => prod.id_producto == pr.id_producto && prod.id_sucursal == pr.id_sucursal);
+						if(p){
+							let newP = {...p, cantidad_vender: pr.cantidad_vender};
+							console.log(newP);
+							$scope.cart.productos.push(newP); 
+							$scope.cart.total_descuento += newP.precio_descuento * newP.cantidad_vender;
+						}
 					})
-					//$scope.cart.total_descuento = $scope.cart.productos.sum("precio_descuento");
 					localStorage.setItem("alluring-cart", JSON.stringify($scope.cart));
 				} else {
 					$scope.productosOr.forEach(p => {
 						let pv = p.precio_venta;
+						p.precio_descuento = 0;
+						p.porcentaje_descuento = 0;
+						p.cantidad_descuento = 0;
 						if(p.descuento_producto_cantidad || p.descuento_producto_porcentaje){
 							p.precio_descuento = p.descuento_producto_cantidad ? pv - p.descuento_producto_cantidad : pv - (pv * (p.descuento_producto_porcentaje / 100));
 							p.porcentaje_descuento = p.descuento_producto_porcentaje;
@@ -988,18 +1087,18 @@
 							p.precio_descuento = p.descuento_general_cantidad ? pv - p.descuento_general_cantidad : pv - (pv * (p.descuento_general_porcentaje / 100));	
 							p.porcentaje_descuento = p.descuento_general_porcentaje;
 							p.cantidad_descuento = p.descuento_general_cantidad;
-						} else {
-							p.precio_descuento = 0;
-							p.porcentaje_descuento = 0;
-							p.cantidad_descuento = 0;
 						}
 					})
 					$scope.cart.total_descuento = 0;
-					$scope.cart.productos.forEach(pr => {
+					let tempCart = [...$scope.cart.productos];
+					$scope.cart.productos = [];
+					tempCart.forEach(pr => {
 						let p = $scope.productosOr.find(prod => prod.id_producto == pr.id_producto && prod.id_sucursal == pr.id_sucursal);
 						if(p){
-							pr = {...p, cantidad_vender: pr.cantidad_vender}; 
-							$scope.cart.total_descuento += pr.precio_descuento * pr.cantidad_vender;
+							let newP = {...p, cantidad_vender: pr.cantidad_vender};
+							console.log(newP);
+							$scope.cart.productos.push(newP); 
+							$scope.cart.total_descuento += newP.precio_descuento * newP.cantidad_vender;
 						}
 					})
 					//$scope.cart.total_descuento = $scope.cart.productos.sum("precio_descuento");
@@ -1257,14 +1356,15 @@
 			}
 
 			$scope.$watch('cart.productos', value => {
-				console.log("Productos changed");
-				$scope.cart.total = $scope.cart.total_descuento = 0;
+				$scope.cart.total = $scope.cart.total_descuento = $scope.cart.total_mixed = 0;
 				angular.forEach($scope.cart.productos, item => {
 					$scope.cart.total+= item.cantidad_vender * item.precio_venta;
 					$scope.cart.total_descuento+= item.cantidad_vender * item.precio_descuento;
+					$scope.cart.total_mixed+= item.cantidad_vender * (item.precio_descuento || item.precio_venta);
 				})
 				console.log("TOTAL:", $scope.cart.total);
 				console.log("TOTAL DESC:", $scope.cart.total_descuento);
+				console.log("TOTAL MIXED:", $scope.cart.total_mixed);
 				localStorage.setItem("alluring-cart", JSON.stringify($scope.cart));
 			}, true)
 			

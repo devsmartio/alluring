@@ -53,7 +53,7 @@ app.use(function(err, req, res, next) {
 /***
  * LOCALS
  */
-app.locals.img_url = "http://192.168.0.22/alluring/media/uploads";
+app.locals.img_url = "http://192.168.0.9/alluring/media/uploads";
 
 
 module.exports = app;

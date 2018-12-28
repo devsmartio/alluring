@@ -1,6 +1,12 @@
 var express = require('express');
 var router = express.Router();
 var mysql = require('mysql');
+const nodemailer = require('nodemailer');
+const config = require('../config');
+const transport = nodemailer.createTransport({
+    service: 'gmail',
+    auth: config.mailAuth
+})
 const mysqlConfig = {
     connLimit : 10,
     host            : 'localhost',
@@ -56,7 +62,7 @@ const insertProducto = (conn, producto, ventaId, cliente) => {
             'id_producto':producto.id_producto,
             'id_sucursal':producto.id_sucursal,
             'cantidad': producto.cantidad_vender,
-            'precio_venta': producto.precio_venta,
+            'precio_venta': producto.precio_descuento || producto.precio_venta,
             'fecha_creacion': SQL_NOW,
             'usuario_creacion': 'dev_catalogo'
         };
@@ -142,8 +148,24 @@ router.post('/', function(req, res, next) {
                     console.log("VERIFICANDO RESULTADO");
                     if(result){
                         conn.destroy();
-                        console.log("VERIFICANDO RESULTADO");
-                        res.sendStatus(200);
+                        console.log("ENVIANDO NOTIFICACION");
+                        let mailData = {...config.toMailData};
+                        let sumProd = 0;
+                        cart.productos.forEach(p => {
+                            sumProd+=p.cantidad_vender;
+                        })
+                        mailData.html = `<b>Se ha realizado un pedido a través del catálogo</b>
+                        <p>
+                            Cliente: ${cliente.nombres} ${cliente.apellidos} Telefono: ${cliente.telefono} <br/>
+                            Fecha: ${new Date().toLocaleString()} <br/>
+                            Total: Q. ${cart.total_mixed.toFixed(2)} <br/>
+                            Piezas: ${sumProd} <br/>
+                        </p>`;
+                        transport.sendMail(mailData, (err,info) => {
+                            if(err) console.log("ERROR SENDING NOTIFICATION", err);
+                            if(!err) console.log("NOTIFICATION SENT");
+                            res.sendStatus(200);
+                        })
                     }
                 } else {
                     console.log("NO SE INSERTO EL CLIENTE");
@@ -165,7 +187,7 @@ const insertVenta = (conn, cart, cliente, productos) => {
         conn.beginTransaction(err => {
             if(err) reject(err);
             let venta = {
-                total: cart.total_descuento || cart.total,
+                total: cart.total_mixed,
                 id_cliente: cliente.id_cliente,
                 estado: 'P',
                 usuario_creacion: "dev-catalogo",

@@ -52,7 +52,9 @@
                                 <span class="d-inline-block" tabindex="0" data-toggle="tooltip" title="{{prod.total_existencias-prod.cantidad}} existencias" >
                                     <img ng-src="media/uploads/{{prod.imagen}}" alt="{{prod.imagen}}" class="img-thumbnail" ng-click="agregarUno(prod)">
                                     <figcaption class="figure-caption">
-                                        <b>{{prod.codigo}}</b>: {{prod.nombre}}<br/>
+                                        <b>{{prod.codigo}}</b>: {{prod.nombre}}
+                                        <span ng-if="hasDescuento(prod)" class="badge badge-warning">{{getDescuento(prod)}}</span>
+                                        <br/>
                                         Existencia: <b><span ng-class="{'text-success':prod.total_existencias > 0, 'text-danger':prod.total_existencias <= 0}">{{prod.total_existencias}}</span></b><br/>
                                         <b>{{prod.nombre_sucursal | uppercase}}</b>
                                     </figcaption>
@@ -77,7 +79,7 @@
                 <div class="input-group-prepend">
                     <span class="input-group-text"><span class="cui-magnifying-glass"></span></span>
                 </div>
-                <input type="text" id="cliente" ng-model="cliente"  class="form-control" placeholder="Buscar Cliente..." aria-label="Search" autocomplete="off" style="font-size:0.8rem;" ng-disabled="devolucion.credito > 0 || preventClienteChange" ng-click='buscar()' data-toggle="modal" data-target="#clientesModal"> 
+                <input type="text" id="cliente" ng-model="cliente"  class="form-control" placeholder="Buscar Cliente..." aria-label="Search" autocomplete="off" style="font-size:0.8rem;" ng-disabled="devolucion.credito > 0 || preventClienteChange || productos_facturar.length" ng-click='buscar()' data-toggle="modal" data-target="#clientesModal"> 
             </div>
             <div class="anyClass w-100" ng-show="show_detalle" style="overflow-x: auto; max-width: 100%; overflow-y: auto">
                 <div class='table-responsive'>
