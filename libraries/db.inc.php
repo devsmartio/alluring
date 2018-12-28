@@ -498,7 +498,7 @@ class DbManager {
                 $query .= " WHERE $where";
             }
             $query = " UPDATE " . $this->tbl_pre . $table . " SET $query ";
-            //  echo $query;
+            //echo $query;
             $this->query($query);
         } else {
             return false;

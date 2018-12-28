@@ -124,16 +124,16 @@ abstract class FastMaintenance extends FastModWrapper{
                 }
             }
         }
-        foreach($pkFields as $k => $v){
-                $where = isEmpty($where) ? $where : sprintf('%s AND ', $where);
-                $where.= sprintf('%s="%s"', $k, $v);
-        }
         if($r == 1){
             $specialValidation = $this->specialValidation($update, $r, $mess, $pkFields);
             $r = $specialValidation['r'];
             $mess = $specialValidation['mess'];
             if($r == 1){
                 $pkFields = $this->processPkFields($pkFields);
+                foreach($pkFields as $k => $v){
+                    $where = isEmpty($where) ? $where : sprintf('%s AND ', $where);
+                    $where.= sprintf('%s="%s"', $k, $v);
+                }
                 try {
                     $update = $this->specialProcessBeforeUpdate($update, $pkFields);
                     $this->db->query_update($this->table, $update, $where);

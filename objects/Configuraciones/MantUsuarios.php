@@ -78,11 +78,10 @@ class MantUsuarios extends FastMaintenance{
     }
 	
     protected function specialProcessBeforeUpdate($updateData, $pkFields = array()){
-        //print_r($updateData);
         $updateData['PASSWORD'] = str_replace("'", "", $updateData['PASSWORD']);
         $pass = $this->getPass($pkFields['ID']);
         if($pass != $updateData['PASSWORD']){
-                $updateData['PASSWORD'] = md5($updateData['PASSWORD']);
+            $updateData['PASSWORD'] = md5($updateData['PASSWORD']);
         }
         $updateData['PASSWORD'] = sqlValue($updateData['PASSWORD'], 'text');
         if(isset($updateData['is_seller']) && $updateData['is_seller'] == "'on'"){
