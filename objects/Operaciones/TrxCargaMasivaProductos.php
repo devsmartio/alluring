@@ -107,15 +107,15 @@ class TrxCargaMasivaProductos extends FastTransaction {
                 $scope.finalizar = function () {
 
                     var identificador_excel = $scope.lastSelected.identificador_excel;
-                    var productos = JSON.stringify($scope.rows);
-                    productos = productos.replace(/\\/g, "\\\\");
+                    //var productos = JSON.stringify($scope.rows);
+                    //productos = productos.replace(/\\/g, "\\\\");
 
                     var bodega_cargar = JSON.stringify($scope.bodegas);
                     bodega_cargar = bodega_cargar.replace(/\\/g, "\\\\");
 
                     $rootScope.modData = {
                         file: $scope.lastSelected.file,
-                        productos: JSON.parse(productos),
+                        productos: $scope.rows,//JSON.parse(productos),
                         bodegas_cargar: JSON.parse(bodega_cargar),
                         mod: 1
                     };
