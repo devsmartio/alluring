@@ -411,7 +411,7 @@
 
 					<!-- Pagination top -->
 					<div class="pagination flex-m flex-w p-b-26">
-						<a href="#productoCont" ng-repeat="p in pages" class="item-pagination flex-c-m trans-0-4" ng-class="{'active-pagination':p.selected}" ng-click="setPage(p)">{{p.num}}</a>
+						<a href="#productoCont" ng-repeat="p in pages" class="item-pagination flex-c-m trans-0-4" ng-class="{'active-pagination':p.selected}" ng-show="p.show" ng-click="setPage(p)">{{p.num}}</a>
 					</div>
 					<!-- Product -->
 					<div class="row" ng-show="productosFilter.length">
@@ -471,7 +471,7 @@
 
 					<!-- Pagination -->
 					<div class="pagination flex-m flex-w p-t-26">
-						<a href="#productoCont" ng-repeat="p in pages" class="item-pagination flex-c-m trans-0-4" ng-class="{'active-pagination':p.selected}" ng-click="setPage(p)">{{p.num}}</a>
+						<a href="#productoCont" ng-repeat="p in pages" class="item-pagination flex-c-m trans-0-4" ng-class="{'active-pagination':p.selected}" ng-show="p.show" ng-click="setPage(p)">{{p.num}}</a>
 					</div>
 				</div>
 			</div>
@@ -806,7 +806,7 @@
 				productos: [],
 				total: 0
 			}
-			$scope.itemsPerPage = 15;
+			$scope.itemsPerPage = 3 * 7;
 			$scope.page = {};
 			$scope.sort = "none";
 			$scope.start = 0;
@@ -1008,6 +1008,13 @@
 				$scope.page = page;
 				$scope.pages.forEach(p => {
 					p.selected = false;
+					let minPage = page.num - 5;
+					let maxPage = page.num + 5;
+					if(p.num < minPage || p.num > maxPage){
+						p.show = false;
+					} else {
+						p.show = true;
+					}
 				})
 				$scope.page.selected = true;
 				$scope.productosShow = getPage($scope.productosSort, $scope.page.num, $scope.itemsPerPage);
