@@ -7,13 +7,7 @@ const transport = nodemailer.createTransport({
     service: 'gmail',
     auth: config.mailAuth
 })
-const mysqlConfig = {
-    connLimit : 10,
-    host            : 'localhost',
-    user            : 'devsmartio',
-    password        : 'rootio',
-    database        : 'alluring'
-  };
+const mysqlConfig = require('../config').mysqlConnectionData;
 
  
 const insertCliente = (conn, cliente) => {

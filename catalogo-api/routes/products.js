@@ -1,13 +1,7 @@
 var express = require('express');
 var router = express.Router();
 var mysql = require('mysql');
-const mysqlConfig = {
-    connectionLimit : 10,
-    host            : 'localhost',
-    user            : 'devsmartio',
-    password        : 'rootio',
-    database        : 'alluring'
-  };
+const mysqlConfig = require('../config').mysqlConnectionData;
 
  
 

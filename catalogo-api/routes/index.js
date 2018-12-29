@@ -3,13 +3,7 @@ var router = express.Router();
 var mysql = require('mysql');
 var md5 = require("md5");
 
-const mysqlConfig = {
-  connectionLimit : 10,
-  host            : 'localhost',
-  user            : 'devsmartio',
-  password        : 'rootio',
-  database        : 'alluring'
-};
+const mysqlConfig = require('../config').mysqlConnectionData;
 
 /* GET home page. */
 router.post('/login', function(req, res, next) {

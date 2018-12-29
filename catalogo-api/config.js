@@ -8,5 +8,12 @@ module.exports = {
         to: "bryan.cruz@getsmartio.com",
         subject: "PEDIDO REALIZADO CATALOGO",
         html: ""
+    },
+    mysqlConnectionData: {
+        connectionLimit : 10,
+        host            : 'localhost',
+        user            : 'devsmartio',
+        password        : 'rootio',
+        database        : 'alluring'
     }
 }
