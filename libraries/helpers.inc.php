@@ -186,12 +186,12 @@ function decode_email_address($encoded){
     return $decoded_email;
 }
 
-function inputStreamToArray(){
+function inputStreamToArray($stripslashes = true){
     $rawJson = file_get_contents("php://input");
     if(!$rawJson){
         return false;
     } else {
-        $array = json_decode(stripslashes($rawJson), true);
+        $array = json_decode($stripslashes ? stripslashes($rawJson) : $rawJson, true);
         return $array;
     }
 }

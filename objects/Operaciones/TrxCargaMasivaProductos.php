@@ -107,15 +107,14 @@ class TrxCargaMasivaProductos extends FastTransaction {
                 $scope.finalizar = function () {
 
                     var identificador_excel = $scope.lastSelected.identificador_excel;
-                    //var productos = JSON.stringify($scope.rows);
-                    //productos = productos.replace(/\\/g, "\\\\");
+                    var productos = JSON.stringify($scope.rows);
+                    productos = productos.replace(/\\[^"]/g, "\\\\");
 
                     var bodega_cargar = JSON.stringify($scope.bodegas);
-                    bodega_cargar = bodega_cargar.replace(/\\/g, "\\\\");
-
+                    bodega_cargar = bodega_cargar.replace(/\\[^"]/g, "\\\\");
                     $rootScope.modData = {
                         file: $scope.lastSelected.file,
-                        productos: $scope.rows,//JSON.parse(productos),
+                        productos: JSON.parse(productos),
                         bodegas_cargar: JSON.parse(bodega_cargar),
                         mod: 1
                     };
@@ -280,12 +279,12 @@ class TrxCargaMasivaProductos extends FastTransaction {
 
     public function doSave($data)
     {
+        $data = inputStreamToArray(false);
+        $data = $data['data'];
         $fecha = new DateTime();
         $user = AppSecurity::$UserData['data'];
-
         $dsCuenta = Collection::get($this->db, 'cuentas', 'lower(nombre) = "inventario"')->single();
         $dsMoneda = Collection::get($this->db, 'monedas', 'moneda_defecto = 1')->single();
-
         foreach ($data['productos'] as $prod) {
             $id_producto = 0;
             $dsProducto = $this->db->query_select('producto', sprintf('codigo_origen = "%s"', $prod['codigo_origen']));
