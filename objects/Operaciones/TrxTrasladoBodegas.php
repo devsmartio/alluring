@@ -56,7 +56,7 @@ class TrxTrasladoBodegas extends FastTransaction {
                     $scope.tipo = '';
                     $scope.clientesBodegas = [];
                     $scope.clientes = [];
-                    $scope.filtered = [];
+                    $scope.filteredProd = [];
 
                     $http.get($scope.ajaxUrl + '&act=getGridCols').success(function (response) {
                         $scope.gridCols = response.data;
@@ -157,8 +157,8 @@ class TrxTrasladoBodegas extends FastTransaction {
                 $("#pistolearItem").keyup(function(ev) {
                     let val = $(this).val();
                     if (ev.which === 13 && val) {
-                        if($scope.filtered.length == 1){
-                            let item = $scope.filtered[0];
+                        if($scope.filteredProd.length == 1){
+                            let item = $scope.filteredProd[0];
                             if(item.cantidad + 1 > item.total_existencias){
                                 swal("Oh oh", `Ya tiene la existencia máxima de ${val} `, "warning");
                             } else {
