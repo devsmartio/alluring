@@ -399,8 +399,11 @@
 							<div class="search-product pos-relative bo4 of-hidden m-t-5 m-b-5 m-r-10" style="height: 60px">
 									<input class="s-text7 size6 p-l-23 p-r-50" type="text" name="search-product" ng-model="filter" placeholder="Buscar..." >
 	
-								<button class="flex-c-m size5 ab-r-m color2 color0-hov trans-0-4" ng-click="setProductosShow()">
+								<button class="flex-c-m size5 ab-r-m color2 color0-hov trans-0-4" ng-show="!hasTextFilter" ng-click="setProductosShow()">
 									<i class="fs-12 fa fa-search" aria-hidden="true"></i>
+								</button>
+								<button class="flex-c-m size5 ab-r-m color2 color0-hov trans-0-4" ng-show="hasTextFilter" ng-click="limpiarFiltroTexto()">
+									<i class="fs-12 fa fa-close" aria-hidden="true"></i>
 								</button>
 							</div>
 						</div>
@@ -800,7 +803,7 @@
 			};
 
 		var app = angular.module("catalogoApp", []);
-		const apiUrl = "http://192.168.0.9:3001";
+		const apiUrl = "http://45.79.16.122:3003";
 		app.controller("ProductosCtrl", function($scope, $http, $filter){
 			//DEFAULTS
 			$scope.rand = Math.random();
@@ -981,7 +984,15 @@
 				return $scope.filter ? $filter('filter')(arr, $scope.filter) : arr;
 			});
 
+			$scope.limpiarFiltroTexto = _ => {
+				$scope.filter = '';
+				$scope.hasTextFilter = false;
+				$scope.productosFilter = $scope.filterProductos($scope.productosOr);
+				$scope.setSorting(); 
+			}
+
 			$scope.setProductosShow = _ => {
+				$scope.hasTextFilter = !(!$scope.filter);
 				$scope.updateCart();
 				$scope.applyDiscount();
 				$scope.productosFilter = $scope.filterProductos($scope.productosOr);
