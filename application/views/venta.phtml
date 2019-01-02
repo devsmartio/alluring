@@ -51,11 +51,11 @@
                             </div>
                         </div>
                                 <span class="d-inline-block" tabindex="0" data-toggle="tooltip" title="{{prod.total_existencias-prod.cantidad}} existencias" >
-                                    <img btn-lazy-src="media/uploads/{{prod.imagen}}" alt="{{prod.imagen}}" class="img-thumbnail" ng-click="agregarUno(prod)">
+                                    <img btn-lazy-src="media/uploads/{{prod.imagen}}?rand={{rand}}" alt="{{prod.imagen}}" class="img-thumbnail" ng-click="agregarUno(prod)">
                                     <figcaption class="figure-caption">
-                                        <b>{{prod.codigo}}</b>: {{prod.nombre}}
+                                        <b>{{prod.codigo}}</b> 
+                                        <p style="margin-bottom: 0px">{{prod.descripcion}}</p>
                                         <span ng-if="hasDescuento(prod)" class="badge badge-warning">{{getDescuento(prod)}}</span>
-                                        <br/>
                                         Existencia: <b><span ng-class="{'text-success':prod.total_existencias > 0, 'text-danger':prod.total_existencias <= 0}">{{prod.total_existencias}}</span></b><br/>
                                         <b>{{prod.nombre_sucursal | uppercase}}</b>
                                     </figcaption>
@@ -342,13 +342,13 @@
                                 <div class='form-group row required'>
                                     <label for='monto' class="col-sm-4 col-form-label">Monto a Pagar</label>
                                     <div class="col-sm-8">
-                                        <input ng-model="forma_pago.monto" type="text" class='form-control' ng-change="cambioMonto()" name='monto' required oninvalid="this.setCustomValidity('El monto es requerido')" oninput="setCustomValidity('')"/>
+                                        <input id="monto_efectivo" ng-model="forma_pago.monto" type="text" class='form-control' ng-change="cambioMonto()" name='monto' required oninvalid="this.setCustomValidity('El monto es requerido')" oninput="setCustomValidity('')"/>
                                     </div>
                                 </div>
                                 <div class='form-group row required'>
                                     <label for='cantidad' class="col-sm-4 col-form-label">Cantidad</label>
                                     <div class="col-sm-8">
-                                        <input ng-model="forma_pago.cantidad_efectivo" ng-readonly="true" type="text" class='form-control' name='cantidad' value="{{forma_pago.cantidad | number:2}}" required oninvalid="this.setCustomValidity('La cantidad es requerida')" oninput="setCustomValidity('')"/>
+                                        <input id="cantidad_efectivo" ng-model="forma_pago.cantidad_efectivo" ng-readonly="true" type="text" class='form-control' name='cantidad' value="{{forma_pago.cantidad | number:2}}" required oninvalid="this.setCustomValidity('La cantidad es requerida')" oninput="setCustomValidity('')"/>
                                     </div>
                                 </div>
                                 <div class="modal-footer">

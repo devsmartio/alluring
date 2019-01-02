@@ -9,7 +9,7 @@ $venta = $this->db->queryToArray(sprintf($queryVenta, $ventaId));
 $venta = sanitize_by_keys($venta[0], ['nombre_cliente']);
 
 
-$queryProductos = " SELECT	tp.id_venta_detalle, p.id_tipo, p.id_producto, m.id_tipo, tp.cantidad, CONCAT(m.nombre, ' - ', p.nombre) as descripcion, tp.precio_venta as precio_unitario, p.precio_venta as precio_sugerido, p.codigo codigo_origen
+$queryProductos = " SELECT	tp.id_venta_detalle, p.id_tipo, p.id_producto, m.id_tipo, tp.cantidad, p.descripcion, tp.precio_venta as precio_unitario, p.precio_venta as precio_sugerido, p.codigo codigo_origen
                     FROM 	trx_venta_detalle tp
                     LEFT JOIN 	producto p ON p.id_producto = tp.id_producto
                     LEFT JOIN 	tipo m ON m.id_tipo = p.id_tipo
@@ -30,9 +30,9 @@ $subtotal = 0;
         <title></title>
         <style>
             body {
-                width: 19cm;
+                width: 20cm;
                 font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif;
-                font-size: 13px;
+                font-size: 15px;
             }
             td {
                 text-align: center;
@@ -49,61 +49,77 @@ $subtotal = 0;
                 text-align: right;
                 display: inline-block;
             }
+            tr.border-top td, tr.border-top th {
+                border-top: 1px gray solid;
+                padding-top: 2px;
+                padding-bottom: 2px;
+            }
         </style>
     </head>
     <body>
-        <table style="width: 90%; margin:20px auto 0px auto;background-color: #fff" border="0">
+        <table style="width: 100%; margin:0px auto 0px auto;background-color: #fff" border="0">
             <tr>
-                <th style='font-size: 21px; text-align: center' colspan="2"><center>ALLURING CONCEPT</center></th>
-            </tr>
-            <tr>
-                <th style='width: 20%; text-align: left'>Número</th>
-                <td style='text-align: left'><?php echo $venta['id_venta'] ?></td>
-            </tr>
-            <tr>
-                <th style='width: 20%; text-align: left'>Empleado</th>
-                <td style='text-align: left'><?php echo $venta['usuario_venta'] ?></td>
-            </tr>
-            <tr>
-                <th style='text-align: left'>Fecha</th>
-                <td style='text-align: left'><?php echo DateTime::createFromFormat(SQL_DT_FORMAT, $venta['fecha_creacion'])->format(SHOW_DT_FORMAT) ?></td>
-            </tr>
-            <tr>
-                <th style='text-align: left'>Nombre</th>
-                <td style='text-align: left'><?php echo $venta["factura_nit"] ?></td>
-            </tr>
-            <tr>
-                <th style='text-align: left'>NIT</th>
-                <td style='text-align: left'><?php echo $venta["factura_nombre"] ?></td>
-            </tr>
-            <tr>
-                <th style='text-align: left'>Dirección</th>
-                <td style='text-align: left'><?php echo $venta["factura_direccion"] ?></td>
-            </tr>
-            <tr>
-                <th style='text-align: left'>Productos</th>
-                <td style='text-align: left'><?php echo $venta["cant_productos"] ?></td>
+                <td  style="width: 50%">
+                    <table style="width: 100%">
+                    <tr>
+                        <th style='width: 50%; text-align: left'>Número</th>
+                        <td style='text-align: right'><?php echo $venta['id_venta'] ?></td>
+                    </tr>
+                    <!--tr>
+                        <th style='width: 20%; text-align: left'>Empleado</th>
+                        <td style='text-align: right'><?php //echo $venta['usuario_venta'] ?></td>
+                    </tr-->
+                    <tr>
+                        <th style='text-align: left'>Fecha</th>
+                        <td style='text-align: right'><?php echo DateTime::createFromFormat(SQL_DT_FORMAT, $venta['fecha_creacion'])->format(SHOW_DT_FORMAT) ?></td>
+                    </tr>
+                    <tr>
+                        <th style='text-align: left'>Nombre</th>
+                        <td style='text-align: right'><?php echo self_escape_string($venta["factura_nombre"]) ?></td>
+                    </tr>
+                    <tr>
+                        <th style='text-align: left'>NIT</th>
+                        <td style='text-align: right'><?php echo $venta["factura_nit"] ?></td>
+                    </tr>
+                    <tr>
+                        <th style='text-align: left'>Dirección</th>
+                        <td style='text-align: right'><?php echo $venta["factura_direccion"] ?></td>
+                    </tr>
+                    <tr>
+                        <th style='text-align: left'>Productos</th>
+                        <td style='text-align: right'><?php echo $venta["cant_productos"] ?></td>
+                    </tr>
+                    </table>
+                </td>
+                <td style="width: 10%">&nbsp;</td>
+                <td valign="top" style="width: 50%">
+                    <img src="media/img/logo.png" alt="Alluring Concept" style="width: 8cm; height: auto"/>
+                    Catálogo: www.catalogoalluring.com <br />
+                    Website: www.alluring.com.gt <br />
+                    Whatsapp: 5451-7328 <br />
+                    Teléfono: 2367-2639 <br />
+                </td>
             </tr>
         </table>
-        <table style="width: 90%; margin:20px auto 0px auto;background-color: #fff" border="1">
-            <tr>
-                <th style='width: 10%'>Producto</th>
-                <th style='width: 65%'>Descripción</th>
-                <th style='width: 10%'>Cantidad</th>
-                <th style='width: 25%'>Precio Unitario</th>
-                <th style='width: 25%'>Precio Sugerido</th>
-                <th style='width: 25%'>Precio Total</th>
+        <table cellspacing="0" style="width: 100%; margin-top: 20px; background-color: #fff; font-size: 13px; border-top: 1px gray solid" border="0">
+            <tr style="background-color: rgb(207,207,231)">
+                <th style='width: 10%; text-align: left'>Producto</th>
+                <th style='width: 38%; text-align: left'>Descripción</th>
+                <th style='width: 7%; text-align: right'>Cantidad</th>
+                <th style='width: 15%; text-align: right'>Precio Unitario</th>
+                <th style='width: 15%; text-align: right'>Precio Sugerido</th>
+                <th style='width: 15%; text-align: right'>Precio Total</th>
             </tr>
             <?php 
             foreach($productos as $p){
                 ?>
-            <tr>
-                <td valign="top"><?php echo $p['codigo_origen'] ?></td>
-                <td style="font-size: 12px"> <?php echo $p['descripcion']; ?> </td>
-                <td valign="top"><?php echo $p['cantidad'] ?></td>
-                <td valign="top" > <?php echo number_format($p['precio_unitario'], 2); ?> </td>
-                <td valign="top" > <?php echo number_format($p['precio_sugerido'], 2); ?> </td>
-                <td valign="top"> <?php echo number_format(($p['precio_unitario'] * $p['cantidad']), 2); ?> </td>
+            <tr class="border-top">
+                <td valign="top" style="text-align: left"> <?php echo $p['codigo_origen'] ?></td>
+                <td style="text-align: left"> <?php echo $p['descripcion']; ?> </td>
+                <td valign="top" style="text-align: right"><?php echo number_format($p['cantidad'],0) ?></td>
+                <td valign="top" style="text-align: right"> <?php echo number_format($p['precio_unitario'], 2); ?> </td>
+                <th valign="top" style="text-align: right"> <?php echo number_format($p['precio_sugerido'], 2); ?> </th>
+                <td valign="top" style="text-align: right"> <?php echo number_format(($p['precio_unitario'] * $p['cantidad']), 2); ?> </td>
             </tr>
                 <?php
                 $total += ($p['precio_unitario'] * $p['cantidad']);
@@ -111,12 +127,46 @@ $subtotal = 0;
             }
             ?>
         </table>
-        <table style="width: 90%; margin:20px auto 0px auto;background-color: #fff" border="0">
+        <table style="width: 100%; margin:20px auto 0px auto;background-color: #fff" border="0">
             <tr>
                 <th style='text-align: right'>TOTAL VENTA</th>
-                <th style='width: 18%'><?php echo number_format($total, 2) ?></th>
+                <th style='width: 18%; text-align: right'><?php echo number_format($total, 2) ?></th>
             </tr>
         </table>
+        <footer style="position: fixed; 
+                bottom: 50px; 
+                left: 0px; 
+                right: 0px;
+                height: 50px; 
+                font-size: 8px;
+                text-align: left;
+            }">
+            <table>
+                <tr>
+                    <td style="text-align: left; width: 50%">
+                        <div><b>Cambio de mercadería:</b></div>
+                        <div>Los cambios de mercadería se harán únicamente la última semana de cada mes.
+                        <ul>
+                            <li>No se acepta mercadería sin etiqueta</li>
+                            <li>No se aceptan cambios con la etiqueta en mal estado o manchada</li>
+                            <li>No se aceptan mercadería dañada (Rayada, lastimada, etc...)</li>
+                            <li>No se acepta más del 20% de la mercadería comprada</li>
+                            <li>Los cambios quedan a discreción de Alluring Concept</li>
+                        </ul></div>
+                    </td>
+                    <td style="text-align: left; width: 50%">
+                        <div><b>Garantía:</b></div>
+                        <div>
+                        <ul>
+                            <li>Cubrimos garantía por defecto de fábrica</li>
+                            <li>La garantía queda a discreción de Alluring Concept</li>
+                            <li>Toda la mercadería que contenga pedrería el cliente la compra sabiendo que no tienen garantía sobre piedras que se hayan caído, ya que son piezas delicadas que dependen del uso que el cliente les dé</li>
+                            
+                        </ul></div>
+                    </td>
+                </tr>
+            </table>
+        </footer>
     </body>
 </html>
 

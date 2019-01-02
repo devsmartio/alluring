@@ -810,11 +810,14 @@ class TrxReingresoConsignacion extends FastTransaction {
                     forma_pago: JSON.parse(forma_pago),
                     consignacion: $scope.selectedConsignacion
                 };
-                swal({
+                let facturarAlert = {
                     title:'Generando venta', 
-                    text: (cambio || "") || "Guardando...", 
-                    timer: 3000
-                });
+                    text: (cambio || "") || "Guardando..."
+                }
+                if(!cambio){
+                    facturarAlert.timer = 3000;
+                }
+                swal(facturarAlert);
                 //console.log($rootScope.modData);
                 $scope.doSave();
             };

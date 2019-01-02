@@ -108,7 +108,7 @@ class TrxVenta extends FastTransaction {
                 }
                 return total
             };
-            
+            $scope.rand = Math.random();
             $scope.resetCliente = function(){
                 $scope.lastClienteSelected = {
                     nombres: null,
@@ -714,6 +714,9 @@ class TrxVenta extends FastTransaction {
                         }
                         $productos_calc = $filter('filter')($scope.productos_facturar, {mostrar: 1});
                         $scope.total = $productos_calc.sum("sub_total");
+                        if(!$scope.$$phase){
+                            $scope.$apply();
+                        }
                         if(resetAfter){
                             //$scope.productos = [];
                             $("#producto").select();
@@ -767,6 +770,9 @@ class TrxVenta extends FastTransaction {
                         }
                         $productos_calc = $filter('filter')($scope.productos_facturar, {mostrar: 1});
                         $scope.total = $productos_calc.sum("sub_total");
+                        if(!$scope.$$phase){
+                            $scope.$apply();
+                        }
                     } else {
                         $("#clientesModal").modal();
                     }
@@ -876,17 +882,25 @@ class TrxVenta extends FastTransaction {
                 if($tipo_cambio.length > 0){
                     $scope.tipo_cambio_actual = $tipo_cambio[0];
                     if($scope.forma_pago.monto && $scope.tipo_cambio_actual.factor){
+                        $scope.forma_pago.cantidad_efectivo = 0;
+                        $scope.forma_pago.monto = 0;
+                        /*
                         console.log("MONTO: ", $scope.forma_pago.monto)
                         $scope.forma_pago.cantidad_efectivo = parseFloat($scope.forma_pago.monto * $scope.tipo_cambio_actual.factor).toFixed(2); 
                         if($scope.devolucion.credito > 0){
                             $scope.forma_pago.cantidad_efectivo = Math.max(0, $scope.forma_pago.cantidad_efectivo - $scope.devolucion.credito);
                             $scope.forma_pago.monto = Math.max(0, $scope.forma_pago.monto - $scope.devolucion.credito);
                         }
+                        */
                     } 
                 } else {
                     $scope.showAlert('alert-warning', 'No hay tipo de cambio configurado para esa moneda', 2500);
                 }
             };
+
+            $("#tipoPagoModal").on('shown.bs.modal', function(){
+                $("#monto_efectivo").focus();
+            })
 
             $scope.tipoPagoFormValid = function(){
                 var efectivo = false;
@@ -969,7 +983,14 @@ class TrxVenta extends FastTransaction {
                     id_venta: ($scope.lastVentaSelected == undefined) ? 0 : $scope.lastVentaSelected.id_venta,
                     devolucion: $scope.devolucion
                 };
-                $scope.showAlert('alert-info', 'Guardando... ' + (cambio || ""), 3000);
+                let facturarAlert = {
+                    title:'Finalizar venta', 
+                    text: (cambio || "") || "Guardando..."
+                }
+                if(!cambio){
+                    facturarAlert.timer = 3000;
+                }
+                swal(facturarAlert);
                 //console.log($rootScope.modData);
                 $scope.doSave();
             };
