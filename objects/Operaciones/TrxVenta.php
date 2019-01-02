@@ -727,7 +727,7 @@ class TrxVenta extends FastTransaction {
 
             $scope.agregarVarios = function(prod) {
                 if(!$scope.preventProductoChange){
-                    if($scope.lastClienteSelected.id_cliente){
+                    if($scope.lastClienteSelected.id_cliente && prod.cant_vender){
                         var restoExistencias = prod.total_existencias - prod.cant_vender;
                         console.log(restoExistencias);
                         if (restoExistencias >= 0) {

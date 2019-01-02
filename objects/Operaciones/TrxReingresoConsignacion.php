@@ -948,7 +948,7 @@ class TrxReingresoConsignacion extends FastTransaction {
         foreach ($dsClientes as $p) {
             $resultSet[] = array('id_tipo_precio' => $p['id_tipo_precio'], 'id_cliente' => $p['id_cliente'], 'identificacion' => $p['identificacion'], 'nombres' => $p['nombres'], 'apellidos' => $p['apellidos']);
         }
-        echo json_encode(array('data' => $resultSet));
+        echo json_encode(array('data' => sanitize_array_by_keys($resultSet, ['nombres', 'apellidos'])));
     }
 
     public function getTipoPrecio(){
