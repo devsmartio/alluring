@@ -218,7 +218,7 @@ $last_name = $user['LAST_NAME'];
                 }
             }
 
-            return function(input, filterVal, limit){
+            return function(input, filterVal, limit, emptyDefault){
                 if(input && validateInput(filterVal)){
                     let list = $filter('filter')(input, filterVal);
                     $rootScope.$broadcast('emptylistfilter.found', list.length);
@@ -230,7 +230,13 @@ $last_name = $user['LAST_NAME'];
                     }
                 }
                 $rootScope.$broadcast('emptylistfilter.found', 0);
-                return [];
+                return emptyDefault || [];
+            }
+        })
+
+        app.filter('trasladoemptylistfilter', function($filter, $rootScope){
+            return function(input, filterVal, limit){
+                return $filter('emptylistfilter')(input, filterVal, limit, input.filter(i => i.cantidad > 0));
             }
         })
 

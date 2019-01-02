@@ -102,7 +102,7 @@
                             <td></td>
                             <td></td>
                         </tr-->
-                        <tr ng-class="{'bg-secondary':row.cantidad>0}" ng-repeat="row in rows | emptylistfilter:search:50 as filteredProd">
+                        <tr ng-class="{'bg-secondary':row.cantidad>0}" ng-repeat="row in rows | trasladoemptylistfilter:search:50 as filteredProd">
                             <td ng-bind="row['codigo']"></td>
                             <td ng-bind="row['nombre']"></td>
                             <td ng-bind="row['descripcion']"></td>
