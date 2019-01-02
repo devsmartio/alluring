@@ -2,7 +2,7 @@
 - *Correo (Mandenme el correo) ventas@alluring.com.gt. Enviar pedidos
 - *Descuentos para cliente y aplicar cambios en pantalla de ventas*
 - *Congelar pedido*
-- Revisión de reingreso de consignacion
+- *Revisión de reingreso de consignacion*
 - Cambiar logo mugre del catálogo
 
 **PRODUCCION

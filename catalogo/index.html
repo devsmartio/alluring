@@ -31,7 +31,8 @@
 	<link rel="stylesheet" type="text/css" href="css/main.css">
 <!--===============================================================================================-->
 </head>
-<body class="animsition" ng-cloak ng-controller="ProductosCtrl">
+<body ng-cloak ng-controller="ProductosCtrl">
+	<div class="se-pre-con"></div>
 	<!-- Header -->
 	<header class="header1" >
 		<!-- Header desktop -->
@@ -694,6 +695,7 @@
 
 <!--===============================================================================================-->
 	<script type="text/javascript" src="vendor/noui/nouislider.min.js"></script>
+	<script src="http://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.2/modernizr.js"></script>
 	<script type="text/javascript">
 		/*[ No ui ]
 	    ===========================================================*/
@@ -865,7 +867,13 @@
 			const getUser = () => {
 				let user = localStorage.getItem("alluring-user");
 				try {
-					return user ? JSON.parse(user) : null;
+					let loggedUser = user ? JSON.parse(user) : null;
+					let finalUser
+					$http.get(`${apiUrl}/users/${loggedUser.id_cliente}`).success(u => {
+						$scope.user = u;
+					}).catch(e => {
+						$scope.user = loggedUser;
+					})
 				} catch {
 					return null
 				}
@@ -954,7 +962,7 @@
 			}
 
 			$scope.cart = getCart();
-			$scope.user = getUser();
+			getUser();
 
 			$scope.filterProductos = prods => {
 				let res = [...prods];
@@ -1291,9 +1299,10 @@
 					}
 					$http.post(`${apiUrl}/orders`, pedido).success(response => {
 						console.log(response);
-						swal({text: "Gracias por hacer su pedido. Muy pronto nos pondremos en contacto contigo", type: "success"});
-						$scope.clearCart();
-						$scope.getProductos();
+						swal({text: "Gracias por hacer su pedido. Muy pronto nos pondremos en contacto contigo", type: "success"}).then(res => {
+							$scope.clearCart();
+							$scope.getProductos();
+						});
 					}).catch(err => {
 						let title = "";
 						let content = "";
@@ -1376,7 +1385,8 @@
 			}, true)
 			
 
-			$scope.getProductos = () => {
+			$scope.getProductos = (isInit) => {
+				$(".se-pre-con").show();
 				$http.get(`${apiUrl}/products`).success(productos => {
 					$scope.productosOr = productos;
 					$scope.setProductosShow();
@@ -1387,6 +1397,8 @@
 								selected: false
 							}
 						});
+						console.log("GOT CAT");
+						$(".se-pre-con").fadeOut("slow");
 					}, err => {
 						alert("Problema en la conexión. Intente refrescando la página");
 					})
@@ -1396,7 +1408,7 @@
 			}
 
 			//INIT
-			$scope.getProductos();
+			$scope.getProductos(true);
 		})
 	</script>
 <!--===============================================================================================-->

@@ -11,9 +11,9 @@ module.exports = {
     },
     mysqlConnectionData: {
         connectionLimit : 10,
-        host            : 'localhost',
+        host            : '45.79.16.122',
         user            : 'devsmartio',
-        password        : 'rootio',
+        password        : 'dev_io2018!',
         database        : 'alluring'
     }
 }

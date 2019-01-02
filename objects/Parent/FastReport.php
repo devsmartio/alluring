@@ -171,8 +171,6 @@ print "</tbody></table>";
             $result .= "</tr>";
         }
         $result .= "<table>";
-        print($result);
-
         $date = new Datetime();
         header('Content-Type: application/vnd.ms-excel');
         header(sprintf('Content-Disposition: attachment;filename=%s_%s.xls', $this->excelFileName, $date->format(SQL_DT_FORMAT)));
@@ -186,6 +184,7 @@ print "</tbody></table>";
         header ('Last-Modified: '.gmdate('D, d M Y H:i:s').' GMT'); // always modified
         header ('Cache-Control: cache, must-revalidate'); // HTTP/1.1
         header ('Pragma: public'); // HTTP/1.0
+        print($result);
     }
     
     private function throwResponse(){

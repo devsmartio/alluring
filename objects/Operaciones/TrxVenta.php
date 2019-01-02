@@ -516,16 +516,24 @@ class TrxVenta extends FastTransaction {
                                 msg: 'El producto con el código ' + val + ' no se encuentra o no hay existencias'
                             });
                         } else {
-                            let productos = response.data;
-                            for(let i = 0;productos.length > i; i++){
-                                let $r = $scope.productos_facturar.filter(f => f.id_producto == productos[i].id_producto && f.id_sucursal == productos[i].id_sucursal);
-                                $r = $r.length ? $r.pop() : {cantidad: 0};
-                                productos[i].total_existencias -= $r.cantidad; 
+                            if(response.data.length <= 50){
+                                let productos = response.data;
+                                for(let i = 0;productos.length > i; i++){
+                                    let $r = $scope.productos_facturar.filter(f => f.id_producto == productos[i].id_producto && f.id_sucursal == productos[i].id_sucursal);
+                                    $r = $r.length ? $r.pop() : {cantidad: 0};
+                                    productos[i].total_existencias -= $r.cantidad; 
+                                }
+                                $scope.productos = productos;
+                                $scope.encontrados = productos.length;
+                                $scope.$apply();
+                            } else {
+                                $scope.encontrados = response.data.length;
                             }
-                            $scope.productos = productos;
                             //$scope.productos.length == 1 && $scope.agregarUno($scope.productos[0], true);
                         }
                     });
+                } else {
+                    $scope.encontrados = 0;
                 }
             });
 
@@ -664,43 +672,47 @@ class TrxVenta extends FastTransaction {
 
             $scope.agregarUno = function(prod, resetAfter) {
                 if(!$scope.preventProductoSearch){
-                    var restoExistencias = prod.total_existencias - prod.cantidad;
-                    if (restoExistencias > 0) {
+                    if($scope.lastClienteSelected.id_cliente){
+                        var restoExistencias = prod.total_existencias - prod.cantidad;
+                        if (restoExistencias > 0) {
 
-                        $productos = $filter('filter')($scope.productos_facturar, {id_producto: prod.id_producto, id_sucursal: prod.id_sucursal});
+                            $productos = $filter('filter')($scope.productos_facturar, {id_producto: prod.id_producto, id_sucursal: prod.id_sucursal});
 
-                        if ($productos.length > 0) {
-                            $productos[0].total_existencias -= 1;
-                            $productos[0].cantidad = parseFloat($productos[0].cantidad) + 1;
-                            $productos[0].sub_total = parseFloat($productos[0].cantidad) * parseFloat($productos[0].precio_venta);
-                        } else {
-                            let agregar = Object.assign({}, prod);
-                            agregar.total_existencias -= 1;
-                            agregar.cantidad = 1;
-                            agregar = $scope.applyDiscountProducto(agregar);
-                            /*
-                            if($scope.lastClienteSelected.tipo_precio && $scope.lastClienteSelected.tipo_precio.porcentaje_descuento){
-                                agregar.precio_venta = agregar.precio_original - parseFloat(agregar.precio_original * ($scope.lastClienteSelected.tipo_precio.porcentaje_descuento/100))  
-                                agregar.sub_total = parseFloat(agregar.precio_venta) * parseInt(prod.cantidad);
+                            if ($productos.length > 0) {
+                                $productos[0].total_existencias -= 1;
+                                $productos[0].cantidad = parseFloat($productos[0].cantidad) + 1;
+                                $productos[0].sub_total = parseFloat($productos[0].cantidad) * parseFloat($productos[0].precio_venta);
                             } else {
-                                
+                                let agregar = Object.assign({}, prod);
+                                agregar.total_existencias -= 1;
+                                agregar.cantidad = 1;
+                                agregar = $scope.applyDiscountProducto(agregar);
+                                /*
+                                if($scope.lastClienteSelected.tipo_precio && $scope.lastClienteSelected.tipo_precio.porcentaje_descuento){
+                                    agregar.precio_venta = agregar.precio_original - parseFloat(agregar.precio_original * ($scope.lastClienteSelected.tipo_precio.porcentaje_descuento/100))  
+                                    agregar.sub_total = parseFloat(agregar.precio_venta) * parseInt(prod.cantidad);
+                                } else {
+                                    
+                                }
+                                */
+                                agregar.sub_total = parseFloat(agregar.precio_venta) * parseInt(agregar.cantidad);
+                                console.log("Agregando prod");
+                                console.log("TotalExistencias");
+                                $scope.productos_facturar.push(agregar);
                             }
-                            */
-                            agregar.sub_total = parseFloat(agregar.precio_venta) * parseInt(agregar.cantidad);
-                            console.log("Agregando prod");
-                            console.log("TotalExistencias");
-                            $scope.productos_facturar.push(agregar);
+                            prod.total_existencias -= 1;
+                        } else {
+                            console.log("No más unidades");
+                            $scope.showAlert('alert-danger', 'No puede vender mas de las unidades (' + prod.total_existencias + ') de este producto ' + prod.nombre, 2500);
                         }
-                        prod.total_existencias -= 1;
+                        $productos_calc = $filter('filter')($scope.productos_facturar, {mostrar: 1});
+                        $scope.total = $productos_calc.sum("sub_total");
+                        if(resetAfter){
+                            //$scope.productos = [];
+                            $("#producto").select();
+                        }
                     } else {
-                        console.log("No más unidades");
-                        $scope.showAlert('alert-danger', 'No puede vender mas de las unidades (' + prod.total_existencias + ') de este producto ' + prod.nombre, 2500);
-                    }
-                    $productos_calc = $filter('filter')($scope.productos_facturar, {mostrar: 1});
-                    $scope.total = $productos_calc.sum("sub_total");
-                    if(resetAfter){
-                        //$scope.productos = [];
-                        $("#producto").select();
+                        $("#clientesModal").modal();
                     }
                 }
                 
@@ -708,45 +720,49 @@ class TrxVenta extends FastTransaction {
 
             $scope.agregarVarios = function(prod) {
                 if(!$scope.preventProductoChange){
-                    var restoExistencias = prod.total_existencias - prod.cant_vender;
-                    console.log(restoExistencias);
-                    if (restoExistencias >= 0) {
+                    if($scope.lastSelectedCliente.id_cliente){
+                        var restoExistencias = prod.total_existencias - prod.cant_vender;
+                        console.log(restoExistencias);
+                        if (restoExistencias >= 0) {
 
-                        $productos = $filter('filter')($scope.productos_facturar, {id_producto: prod.id_producto});
+                            $productos = $filter('filter')($scope.productos_facturar, {id_producto: prod.id_producto});
 
-                        if ($productos.length > 0) {
-                            $productos[0].total_existencias -= prod.cant_vender;
-                            $productos[0].cantidad = parseFloat($productos[0].cantidad) + prod.cant_vender;
-                            $productos[0].sub_total = parseFloat($productos[0].cantidad) * parseFloat($productos[0].precio_venta);
-                        } else {
-                            let agregar = Object.assign({}, prod);
-                            agregar.total_existencias -= prod.cant_vender;
-                            agregar.cantidad = parseInt(prod.cantidad);
-                            agregar = $scope.applyDiscountProducto(agregar);
-                            /*
-                            if($scope.lastClienteSelected.tipo_precio && $scope.lastClienteSelected.tipo_precio.porcentaje_descuento){
-                                agregar.precio_venta = agregar.precio_original - parseFloat(agregar.precio_original * ($scope.lastClienteSelected.tipo_precio.porcentaje_descuento/100))  
-                                agregar.sub_total = parseFloat(agregar.precio_venta) * parseInt(prod.cantidad);
+                            if ($productos.length > 0) {
+                                $productos[0].total_existencias -= prod.cant_vender;
+                                $productos[0].cantidad = parseFloat($productos[0].cantidad) + prod.cant_vender;
+                                $productos[0].sub_total = parseFloat($productos[0].cantidad) * parseFloat($productos[0].precio_venta);
                             } else {
-                                agregar.sub_total = parseFloat(prod.precio_venta) * parseInt(prod.cantidad);
+                                let agregar = Object.assign({}, prod);
+                                agregar.total_existencias -= prod.cant_vender;
+                                agregar.cantidad = parseInt(prod.cantidad);
+                                agregar = $scope.applyDiscountProducto(agregar);
+                                /*
+                                if($scope.lastClienteSelected.tipo_precio && $scope.lastClienteSelected.tipo_precio.porcentaje_descuento){
+                                    agregar.precio_venta = agregar.precio_original - parseFloat(agregar.precio_original * ($scope.lastClienteSelected.tipo_precio.porcentaje_descuento/100))  
+                                    agregar.sub_total = parseFloat(agregar.precio_venta) * parseInt(prod.cantidad);
+                                } else {
+                                    agregar.sub_total = parseFloat(prod.precio_venta) * parseInt(prod.cantidad);
+                                }
+                                */
+                                agregar.sub_total = parseFloat(agregar.precio_venta) * parseInt(prod.cantidad);
+                                $scope.productos_facturar.push(agregar);
                             }
-                            */
-                            agregar.sub_total = parseFloat(agregar.precio_venta) * parseInt(prod.cantidad);
-                            $scope.productos_facturar.push(agregar);
+                            prod.total_existencias -= prod.cant_vender;
+                        } else {
+                            $scope.showAlert('alert-danger','No puede vender mas de las unidades (' + prod.total_existencias + ') de este producto ' + prod.nombre, 2500);
                         }
-                        prod.total_existencias -= prod.cant_vender;
-                    } else {
-                        $scope.showAlert('alert-danger','No puede vender mas de las unidades (' + prod.total_existencias + ') de este producto ' + prod.nombre, 2500);
-                    }
 
-                    if($scope.lastClienteSelected.tipo_precio && $scope.lastClienteSelected.tipo_precio.porcentaje_descuento){
-                        for(let i = 0; $scope.productos_facturar.length > i; i++){
-                            $scope.productos_facturar[i].precio_venta = $scope.productos_facturar[i].precio_original - parseFloat($scope.productos_facturar[i].precio_original * (r.porcentaje_descuento/100))  
-                            $scope.productos_facturar[i].sub_total = $scope.productos_facturar[i].precio_venta * $scope.productos_facturar[i].cantidad;
+                        if($scope.lastClienteSelected.tipo_precio && $scope.lastClienteSelected.tipo_precio.porcentaje_descuento){
+                            for(let i = 0; $scope.productos_facturar.length > i; i++){
+                                $scope.productos_facturar[i].precio_venta = $scope.productos_facturar[i].precio_original - parseFloat($scope.productos_facturar[i].precio_original * (r.porcentaje_descuento/100))  
+                                $scope.productos_facturar[i].sub_total = $scope.productos_facturar[i].precio_venta * $scope.productos_facturar[i].cantidad;
+                            }
                         }
+                        $productos_calc = $filter('filter')($scope.productos_facturar, {mostrar: 1});
+                        $scope.total = $productos_calc.sum("sub_total");
+                    } else {
+                        $("#clientesModal").modal();
                     }
-                    $productos_calc = $filter('filter')($scope.productos_facturar, {mostrar: 1});
-                    $scope.total = $productos_calc.sum("sub_total");
                 }
             };
 
@@ -1080,7 +1096,7 @@ class TrxVenta extends FastTransaction {
         foreach ($dsClientes as $p) {
             $resultSet[] = array('id_tipo_precio' => $p['id_tipo_precio'], 'id_cliente' => $p['id_cliente'], 'identificacion' => $p['identificacion'], 'nombres' => $p['nombres'], 'apellidos' => $p['apellidos']);
         }
-        echo json_encode(array('data' => $resultSet));
+        echo json_encode(array('data' => sanitize_array_by_keys($resultSet, ['nombres', 'apellidos'])));
     }
 
     public function getTipoPrecio(){
@@ -1102,7 +1118,7 @@ class TrxVenta extends FastTransaction {
 
         $ventas = $this->db->queryToArray(sprintf($queryVentas, $bod));
 
-        echo json_encode(array('data' => $ventas));
+        echo json_encode(array('data' => sanitize_array_by_keys($ventas, ['nombre_cliente'])));
     }
 
     public function getDetalleVenta(){
@@ -1169,58 +1185,63 @@ class TrxVenta extends FastTransaction {
         $bod = getParam("bod");
         $accesos = [$bod];
         $strAccesos = join(",",$accesos);
-        $queryProductos = " 
-        SELECT 
-            prod.*,
-            ifnull(dp.cantidad, 0) descuento_producto_cantidad,
-            ifnull(dp.porcentaje_descuento, 0) descuento_producto_porcentaje,
-            ifnull(dt.cantidad, 0) descuento_categoria_cantidad,
-            ifnull(dt.porcentaje_descuento, 0) descuento_categoria_porcentaje,
-            ifnull(dg.cantidad, 0) descuento_general_cantidad,
-            ifnull(dg.porcentaje_descuento, 0) descuento_general_porcentaje
-        FROM
-            (SELECT	p.id_producto, p.nombre, p.descripcion, p.precio_venta precio_original, p.precio_venta, p.imagen, p.id_tipo,
-                    p.codigo, FLOOR(COALESCE((sum(trx.haber) - sum(trx.debe)),0)) AS total_existencias,
-                    1 AS mostrar, max(t.nombre) AS nombre_categoria, max(s.nombre) AS nombre_sucursal,  max(s.id_sucursal) AS id_sucursal
-            FROM	producto p
-            LEFT JOIN tipo t ON t.id_tipo = p.id_tipo
-            LEFT JOIN trx_transacciones trx ON trx.id_producto = p.id_producto AND trx.id_sucursal in (" . $strAccesos . ")
-            LEFT JOIN sucursales s ON s.id_sucursal = trx.id_sucursal 
-            WHERE	(
-                p.codigo LIKE '%". $key . "%'
-                OR
-                p.codigo_origen LIKE '%". $key . "%'
-                OR
-                p.nombre LIKE '%". $key . "%'
-                OR
-                p.descripcion LIKE '%". $key . "%'
-                OR
-                t.nombre LIKE '%". $key . "%'
-                OR
-                s.nombre LIKE '%". $key . "%'
-            )
-            GROUP BY p.id_producto, trx.id_sucursal) prod 
-        LEFT JOIN descuentos dp on dp.id_producto=prod.id_producto 
-            AND dp.activo = 1 
-            AND dp.id_tipo_precio is null 
-            AND dp.id_tipo is null
-        LEFT JOIN descuentos dt on dt.id_tipo=prod.id_tipo 
-            AND dt.activo = 1 
-            AND dt.id_tipo_precio is null 
-            AND dt.id_producto is null
-        LEFT JOIN descuentos dg on 
-            dg.activo = 1 
-            AND dg.id_producto is null 
-            AND dg.id_tipo is null 
-            AND dg.id_tipo_precio is null";
-//                            HAVING	(sum(trx.haber) - sum(trx.debe)) > 0";
+        $productos = [];
+        if(!isEmpty($key)){
+            $queryProductos = " 
+                SELECT 
+                    prod.*,
+                    ifnull(dp.cantidad, 0) descuento_producto_cantidad,
+                    ifnull(dp.porcentaje_descuento, 0) descuento_producto_porcentaje,
+                    ifnull(dt.cantidad, 0) descuento_categoria_cantidad,
+                    ifnull(dt.porcentaje_descuento, 0) descuento_categoria_porcentaje,
+                    ifnull(dg.cantidad, 0) descuento_general_cantidad,
+                    ifnull(dg.porcentaje_descuento, 0) descuento_general_porcentaje
+                FROM
+                    (SELECT	p.id_producto, p.nombre, p.descripcion, p.precio_venta precio_original, p.precio_venta, p.imagen, p.id_tipo,
+                            p.codigo, FLOOR(COALESCE((sum(trx.haber) - sum(trx.debe)),0)) AS total_existencias,
+                            1 AS mostrar, max(t.nombre) AS nombre_categoria, max(s.nombre) AS nombre_sucursal,  max(s.id_sucursal) AS id_sucursal
+                    FROM	producto p
+                    LEFT JOIN tipo t ON t.id_tipo = p.id_tipo
+                    LEFT JOIN trx_transacciones trx ON trx.id_producto = p.id_producto AND trx.id_sucursal in (" . $strAccesos . ")
+                    LEFT JOIN sucursales s ON s.id_sucursal = trx.id_sucursal 
+                    WHERE	(
+                        p.codigo LIKE '%". $key . "%'
+                        OR
+                        p.codigo_origen LIKE '%". $key . "%'
+                        OR
+                        p.nombre LIKE '%". $key . "%'
+                        OR
+                        p.descripcion LIKE '%". $key . "%'
+                        OR
+                        t.nombre LIKE '%". $key . "%'
+                        OR
+                        s.nombre LIKE '%". $key . "%'
+                    )
+                    GROUP BY p.id_producto, trx.id_sucursal) prod 
+                LEFT JOIN descuentos dp on dp.id_producto=prod.id_producto 
+                    AND dp.activo = 1 
+                    AND dp.id_tipo_precio is null 
+                    AND dp.id_tipo is null
+                LEFT JOIN descuentos dt on dt.id_tipo=prod.id_tipo 
+                    AND dt.activo = 1 
+                    AND dt.id_tipo_precio is null 
+                    AND dt.id_producto is null
+                LEFT JOIN descuentos dg on 
+                    dg.activo = 1 
+                    AND dg.id_producto is null 
+                    AND dg.id_tipo is null 
+                    AND dg.id_tipo_precio is null";
+        //                            HAVING	(sum(trx.haber) - sum(trx.debe)) > 0";
 
-        $productos = $this->db->queryToArray($queryProductos);
+                $productos = $this->db->queryToArray($queryProductos);
 
-        for($i = 0; count($productos) > $i; $i++){
-            $productos[$i]['cantidad'] = 0;
-            $productos[$i]['sub_total'] = 0;
-            $productos[$i]['cant_vender'] = 0;
+                if(count($productos) <= 50){
+                    for($i = 0; count($productos) > $i; $i++){
+                        $productos[$i]['cantidad'] = 0;
+                        $productos[$i]['sub_total'] = 0;
+                        $productos[$i]['cant_vender'] = 0;
+                    }
+                }
         }
 
         echo json_encode(array('data' => $productos));

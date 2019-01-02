@@ -4,10 +4,10 @@
 
     /*[ Load page ]
     ===========================================================*/
-    $(".animsition").animsition({
+  /*  $(".animsition").animsition({
         inClass: 'fade-in',
         outClass: 'fade-out',
-        inDuration: 1500,
+        inDuration: 5000,
         outDuration: 800,
         linkElement: '.animsition-link',
         loading: true,
@@ -23,7 +23,8 @@
         overlayParentElement : 'html',
         transition: function(url){ window.location.href = url; }
     });
-    
+    $('.animsition').animsition('in');
+    */
     /*[ Back to top ]
     ===========================================================*/
     var windowH = $(window).height()/2;

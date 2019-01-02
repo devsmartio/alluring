@@ -37,8 +37,13 @@ class TrxTrasladoBodegas extends FastTransaction {
         ?>
         <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/sweetalert2@7.29.2/dist/sweetalert2.all.min.js"></script>
         <script>
+
             app.controller('ModuleCtrl', function ($scope, $http, $rootScope) {
                 $scope.rand = Math.random();
+                $scope.encontrados = 0;
+                $scope.$on('emptylistfilter.found', function(e, found){
+                    $scope.encontrados = found;
+                })
                 $scope.startAgain = function () {
                     $scope.idSucursalOrigen = '';
                     $scope.idSucursalDestino = '';
@@ -48,8 +53,10 @@ class TrxTrasladoBodegas extends FastTransaction {
                     $scope.diasConsignar = 0;
                     $scope.porcentajeCompraMinima = 0;
                     $scope.idClienteRecibe = '';
+                    $scope.tipo = '';
                     $scope.clientesBodegas = [];
                     $scope.clientes = [];
+                    $scope.filtered = [];
 
                     $http.get($scope.ajaxUrl + '&act=getGridCols').success(function (response) {
                         $scope.gridCols = response.data;
@@ -149,13 +156,9 @@ class TrxTrasladoBodegas extends FastTransaction {
                 };
                 $("#pistolearItem").keyup(function(ev) {
                     let val = $(this).val();
-                    if (ev.which === 13 && val && $scope.rows.length) {
-                        let item = $scope.rows.find(r => {
-                            return r.codigo.toLowerCase() == val.toLowerCase();
-                        });
-                        if(!item){
-                            swal("Oh oh", `Item ${val} no encontrado`, "warning");
-                        } else {
+                    if (ev.which === 13 && val) {
+                        if($scope.filtered.length == 1){
+                            let item = $scope.filtered[0];
                             if(item.cantidad + 1 > item.total_existencias){
                                 swal("Oh oh", `Ya tiene la existencia máxima de ${val} `, "warning");
                             } else {
@@ -163,8 +166,10 @@ class TrxTrasladoBodegas extends FastTransaction {
                                 $scope.$apply();
                                 $(this).select();
                             }
+                        } else {
+                            swal("Oh oh", `Item ${val} no encontrado`, "warning");
                         }
-                    }
+                    } 
                 });
                     
 
@@ -331,7 +336,7 @@ class TrxTrasladoBodegas extends FastTransaction {
 
             $trx_movimiento_sucursales = [
                 'id_movimiento_sucursales_estado' => sqlValue('2', 'int'),
-                'id_empleado_envia' => sqlValue($dsEmpleado['id_empleado'], 'int'),
+                'id_empleado_envia' => sqlValue($this->user['ID'], 'text'),
                 'id_sucursal_origen' => sqlValue($data['idSucursalOrigen'], 'int'),
                 'comentario_envio' => sqlValue('', 'text'),
                 'comentario_recepcion' => sqlValue('', 'text'),
@@ -360,7 +365,7 @@ class TrxTrasladoBodegas extends FastTransaction {
 
                 $transaccion = [
                     'id_cuenta' => sqlValue($dsCuenta['id_cuenta'], 'int'),
-                    'id_empleado' => sqlValue($dsEmpleado['id_empleado'], 'int'),
+                    'usuario_creacion' => sqlValue($this->user['ID'], 'text'),
                     'id_sucursal' => sqlValue($data['idSucursalOrigen'], 'int'),
                     'descripcion' => sqlValue('Traslado Productos', 'text'),
                     'id_producto' => sqlValue($prod['id_producto'], 'int'),
@@ -378,7 +383,7 @@ class TrxTrasladoBodegas extends FastTransaction {
 
                 $transaccionDes = [
                     'id_cuenta' => sqlValue($dsCuenta['id_cuenta'], 'int'),
-                    'id_empleado' => sqlValue($dsEmpleado['id_empleado'], 'int'),
+                    'usuario_creacion' => sqlValue($this->user['ID'], 'text'),
                     'id_sucursal' => sqlValue($data['tipo'] == 'cliente' ? (isset($data['idSucursalDestinoCliente']) ? $data['idSucursalDestinoCliente'] : 'NULL') : $data['idSucursalDestino'], 'int'),
                     'descripcion' => sqlValue('Traslado Productos', 'text'),
                     'id_producto' => sqlValue($prod['id_producto'], 'int'),

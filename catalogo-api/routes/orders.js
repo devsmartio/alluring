@@ -24,14 +24,16 @@ const insertCliente = (conn, cliente) => {
             usuario_creacion: "dev-catalogo"
         }
         let clienteId = 0;
-        conn.query('INSERT INTO clientes SET ?', insertCliente, function (error, results, fields) {
+        let query = conn.query('INSERT INTO clientes SET ?', insertCliente, function (error, results, fields) {
             if (error) {
                 reject(error);
             } else {
                 clienteId = results.insertId;
                 let telefonoInsert = {
                     numero: cliente.telefono,
-                    id_cliente: results.insertId
+                    id_cliente: results.insertId,
+                    fecha_creacion: SQL_NOW,
+                    usuario_creacion: "dev-catalogo"
                 }
                 conn.query('INSERT INTO clientes_telefonos SET ?', telefonoInsert, function (error, results, fields) {
                     if (error) {
@@ -44,6 +46,7 @@ const insertCliente = (conn, cliente) => {
             }
             
         });
+        console.log(query.sql);
     })
 }
 

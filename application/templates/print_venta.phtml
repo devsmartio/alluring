@@ -8,6 +8,7 @@ $queryVenta = " SELECT 	v.usuario_venta, v.id_venta, v.total, v.fecha_creacion, 
 $venta = $this->db->queryToArray(sprintf($queryVenta, $ventaId));
 $venta = sanitize_by_keys($venta[0], ['nombre_cliente']);
 
+
 $queryProductos = " SELECT	tp.id_venta_detalle, p.id_tipo, p.id_producto, m.id_tipo, tp.cantidad, CONCAT(m.nombre, ' - ', p.nombre) as descripcion, tp.precio_venta as precio_unitario, p.precio_venta as precio_sugerido, p.codigo codigo_origen
                     FROM 	trx_venta_detalle tp
                     LEFT JOIN 	producto p ON p.id_producto = tp.id_producto

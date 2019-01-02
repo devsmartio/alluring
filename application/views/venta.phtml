@@ -23,6 +23,7 @@
                 </div>
                 <input type="text" id="producto" class="form-control" ng-disabled="preventProductoChange" placeholder="Buscar Productos..." aria-label="Search" ng-model="search_codigo_origen" autocomplete="off" style="font-size:0.8rem;" />
                 <div class="input-group-append">
+                    <button ng-disabled="true" class="btn btn-outline-primary" ng-if="encontrados">Encontrados {{encontrados}}</button>
                     <button ng-click="showBodegaCat()" ng-disabled="productos_facturar.length" class="btn btn-outline-primary">{{bodegaSel ? bodegaSel.nombre : "No ha seleccionado bodega"}}</button>
                     <button title="pedidos" class="btn btn-info" ng-disabled="productos_facturar.length" ng-show="bodegaSel" ng-click="checkPedidos()">
                         <i class="cui-basket-loaded"></i>
@@ -50,7 +51,7 @@
                             </div>
                         </div>
                                 <span class="d-inline-block" tabindex="0" data-toggle="tooltip" title="{{prod.total_existencias-prod.cantidad}} existencias" >
-                                    <img ng-src="media/uploads/{{prod.imagen}}" alt="{{prod.imagen}}" class="img-thumbnail" ng-click="agregarUno(prod)">
+                                    <img btn-lazy-src="media/uploads/{{prod.imagen}}" alt="{{prod.imagen}}" class="img-thumbnail" ng-click="agregarUno(prod)">
                                     <figcaption class="figure-caption">
                                         <b>{{prod.codigo}}</b>: {{prod.nombre}}
                                         <span ng-if="hasDescuento(prod)" class="badge badge-warning">{{getDescuento(prod)}}</span>
@@ -181,7 +182,7 @@
                                 <td><input id="nombres" type='text' ng-model="search.nombres"/></td>
                                 <td><input id="apellidos" type='text' ng-model="search.apellidos"/></td>
                             </tr>
-                            <tr ng-class="{'table-active':row.selected}" ng-click='selectClienteRow(row)' ng-repeat='row in clientes | filter:search | orderBy: sortBy'>
+                            <tr ng-class="{'table-active':row.selected}" ng-click='selectClienteRow(row)' ng-repeat='row in clientes | emptylistfilter:search:10 | orderBy: sortBy'>
                                 <td ng-bind="row['identificacion']"></td>
                                 <td ng-bind="row['nombres']"></td>
                                 <td ng-bind="row['apellidos']"></td>
