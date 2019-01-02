@@ -410,6 +410,9 @@ class TrxVenta extends FastTransaction {
                             }
                         }
                         $scope.total = $scope.productos_facturar.sum("sub_total");
+                        if(!$scope.$$phase){
+                            $scope.$apply();
+                        }
                     })
                 }
                 $('#clientesModal').modal('hide');
@@ -525,7 +528,9 @@ class TrxVenta extends FastTransaction {
                                 }
                                 $scope.productos = productos;
                                 $scope.encontrados = productos.length;
-                                $scope.$apply();
+                                if(!$scope.$$phase){
+                                    $scope.$apply();
+                                }
                             } else {
                                 $scope.encontrados = response.data.length;
                             }
@@ -541,7 +546,9 @@ class TrxVenta extends FastTransaction {
                 // 13 is ENTER
                 if (ev.which === 13 && $scope.productos.length == 1) {
                     $scope.agregarUno($scope.productos[0], true);
-                    $scope.$apply();
+                    if(!$scope.$$phase){
+                        $scope.$apply();
+                    }
                 }
             });
 
@@ -720,7 +727,7 @@ class TrxVenta extends FastTransaction {
 
             $scope.agregarVarios = function(prod) {
                 if(!$scope.preventProductoChange){
-                    if($scope.lastSelectedCliente.id_cliente){
+                    if($scope.lastClienteSelected.id_cliente){
                         var restoExistencias = prod.total_existencias - prod.cant_vender;
                         console.log(restoExistencias);
                         if (restoExistencias >= 0) {
