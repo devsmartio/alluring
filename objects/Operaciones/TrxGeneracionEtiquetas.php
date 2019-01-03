@@ -200,7 +200,7 @@ class TrxGeneracionEtiquetas extends FastTransaction {
         $idSucursal = getParam("idSucursal");
         $idTipo = getParam("idTipo");
 
-        $queryTransacciones ="  SELECT	p.codigo_origen, p.nombre, p.descripcion, t.haber, t.id_sucursal, p.id_tipo, ti.nombre as nombre_tipo, s.nombre as nombre_bodega
+        $queryTransacciones ="  SELECT	p.codigo codigo_origen, p.nombre, p.descripcion, t.haber, t.id_sucursal, p.id_tipo, ti.nombre as nombre_tipo, s.nombre as nombre_bodega
                                 FROM	trx_transacciones t
                                         INNER JOIN producto p ON p.id_producto = t.id_producto
                                         INNER JOIN tipo ti ON ti.id_tipo = p.id_tipo
@@ -216,7 +216,7 @@ class TrxGeneracionEtiquetas extends FastTransaction {
 
         $transacciones = $this->db->queryToArray($queryTransacciones . $where);
 
-        echo json_encode(array('data' => $transacciones));
+        echo json_encode(array('data' => sanitize_array_by_keys($transacciones, ['codigo_origen', 'nombre', 'descripcion', 'nombre_tipo', 'nombre_bodega'])));
     }
 
     public function dataIsValid($data)

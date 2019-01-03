@@ -157,7 +157,26 @@ router.post('/', function(req, res, next) {
                             Fecha: ${new Date().toLocaleString()} <br/>
                             Total: Q. ${cart.total_mixed.toFixed(2)} <br/>
                             Piezas: ${sumProd} <br/>
-                        </p>`;
+                        </p>
+                        <table border="1" cellspacing="1">
+                            <tr>
+                                <th>Código</th>
+                                <th>Descripcion</th>
+                                <th>Cantidad</th>
+                                <th>Precio Unitario</th>
+                                <th>Subtotal</th>
+                            </tr>
+                            ${cart.productos.map(p => `
+                            <tr>
+                                <td>${p.codigo}</td>
+                                <td>${p.descripcion}</td>
+                                <td>${p.cantidad_vender}</td>
+                                <td>${p.precio_descuento || p.precio_venta}</td>
+                                <td>${(p.precio_descuento || p.precio_venta) * p.cantidad_vender}</td>
+                            </tr>
+                            `).join("")}
+                        </table>
+                        `;
                         transport.sendMail(mailData, (err,info) => {
                             if(err) console.log("ERROR SENDING NOTIFICATION", err);
                             if(!err) console.log("NOTIFICATION SENT");

@@ -15,11 +15,13 @@ class FastReportColumn {
     public $name;
     public $field;
     public $function;
+    public $renderer;
     
-    function __construct($name, $field, $function = null) {
+    function __construct($name, $field, $function = null, $renderer = null) {
         $this->name = $name;
         $this->field = $field;
         $this->function = $function;
+        $this->renderer = $renderer;
     }
     
     function serveValue($row){
@@ -41,7 +43,15 @@ class FastReportColumn {
                 $return = DateTime::createFromFormat('Y-m-d', $row[$this->field])->format('d/m/Y');
                 break;
             default:
-                $return = $row[$this->field];
+                if(is_callable($this->renderer)){
+                    try {
+                        $return = $this->renderer($row);
+                    } catch(Exception $e){
+                        $return = $row[$this->field]; 
+                    }
+                } else {
+                    $return = $row[$this->field];
+                }
         }
         return $return;
     }

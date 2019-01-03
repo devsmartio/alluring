@@ -73,10 +73,13 @@ foreach ($transacciones as $trx) {
             $conteo++;
         ?>
         <?php if ($i%3 == 1) echo "<tr>" ?>
+        <?php 
+        $margen = 20 - strlen($p['codigo']);
+        ?> 
         <td style="padding-left:5px; width: 230px">
                 <div style="height: 85px;text-align: center">
-                    <span style="display: block; word-wrap: break-word"><?php echo $p['descripcion'] ?></span>
-                    <div style="margin-left: 18%; display: block"><?php echo $generator->getBarcode($p['codigo'], $generator::TYPE_CODE_128); ?></div>
+                    <span style="display: block; word-wrap: break-word"><?php echo self_escape_string($p['descripcion']) ?></span>
+                    <div style="margin-left: <?php echo $margen ?>%; display: block"><?php echo $generator->getBarcode($p['codigo'], $generator::TYPE_CODE_128); ?></div>
                     <span style="display: block;word-wrap: break-word"><?php echo $p['codigo'] ?></span>
                 </div>
             </td>
@@ -85,3 +88,4 @@ foreach ($transacciones as $trx) {
 </table>
 </body>
 </html>
+<?php //throw new Exception("OUTPUT EN HTML")?>
