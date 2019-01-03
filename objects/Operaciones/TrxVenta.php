@@ -161,6 +161,7 @@ class TrxVenta extends FastTransaction {
                 $scope.vendedor = {};
                 $scope.paises = [];
                 $scope.departamentos = [];
+                $scope.lastVentaSelected = null;
                 $scope.resetCliente();
                 $('#loading').hide();
 
@@ -401,6 +402,7 @@ class TrxVenta extends FastTransaction {
                 $scope.cliente = $scope.lastClienteSelected.nombres + " " + $scope.lastClienteSelected.apellidos;
                 console.log($scope.lastClienteSelected);
                 if(!$scope.lastVentaSelected || !$scope.lastVentaSelected.esPedido){
+                    
                     $http.get($scope.ajaxUrl + "&act=getTipoPrecio&id=" + $scope.lastClienteSelected.id_tipo_precio).success(r => {
                         $scope.lastClienteSelected.tipo_precio = r;
                         if(r.porcentaje_descuento){
