@@ -236,6 +236,7 @@ class TrxVenta extends FastTransaction {
                             index: i
                         }
                     });
+                    $("#bodegasModal").modal('hide');
                     if(!$scope.$$phase){
                         $scope.$apply();
                     }
