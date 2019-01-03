@@ -144,6 +144,7 @@ class TrxVenta extends FastTransaction {
                 $scope.selectDevolucion = true;
                 $scope.sortDevolucion = false;
                 $scope.ventasPasadas = [];
+                $scope.ventas = [];
                 $scope.ventaPasadaSelected = null;
 
                 $scope.productos_facturar = new Array();
@@ -228,10 +229,16 @@ class TrxVenta extends FastTransaction {
 
             $scope.getVentas = _ => {
                 $http.get($scope.ajaxUrl + '&act=getVentas&bod=' + $scope.bodegaSel.id_sucursal).success(function (response) {
-                    $scope.ventas = response.data;
-                    $scope.setVentasRowSelected($scope.ventas);
-                    $scope.setVentasRowIndex($scope.ventas);
-                    $("#bodegasModal").modal('hide');
+                    $scope.ventas = response.data.map((v,i) => {
+                        return {
+                            ...v,
+                            selected: false,
+                            index: i
+                        }
+                    });
+                    if(!$scope.$$phase){
+                        $scope.$apply();
+                    }
                 });
             }
 
@@ -315,6 +322,8 @@ class TrxVenta extends FastTransaction {
             }
 
             $scope.checkPedidos = _ => {
+                console.log("CHECKING PEDIDOS");
+                $scope.getVentas();
                 $('#ventasModal').modal();
             }
 

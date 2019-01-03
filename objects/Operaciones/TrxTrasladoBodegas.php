@@ -182,6 +182,7 @@ class TrxTrasladoBodegas extends FastTransaction {
                     $scope.startAgain();
                 });
 
+
                 $scope.filtarProductos = function() {
                     $http.get($scope.ajaxUrl + '&act=getProductos&id_sucursal='+$scope.idSucursalOrigen).success(function (response) {
                         $scope.rows = response.data;
