@@ -742,48 +742,50 @@ class TrxVenta extends FastTransaction {
 
             $scope.agregarVarios = function(prod) {
                 if(!$scope.preventProductoChange){
-                    if($scope.lastClienteSelected.id_cliente && prod.cant_vender){
-                        var restoExistencias = prod.total_existencias - prod.cant_vender;
-                        console.log(restoExistencias);
-                        if (restoExistencias >= 0) {
+                    if($scope.lastClienteSelected.id_cliente){
+                        if(prod.cant_vender){
+                            var restoExistencias = prod.total_existencias - prod.cant_vender;
+                            console.log(restoExistencias);
+                            if (restoExistencias >= 0) {
 
-                            $productos = $filter('filter')($scope.productos_facturar, {id_producto: prod.id_producto});
+                                $productos = $filter('filter')($scope.productos_facturar, {id_producto: prod.id_producto});
 
-                            if ($productos.length > 0) {
-                                $productos[0].total_existencias -= prod.cant_vender;
-                                $productos[0].cantidad = parseFloat($productos[0].cantidad) + prod.cant_vender;
-                                $productos[0].sub_total = parseFloat($productos[0].cantidad) * parseFloat($productos[0].precio_venta);
-                            } else {
-                                let agregar = Object.assign({}, prod);
-                                agregar.total_existencias -= prod.cant_vender;
-                                agregar.cantidad = parseInt(prod.cantidad);
-                                agregar = $scope.applyDiscountProducto(agregar);
-                                /*
-                                if($scope.lastClienteSelected.tipo_precio && $scope.lastClienteSelected.tipo_precio.porcentaje_descuento){
-                                    agregar.precio_venta = agregar.precio_original - parseFloat(agregar.precio_original * ($scope.lastClienteSelected.tipo_precio.porcentaje_descuento/100))  
-                                    agregar.sub_total = parseFloat(agregar.precio_venta) * parseInt(prod.cantidad);
+                                if ($productos.length > 0) {
+                                    $productos[0].total_existencias -= prod.cant_vender;
+                                    $productos[0].cantidad = parseFloat($productos[0].cantidad) + prod.cant_vender;
+                                    $productos[0].sub_total = parseFloat($productos[0].cantidad) * parseFloat($productos[0].precio_venta);
                                 } else {
-                                    agregar.sub_total = parseFloat(prod.precio_venta) * parseInt(prod.cantidad);
+                                    let agregar = Object.assign({}, prod);
+                                    agregar.total_existencias -= prod.cant_vender;
+                                    agregar.cantidad = parseInt(prod.cantidad);
+                                    agregar = $scope.applyDiscountProducto(agregar);
+                                    /*
+                                    if($scope.lastClienteSelected.tipo_precio && $scope.lastClienteSelected.tipo_precio.porcentaje_descuento){
+                                        agregar.precio_venta = agregar.precio_original - parseFloat(agregar.precio_original * ($scope.lastClienteSelected.tipo_precio.porcentaje_descuento/100))  
+                                        agregar.sub_total = parseFloat(agregar.precio_venta) * parseInt(prod.cantidad);
+                                    } else {
+                                        agregar.sub_total = parseFloat(prod.precio_venta) * parseInt(prod.cantidad);
+                                    }
+                                    */
+                                    agregar.sub_total = parseFloat(agregar.precio_venta) * parseInt(prod.cantidad);
+                                    $scope.productos_facturar.push(agregar);
                                 }
-                                */
-                                agregar.sub_total = parseFloat(agregar.precio_venta) * parseInt(prod.cantidad);
-                                $scope.productos_facturar.push(agregar);
+                                prod.total_existencias -= prod.cant_vender;
+                            } else {
+                                $scope.showAlert('alert-danger','No puede vender mas de las unidades (' + prod.total_existencias + ') de este producto ' + prod.nombre, 2500);
                             }
-                            prod.total_existencias -= prod.cant_vender;
-                        } else {
-                            $scope.showAlert('alert-danger','No puede vender mas de las unidades (' + prod.total_existencias + ') de este producto ' + prod.nombre, 2500);
-                        }
 
-                        if($scope.lastClienteSelected.tipo_precio && $scope.lastClienteSelected.tipo_precio.porcentaje_descuento){
-                            for(let i = 0; $scope.productos_facturar.length > i; i++){
-                                $scope.productos_facturar[i].precio_venta = $scope.productos_facturar[i].precio_original - parseFloat($scope.productos_facturar[i].precio_original * (r.porcentaje_descuento/100))  
-                                $scope.productos_facturar[i].sub_total = $scope.productos_facturar[i].precio_venta * $scope.productos_facturar[i].cantidad;
+                            if($scope.lastClienteSelected.tipo_precio && $scope.lastClienteSelected.tipo_precio.porcentaje_descuento){
+                                for(let i = 0; $scope.productos_facturar.length > i; i++){
+                                    $scope.productos_facturar[i].precio_venta = $scope.productos_facturar[i].precio_original - parseFloat($scope.productos_facturar[i].precio_original * (r.porcentaje_descuento/100))  
+                                    $scope.productos_facturar[i].sub_total = $scope.productos_facturar[i].precio_venta * $scope.productos_facturar[i].cantidad;
+                                }
                             }
-                        }
-                        $productos_calc = $filter('filter')($scope.productos_facturar, {mostrar: 1});
-                        $scope.total = $productos_calc.sum("sub_total");
-                        if(!$scope.$$phase){
-                            $scope.$apply();
+                            $productos_calc = $filter('filter')($scope.productos_facturar, {mostrar: 1});
+                            $scope.total = $productos_calc.sum("sub_total");
+                            if(!$scope.$$phase){
+                                $scope.$apply();
+                            }
                         }
                     } else {
                         $("#clientesModal").modal();
