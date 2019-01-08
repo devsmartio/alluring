@@ -83,11 +83,11 @@
                 <div class='table-responsive'>
                     <table class='table table-striped table-bordered table-sm'>
                         <tr>
-                            <th colspan="7" style="width: 70%">Pistolear/Buscar: 
+                            <th colspan="5" style="width: 70%">Pistolear/Buscar: 
                                 <input class="form-control" ng-model="search" id="pistolearItem"/>
                             </th>
-                            <th>
-                            Encontrados: <span ng-class="{success: encontrados <= 50, danger: encontrados > 50 }">{{encontrados || 0}}</span>
+                            <th colspan="2">
+                            Encontrados: <span ng-class="{success: encontrados <= 50, danger: encontrados > 50 }">{{encontrados || 0}}</span><br />
                             Piezas: <span>{{piezas || 0}}</span> <br/>
                             Total: <span>{{total | currency : 'Q' : 2}}</span>
                             </th>
