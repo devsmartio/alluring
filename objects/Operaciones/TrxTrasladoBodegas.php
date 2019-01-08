@@ -457,6 +457,7 @@ class TrxTrasladoBodegas extends FastTransaction {
 
             $this->r = 1;
             $this->msg = 'Traslado realizado con éxito';
+            $this->data["id_movimiento_sucursales"] = $id_movimiento_sucursales;
         } catch(Exception $e) {
             $this->r = 0;
             $this->msg = $e->getMessage();
