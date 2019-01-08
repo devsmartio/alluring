@@ -53,6 +53,11 @@ class PDFManager {
                 $template = "print_venta.phtml";
                 break;
             }
+            case "CON": {
+                $ventaId = getParam("id_movimiento_sucursales");
+                $template = "print_consignacion.phtml";
+                break;
+            }
             case "TS": {
                 $movimientoId = getParam("id_movimiento_sucursales");
                 $template = "print_traslado_sucursales.phtml";

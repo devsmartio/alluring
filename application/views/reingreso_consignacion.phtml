@@ -151,6 +151,7 @@
                     <div class="table-responsive anyClass" ng-show="lastClienteSelected.id_cliente">
                         <table class="table table-sm table-striped table-bordered table-hover">
                             <tr>
+                                <th>Opciones</th>
                                 <th>Fecha</th>
                                 <th>Productos</th>
                                 <th>Origen</th>
@@ -169,7 +170,13 @@
                                 <td><input ng-model="searchCon.porcentaje_compra" class="form-control" /></td>
                                 <th colspan="2">&nbsp;</th>
                             </tr>
-                            <tr ng-class="{'bg-danger':!getConsignacionState(c),'bg-success':getConsignacionState(c)}" ng-repeat="c in consignacionesPendientes | filter : searchCon" ng-click="selectConsignacion(c)">
+                            <tr ng-class="{'bg-danger':!getConsignacionState(c),'bg-success':getConsignacionState(c)}" ng-repeat="c in consignacionesPendientes | filter : searchCon" >
+                                <td>
+                                    <button class="btn btn-warning btn-sm" ng-click="generarDet(c)">
+                                        <i class="cui-file"></i>
+                                    </button>
+                                    <button class="btn btn-primary btn-sm" ng-click="selectConsignacion(c)"><i class="cui-check"></i></button>
+                                </td>
                                 <td ng-bind="c.fecha_recepcion"></td>
                                 <td ng-bind="c.productos.length"></td>
                                 <td ng-bind="c.sucursal_origen"></td>

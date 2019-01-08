@@ -131,6 +131,10 @@ class TrxReingresoConsignacion extends FastTransaction {
                 $scope.total = $scope.productos_facturar.sum("subtotal");
             };
 
+            $scope.generarDet = function(c){
+                window.open('?action=pdf&tmp=CON&id_movimiento_sucursales=' + c.id_movimiento_sucursales,'_blank');
+            }
+
             $scope.resetConsignacion = function(){
                 $scope.productos_facturar = [];
                 let c = {...$scope.selectedConsignacion};
@@ -952,7 +956,25 @@ class TrxReingresoConsignacion extends FastTransaction {
     {
         $resultSet = array();
 
-        $dsClientes = $this->db->query_select('clientes', sprintf("id_usuario='%s'", $this->user['ID']));
+        if($this->user['FK_PROFILE'] != 1){
+            $query = "
+                SELECT * FROM clientes WHERE id_cliente IN (
+                    SELECT id_cliente_recibe 
+                    FROM trx_movimiento_sucursales
+                    WHERE es_devuelto = 0
+                ) AND id_usuario = '%s'
+            ";
+            $dsClientes = $this->db->queryToArray(sprintf($query, $this->user['ID']));
+        } else {
+            $query = "
+            SELECT * FROM clientes WHERE id_cliente IN (
+                SELECT id_cliente_recibe 
+                FROM trx_movimiento_sucursales
+                WHERE es_devuelto = 0
+            )
+        ";
+         $dsClientes = $this->db->queryToArray($query);
+        }
 
         
 
