@@ -206,7 +206,13 @@ class TrxTrasladoBodegas extends FastTransaction {
                 };
 
                 $scope.startAgain();
-                $rootScope.addCallback(function () {
+                $rootScope.addCallback(function (response) {
+                    if ((response != undefined) && (response.result == 1)) {
+                        if (response.data) {
+                            id_movimiento_sucursales = response.data.id_movimiento_sucursales;
+                            window.open("./?action=pdf&tmp=CON&id_movimiento_sucursales=" + id_movimiento_sucursales);
+                        }
+                    }
                     $scope.startAgain();
                 });
 
@@ -457,7 +463,7 @@ class TrxTrasladoBodegas extends FastTransaction {
 
             $this->r = 1;
             $this->msg = 'Traslado realizado con éxito';
-            $this->data["id_movimiento_sucursales"] = $id_movimiento_sucursales;
+            $this->returnData = array('id_movimiento_sucursales' => $id_movimiento_sucursales);
         } catch(Exception $e) {
             $this->r = 0;
             $this->msg = $e->getMessage();
