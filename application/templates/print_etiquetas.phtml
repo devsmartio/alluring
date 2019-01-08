@@ -1,0 +1,71 @@
+<?php
+
+$queryTransacciones ="  SELECT	p.codigo, p.descripcion, ge.cantidad
+                        FROM	producto p
+                        INNER JOIN generacion_etiquetas ge ON (case when ge.codigo_origen is null then ge.codigo else ge.codigo_origen end) = (case when ge.codigo_origen is null then p.codigo else p.codigo_origen end)";
+
+$transacciones = $this->db->queryToArray(sprintf($queryTransacciones));
+
+$generator = new BarcodeGeneratorHTML();
+
+$total = 0;
+foreach ($transacciones as $trx) {
+    $total += $trx['cantidad'];
+}
+
+?>
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title></title>
+    <!--style>
+        body {
+            width: 19cm;
+            font-family:sans-serif;
+            font-size: 10px;
+        }
+        label {
+            display: block;
+            text-align: center;
+            max-width: 200px;
+            word-wrap: break-word
+        }
+        div {
+            margin: auto;
+        }
+    </style-->
+</head>
+<body style="width: 19cm;
+            font-family:sans-serif;
+            font-size: 10px;">
+<table border="0">
+    <?php
+        reset($transacciones);
+        $p = current($transacciones);
+        $conteo = 0;
+        $cantidad = (int)$p['cantidad'];
+    ?>
+    <?php for($i = 1; $i <= $total; $i++){
+        if($conteo == $cantidad){
+            $p = next($transacciones);
+            $cantidad = (int)$p['cantidad'];
+            $conteo = 0;
+        }else{
+            $conteo++;
+        }
+        $margen = 20 - strlen($p['codigo']);
+    ?>
+        <?php if ($i%3 == 1) echo "<tr>" ?>
+            <td style="padding-left:0.4cm; width: 6.86cm; height:2.7cm">
+                <div style="text-align: center">
+                    <span style="display: block; word-wrap: break-word"><?php echo self_escape_string($p['descripcion']) ?></span>
+                    <div style="margin-left: <?php echo $margen?>%; display: block"><?php echo $generator->getBarcode($p['codigo'], $generator::TYPE_CODE_128); ?></div>
+                    <span style="display: block;word-wrap: break-word"><?php echo $p['codigo'] ?></span>
+                </div>
+            </td>
+        <?php if ($i%3 == 0) echo "</tr>" ?>
+    <?php } ?>
+</table>
+</body>
+</html><?php //throw new Exception()?>

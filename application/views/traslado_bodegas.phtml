@@ -1,0 +1,137 @@
+<div class='col-md-12 col-lg-12' ng-controller="ModuleCtrl">
+    <form class='col-md-12 col-lg-12' id="mantForm" name="mantForm" method="post">
+        <div class="row">
+            <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
+                <fieldset>
+                    <legend>Bodega Origen:</legend>
+                    <div class='form-group form-group-sm'>
+                    <select  ng-model="idSucursalOrigen" ng-options="s.id_sucursal as s.nombre for s in sucursalesOrigen" class='form-control' ng-change="filtarProductos()">
+                        <option value="">-- Elija una bodega --</option>
+                    </select>
+                    </div>
+                </fieldset>
+            </div>
+            <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
+                <fieldset>
+                    <legend>Tipo:</legend>
+                    <select ng-model="tipo" class='form-control'>
+                    <option value="">-- Elija una opción --</option>
+                        <option value="cliente">Cliente</option>
+                        <option value="bodega">Bodega</option>
+                    </select>
+                </fieldset>
+            </div>
+            <div class="col-12" ng-show="tipo=='bodega'">
+                <fieldset>
+                    <legend>Bodega Destino:</legend>
+                    <select  ng-model="idSucursalDestino" ng-options="s.id_sucursal as s.nombre for s in sucursalesDestino" class='form-control'>
+                        <option value="">-- Elija una bodega --</option>
+                    </select>
+                </fieldset>
+            </div>
+            <div class="col-xs-12 col-md-6" ng-show="tipo=='cliente'">
+                <fieldset>
+                    <legend>Cliente:</legend>
+                    <select id="idCliente" ng-change="setBodega()" ng-model="clienteSelected" ng-options="c as c.cliente.nombre_completo for c in clientes" class='form-control' >
+                        <option value="">-- Elija una opción --</option>
+                    </select>
+                </fieldset>
+            </div>
+
+            <div class="col-xs-12 col-md-6" ng-show="tipo=='cliente'">
+                <fieldset>
+                    <legend>Bodega Destino:</legend>
+                    <select id="idBodegaDestino" ng-model="idSucursalDestinoCliente" ng-options="b.id_sucursal as b.nombre for b in clienteSelected.bodegas" class='form-control' >
+                        <option value="">-- Elija una opción --</option>
+                    </select>
+                </fieldset>
+            </div>
+        </div>
+        <div class="row" style="margin-top: 35px;" ng-show="tipo&&idSucursalOrigen">
+            <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
+                <div class="row">
+                    <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
+                        <div class='form-group'>
+                            <div class='btn-group' role='group'>
+                                <button id="btnTrasladarTodo" class='btn btn-success' title="Trasladar Todo" ng-click='trasladarTodo()' type="button">
+                                    <span class='glyphicon glyphicon-floppy-saved'></span>&nbsp;Trasladar Todo
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12" ng-show="tipo=='cliente'">
+                <div class="row">
+                    <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
+                        <div class='form-group form-group-sm'>
+                            <label for='diasConsignar' class='control-label'>Dias a Consignar</label>
+                            <input ng-model="diasConsignar" type="number" class='form-control' name='diasConsignar' placeholder='0' min="1" max="100" size="5"/>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
+                        <div class='form-group form-group-sm'>
+                            <label for='porcentajeCompraMinima' class='control-label'>% compra mínima</label>
+                            <input ng-model="porcentajeCompraMinima" type="number" class='form-control' name='porcentajeCompraMinima' placeholder='0' min="1" max="100" size="5"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                <div class='table-responsive'>
+                    <table class='table table-striped table-bordered table-sm'>
+                        <tr>
+                            <th colspan="7">Pistolear/Buscar: Encontrados: <span ng-class="{success: encontrados <= 50, danger: encontrados > 50 }">{{encontrados || 0}}</span><input class="form-control" ng-model="search" id="pistolearItem"/></th>
+                        </tr>
+                        <tr>
+                            <th style="width: 25px;text-align: center;">Código Producto</th>
+                            <th style="text-align: center;">Nombre</th>
+                            <th style="text-align: center;">Descripción</th>
+                            <th style="text-align: center;">Precio venta<s/th>
+                            <th style="width: 30%;text-align: center;">Imagen</th>
+                            <th style="text-align: center;">Existencia</th>
+                            <th style="width: 25px;text-align: center;">Cantidad a Trasladar</th>
+                        </tr>
+                        <!--tr>
+                            <td><input type='text' class='form-control form-control-sm' ng-model="search.codigo_origen"/></td>
+                            <td><input type='text' class='form-control form-control-sm' ng-model="search.nombre"/></td>
+                            <td><input type='text' class='form-control form-control-sm' ng-model="search.descripcion"/></td>
+                            <td><input type='text' class='form-control form-control-sm' ng-model="search.nombre_tipo"/></td>
+                            <td></td>
+                            <td></td>
+                        </tr-->
+                        <tr ng-class="{'bg-secondary':row.cantidad>0}" ng-repeat="row in rows | trasladoemptylistfilter:search:50 as filteredProd">
+                            <td ng-bind="row['codigo']"></td>
+                            <td ng-bind="row['nombre']"></td>
+                            <td ng-bind="row['descripcion']"></td>
+                            <td >{{row['precio_descuento'] || row['precio_venta'] | currency : 'Q' : 2}}</td>
+                            <td>
+                                <img bn-lazy-src="media/uploads/{{row.imagen}}?rand={{rand}}" alt="{{row.codigo}}" class="img-thumbnail w-50">
+                            </td>
+                            <td ng-bind="row['total_existencias']"></td>
+                            <td>
+                                <input type="number" class='form-control form-control-sm' name="cantidad" ng-model="row['cantidad']" size="5" min="0">
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="row" style="margin-top: 35px;" >
+            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                <div class='form-group'>
+                    <div class='btn-group' role='group'>
+                        <button id="btnFinalizar" class='btn btn-success' title="Guardar" ng-click='finalizar()' type="button" ng-disabled="disableBtn">
+                            <span class='glyphicon glyphicon-floppy-saved'></span>&nbsp;Trasladar
+                        </button>
+                    </div>
+                    <button class='btn btn-info' title="Cancelar" ng-click='cancel()'  type="button">
+                        <span class='glyphicon glyphicon-remove'></span>&nbsp;Cancelar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>

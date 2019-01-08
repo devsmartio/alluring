@@ -1,0 +1,94 @@
+<?php
+
+if ($tipoGeneracion == 0) {
+    $queryTransacciones = "  SELECT	p.codigo, p.descripcion, ge.cantidad as haber
+                             FROM	producto p
+                             INNER JOIN generacion_etiquetas ge ON ge.codigo_origen = p.codigo_origen ";
+
+    $transacciones = $this->db->queryToArray($queryTransacciones);
+} else {
+
+    $queryTransacciones = "  SELECT	p.codigo, p.descripcion, t.haber
+                             FROM	trx_transacciones t
+                             INNER JOIN producto p ON p.id_producto = t.id_producto ";
+
+    $where = " WHERE 1 = 1 ";
+
+    if ($idSucursal != "")
+        $where .= " AND t.id_sucursal = " . $idSucursal;
+
+    if ($idTipo != "")
+        $where .= " AND p.id_tipo = " . $idTipo;
+
+    $transacciones = $this->db->queryToArray($queryTransacciones . $where);
+
+}
+
+$generator = new BarcodeGeneratorHTML();
+
+$total = 0;
+foreach ($transacciones as $trx) {
+    $total += $trx['haber'];
+}
+
+?>
+<!DOCTYPE html>
+<html style="margin-top: 1.25cm; margin-left: 0.4cm;">
+    <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title></title>
+    <!--style>
+	@page { margin: 0px; }
+html,body { margin: 0px; }
+        body {
+		padding-top: 2cm;
+            width: 22cm;
+		margin: 0px;
+            font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif;
+            font-size: 10px;
+        }
+        label {
+            display: block;
+            text-align: center;
+            max-width: 200px;
+            word-wrap: break-word
+        }
+        div {
+            margin: auto;
+        }
+    </style-->
+</head>
+<body style="font-family:sans-serif;
+            font-size: 10px;margin: 0px">
+<table border="0" style="margin: 0px" cellspacing="0" cellpadding="0">
+    <?php
+    reset($transacciones);
+    $p = current($transacciones);
+    $conteo = 0;
+    $cantidad = (int)$p['haber'];
+    ?>
+    <?php for($i = 1; $i <= $total; $i++){
+        if($conteo == $cantidad){
+            $p = next($transacciones);
+            $cantidad = (int)$p['haber'];
+            $conteo = 0;
+        }else
+            $conteo++;
+        ?>
+        <?php if ($i%3 == 1) echo "<tr>" ?>
+        <?php 
+        $margen = 20 - strlen($p['codigo']);
+        ?> 
+        <td style=" width: 6.9cm">
+                <div style="height: 2.10cm;text-align: center;/* border: 1px solid black;*/ margin-right: 0.3cm;padding-top: 0.4cm">
+                    <span style="display: block; word-wrap: break-word"><?php echo self_escape_string($p['descripcion']) ?></span>
+                    <div style="margin-left: <?php echo $margen ?>%; display: block"><?php echo $generator->getBarcode($p['codigo'], $generator::TYPE_CODE_128); ?></div>
+                    <span style="display: block;word-wrap: break-word"><?php echo $p['codigo'] ?></span>
+                </div>
+            </td>
+        <?php if ($i%3 == 0) echo "</tr>" ?>
+    <?php } ?>
+</table>
+</body>
+</html>
+<?php //throw new Exception("OUTPUT EN HTML")?>

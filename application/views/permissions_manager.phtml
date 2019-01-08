@@ -1,0 +1,54 @@
+<div class="row">
+    <div class="col-lg-12 col-md-12">
+            <div class="perfil">
+        <label>Perfil:</label>
+        <select ng-model="selectedProfile" ng-change="setSelected()">
+            <option value="">-- Seleccione --</option>
+            <option ng-repeat="perfil in modData"value="{{perfil.ID}}">{{perfil.NAME}}</option> 
+        </select>  
+        <button class="btn btn-sm btn-primary" ng-click="savePermissions()">
+            <span class="glyphicon glyphicon-floppy-disk"></span>&nbsp;Guardar
+        </button>
+        <button class="btn btn-sm btn-danger" ng-click="startAgain()">
+            <span class="glyphicon glyphicon-remove"></span>&nbsp;Cancelar
+            </div>
+    </div>        
+</div>
+<div class="row" ng-show="selectedProfile!=''">
+    <div class="col-lg-5 col-md-5">
+        <div class="panel panel-danger">
+            <div class="panel-heading">Areas denegadas</div>
+            <div class="panel-body">        
+                <ul>  
+                    <li ng-class="{'list-group-item-success':item.selected}" class="list-group-item" ng-repeat="item in lastSelected.DENIED" ng-click="flagControl(item)">{{item.NAME}}</li>
+                </ul>             
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-2 col-md-2">
+        <div class="form-group">
+            <button class="btn btn-success d-none d-md-block visible-md centrado" ng-click="addPermissions()">
+                <span class="glyphicon glyphicon-chevron-right">></span>
+            </button>
+            <button class="btn btn-danger d-none d-md-block centrado" ng-click="removePermissions()">
+                <span class="glyphicon glyphicon-chevron-left"><</span>
+            </button>
+            <button class="btn btn-danger d-md-none centrado" ng-click="removePermissions()">
+                <span class="glyphicon glyphicon-chevron-up">^</span>
+            </button>         
+            <button class="btn btn-success d-md-none centrado" ng-click="addPermissions()">
+                <span class="glyphicon glyphicon-chevron-down">v</span>
+            </button>       
+        </div>
+    </div>
+    <div class="col-lg-5 col-md-5">
+        <div class="panel panel-success">
+            <div class="panel-heading">Areas permitidas</div>
+            <div class="panel-body">
+                <ul>
+                    <li ng-class="{'list-group-item-danger':item.selected}" class="list-group-item" ng-repeat="item in lastSelected.ALLOWED" ng-click="flagControl(item)">{{item.NAME}}</li>
+                </ul> 
+            </div>
+        </div>	
+    </div>
+</div>

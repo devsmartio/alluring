@@ -1,0 +1,289 @@
+<div class='col-md-12 col-lg-12' ng-controller="ModuleCtrl">
+    <div class="well well-sm row" style="padding-bottom: 0px" ng-show='noMode'>
+        <?php
+        if(!$this->onlyEdit){
+            ?>
+            <div class="col-md-4 col-lg-4 col-sm-6 col-xs-12">
+                <div class='btn-group'>
+                    <button class='btn btn-primary btn-sm' ng-click='goNew()'>
+                        <span class='glyphicon glyphicon-file'></span>&nbsp;Nuevo
+                    </button>
+                </div>
+            </div>
+        <?php
+        }
+        ?>
+        <div class="form-group col-md-8 col-lg-8 col-sm-6 col-xs-12">
+            <label style="display: inline-block">Ordenar por:</label>
+            <select style="max-width: 50%; display: inline-block" ng-model="sortBy" class="form-control input-sm">
+                <option value="">-- Seleccione --</option>
+                <option ng-repeat="col in gridCols" value="{{col.VALOR}}">{{col.LABEL}}</option>
+            </select>
+        </div>
+    </div>
+
+    <div class='table-responsive'>
+        <table class='table table-striped table-bordered' ng-show='noMode'>
+            <tr>
+                <th ng-repeat='col in gridCols' ng-bind='col.LABEL'></th>
+                <th>&nbsp;</th>
+            </tr>
+            <tr>
+                <?php
+                foreach ($this->gridCols as $key => $value) {
+                    ?>
+                    <td><input type='text' ng-model='search.<?php echo $value ?>'/></td>
+                <?php
+                }
+                ?>
+                <td>&nbsp;</td>
+            </tr>
+            <tr ng-class="{info:row.selected}" ng-repeat='row in rows | filter:search | orderBy: sortBy'>
+                <td ng-repeat='col in gridCols' ng-bind='row[col.VALOR]'></td>
+                <td>
+                    <button class="btn btn-outline-success" ng-click='selectRow(row)'>
+                        <i class="cui-pencil"></i>
+                    </button>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <form ng-show='editMode||newMode' class='col-md-12 col-lg-12' id="mantForm" name="mantForm" method="post">
+        <div class="row">
+            <div class="col-lg-5 col-md-5 col-sm-12 col-xs-12">
+                <div class='form-group form-group-sm'>
+                    <label for='nombres' class='control-label'>Nombres</label>
+                    <input ng-model="lastSelected.nombres" type="text" required class='form-control' name='nombres' placeholder='' ng-readonly='(editMode&&false)||(newMode&&false)' />
+                </div>
+                <div class='form-group form-group-sm'>
+                    <label for='apellidos' class='control-label'>Apellidos</label>
+                    <input ng-model="lastSelected.apellidos" type="text" required class='form-control' name='apellidos' placeholder='' ng-readonly='(editMode&&false)||(newMode&&false)' />
+                </div>
+                <div class='form-group form-group-sm'>
+                    <label for='direccion' class='control-label'>Direccion</label>
+                    <textarea ng-model="lastSelected.direccion" type="textarea" required class='form-control' name='direccion' placeholder=''></textarea>
+                </div>
+                <div class='form-group form-group-sm'>
+                    <label for='identificacion' class='control-label'>Identificacion</label>
+                    <input ng-model="lastSelected.identificacion" type="text" required class='form-control' name='identificacion' placeholder='' ng-readonly='(editMode&&false)||(newMode&&false)'/>
+                </div>
+                <div class='form-group form-group-sm'>
+                    <label for='id_pais' class='control-label'>Pais</label>
+                    <select name='id_pais' id="id_pais" class="form-control" ng-model="lastPaisSelected" ng-options="pais as pais.nombre for pais in paises" required>
+                        <option value="" disabled>-- Seleccione --</option>
+                    </select>
+                </div>
+                <div class='form-group form-group-sm'>
+                    <label for='id_departamento' class='control-label'>Departamento</label>
+                    <select name='id_departamento' id="id_departamento" class="form-control" ng-model="lastDepartamentoSelected" ng-options="depto as depto.nombre for depto in departamentos" required>
+                        <option value="" disabled>-- Seleccione --</option>
+                    </select>
+                </div>
+                <div class='form-group form-group-sm'>
+                    <label for='id_municipio' class='control-label'>Municipio</label>
+                    <select name='id_municipio' id="id_municipio" class="form-control" ng-model="lastMunicipioSelected" ng-options="muni as muni.nombre for muni in municipios" required>
+                        <option value="" disabled>-- Seleccione --</option>
+                    </select>
+                </div>
+                <div class='form-group form-group-sm'>
+                    <label for='correo' class='control-label'>Correo</label>
+                    <input ng-model="lastSelected.correo" type="text" required class='form-control' name='correo'  placeholder='' ng-readonly='(editMode&&false)||(newMode&&false)' />
+                </div>
+                <div class='form-group form-group-sm'>
+                    <label for='id_tipo_precio' class='control-label'>Tipo Precio</label>
+                    <select name="id_tipo_precio" id="id_tipo_precio" ng-model="lastSelected.id_tipo_precio" type="select" required class='form-control'>
+                        <option ng-repeat="tipoCliente in tiposCliente" value="{{tipoCliente.id_tipo_precio}}">{{tipoCliente.nombre}}</option>
+                    </select>
+                </div>
+                <div class='form-group form-group-sm'>
+                    <label for='id_usuario' class='control-label'>Vendedor</label>
+                    <select name="id_usuario" id="id_usuario" ng-model="lastSelected.id_usuario" type="select" required class='form-control'>
+                        <option ng-repeat="vendedor in vendedores" value="{{vendedor.id_usuario}}">{{vendedor.nombre}}</option>
+                    </select>
+                </div>
+                <div class='checkbox'>
+                    <label>
+                        <input ng-model="lastSelected.tiene_credito" type="checkbox" name='tiene_credito' placeholder='' />
+                        Tiene Credito
+                    </label>
+                </div>
+                <div class='form-group form-group-sm'>
+                    <label for='dias_credito' class='control-label'>Dias Credito</label>
+                    <input ng-model="lastSelected.dias_credito" type="text" class='form-control' name='dias_credito' placeholder='' ng-readonly='(editMode&&false)||(newMode&&false)' />
+                </div>
+                <div class='form-group form-group-sm'>
+                    <label for='id_cliente_referido' class='control-label'>Referido por</label>
+                    <select name="id_cliente_referido" id="id_cliente_referido" ng-model="lastSelected.id_cliente_referido" type="select" class='form-control'>
+                        <option ng-repeat="cliente in clientes" value="{{cliente.id_cliente}}">{{cliente.nombre}}</option>
+                    </select>
+                </div>
+                <div class='form-group form-group-sm'>
+                    <label for='observaciones' class='control-label'>Observaciones</label>
+                    <textarea ng-model="lastSelected.observaciones" type="textarea" class='form-control' name='observaciones' placeholder=''>
+                    </textarea>
+                </div>
+            </div>
+            <div class="col-lg-2 col-md-2 col-sm-12 col-xs-12"></div>
+            <div class="col-lg-5 col-md-5 col-sm-12 col-xs-12">
+                <fieldset>
+                    <legend>Datos de factura:</legend>
+                    <div class='form-group form-group-sm'>
+                        <label for='factura_nit' class='control-label'>Nit</label>
+                        <input ng-model="lastSelected.factura_nit" type="text" required class='form-control' name='factura_nit' placeholder='' ng-readonly='(editMode&&false)||(newMode&&false)'/>
+                    </div>
+                    <div class='form-group form-group-sm'>
+                        <label for='factura_nombre' class='control-label'>Nombre</label>
+                        <input ng-model="lastSelected.factura_nombre" type="text" required class='form-control' name='factura_nombre' placeholder='' ng-readonly='(editMode&&false)||(newMode&&false)'/>
+                    </div>
+                    <div class='form-group form-group-sm'>
+                        <label for='factura_direccion' class='control-label'>Direccion</label>
+                        <input ng-model="lastSelected.factura_direccion" type="text" required class='form-control' name='factura_direccion' placeholder='' ng-readonly='(editMode&&false)||(newMode&&false)'/>
+                    </div>
+                </fieldset>
+                <fieldset>
+                    <legend>Credenciales de catálogo:</legend>
+                    <div class='form-group form-group-sm'>
+                        <label for='catalogo_usuario' class='control-label'>Usuario</label>
+                        <input ng-model="lastSelected.catalogo_usuario" type="text" required class='form-control' name='catalogo_usuario' placeholder='' ng-readonly='(editMode&&false)||(newMode&&false)'/>
+                    </div>
+                    <div class='form-group form-group-sm'>
+                        <label for='catalogo_password_hash' class='control-label'>Password</label>
+                        <input ng-model="lastSelected.catalogo_password_hash" type="password" required class='form-control' name='catalogo_password_hash' placeholder='' ng-readonly='(editMode&&false)||(newMode&&false)'/>
+                    </div>
+                </fieldset>
+                <fieldset ng-show="editMode">
+                    <legend>Teléfonos:</legend>
+                    <div class="row">
+                        <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
+                            <input ng-model="telefono" type="text" required class='form-control' name='telefono' placeholder='Número de teléfono' maxlength="8" ng-pattern="telefonoPattern" ng-required='!lastSelected.telefonos'/>
+                            <div ng-show="mantForm.telefono.$dirty && mantForm.telefono.$invalid || mantForm.telefono.$error.pattern">
+                                <span ng-show="mantForm.telefono.$error.pattern && mantForm.telefono.$invalid " class="help-block" style="color: #ff0000">Número de Teléfono Inválido</span>
+                                <span ng-show=" mantForm.telefono.$error.required" class="help-block" style="color: #ff0000">Requerido</span>
+                                <span ng-show="mantForm.telefono.$invalid" class="help-block" style="color: #ff0000">{{error}}</span>
+                            </div>
+                        </div>
+                        <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
+                            <button type="button" class="btn btn-primary" ng-click="agregarTelefono()">
+                                <span class="cui-check" aria-hidden="true">
+                            </button>
+                        </div>
+                    </div>
+                    <div class="row" style="margin-top: 15px;">
+                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                            <table class='table table-striped table-bordered'>
+                                <tr>
+                                    <th>Telefono</th>
+                                    <th>Borrar</th>
+                                </tr>
+                                <tr ng-repeat="tel in lastSelected.telefonos">
+                                    <td>{{tel.numero}}</td>
+                                    <td>
+                                        <button type="button" class="btn btn-brand btn-pinterest" ng-click="borrarTelefono(tel)">-</button>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </fieldset>
+                <fieldset ng-show="editMode">
+                    <legend>
+                        Bodegas:
+                        <button type="button" class="btn btn-success" data-toggle="modal" data-target="#bodegasModal">
+                            Agregar
+                        </button>
+                    </legend>
+                    <div class="row" style="margin-top: 15px;">
+                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                            <table class='table table-striped table-bordered'>
+                                <tr>
+                                    <th>Bodega</th>
+                                    <th>Borrar</th>
+                                </tr>
+                                <tr ng-repeat="bodega in lastSelected.bodegas">
+                                    <td>{{bodega.nombre}}</td>
+                                    <td>
+                                        <button type="button" class="btn btn-brand btn-pinterest" ng-click="borrarBodega(bodega)">-</button>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </fieldset>
+            </div>
+        </div>
+        <div class="row" style="margin-top: 35px;">
+            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                <div class='form-group'>
+                    <div class='btn-group' role='group'>
+                        <button class='btn btn-success' title="Guardar" ng-click='finalizar()' type="button" ng-if="newMode">
+                            <span class='glyphicon glyphicon-floppy-saved'></span>&nbsp;Guardar
+                        </button>
+                        <button class='btn btn-success' title="Guardar" ng-click='finalizarEditado()' type="button" ng-if="editMode">
+                            <span class='glyphicon glyphicon-floppy-saved'></span>&nbsp;Guardar
+                        </button>
+                        <?php
+                        if(!$this->onlyEdit){
+                            ?>
+                            <button class='btn btn-danger' title="Eliminar" ng-click='doDelete()' ng-if="editMode" type="button">
+                                <span class='glyphicon glyphicon-trash'></span>&nbsp;Eliminar
+                            </button>
+                        <?php
+                        }
+                        ?>
+                    </div>
+                    <div class='btn-group' role='group'>
+                        <button class='btn btn-primary' title="Anterior" ng-click='prev()'  type="button" ng-if="editMode">
+                            <span class='glyphicon glyphicon-chevron-left'></span>&nbsp;Anterior
+                        </button>
+                        <button class='btn btn-primary' title="Siguiente" ng-click='next()'  type="button" ng-if="editMode">
+                            Siguiente&nbsp;<span class='glyphicon glyphicon-chevron-right'></span>
+                        </button>
+                    </div>
+                    <button class='btn btn-info' title="Cancelar" ng-click='cancel()'  type="button">
+                        <span class='glyphicon glyphicon-remove'></span>&nbsp;Cancelar
+                    </button>
+                    <div class='form-group form-group-sm'>
+                        <input ng-model="lastSelected.id_cliente" type="hidden" required class='form-control' name='id_cliente' placeholder='' />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+    <div class="modal" tabindex="-1" role="dialog" id="bodegasModal">
+        <div class="modal-dialog" role="document" style="max-width: 800px; height: 500px;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Bodegas</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class='table-responsive anyClass'>
+                        <table class='table table-sm'>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nombre</th>
+                                <th>Identificador Excel</th>
+                            </tr>
+                            <tr>
+                                <td><input type='text' ng-model="search.id_sucursal"/></td>
+                                <td><input type='text' ng-model="search.nombre"/></td>
+                                <td><input type='text' ng-model="search.identificador_excel"/></td>
+                            </tr>
+                            <tr ng-class="{'table-active':bodega.selected}" ng-click='selectBodegaRow(bodega)' ng-repeat='bodega in sucursales | filter:search | orderBy: sortBy'>
+                                <td ng-bind="bodega['id_sucursal']"></td>
+                                <td ng-bind="bodega['nombre']"></td>
+                                <td ng-bind="bodega['identificador_excel']"></td>
+                            </tr>
+                        </table>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success" data-dismiss="modal" ng-click="agregarBodega()"><span class="cui-check" aria-hidden="true"></span> Agregar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

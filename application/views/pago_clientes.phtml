@@ -1,0 +1,132 @@
+<div ng-controller="ModuleCtrl" class="row">
+    <div ng-show="inList&&!inCliente" class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+        <div class="table-responsive" style="overflow-x: auto">
+            <table class="table table-striped table-bordered">
+                <tr>
+                    <th style="width: 15%">Nombres</th>
+                    <th style="width: 15%">Apellidos</th>
+                    <th style="width: 15%">Nit</th>
+                    <th style="width: 15%">Correo</th>
+                    <th style="width: 15%">Teléfono</th>
+                    <th style="width: 10%">Opciones</th>
+                </tr>
+                <tr>
+                    <td>
+                        <input type="text" class="form-control" ng-model="filtro.nombres"/>
+                    </td>
+                    <td>
+                        <input type="text" class="form-control" ng-model="filtro.apellidos"/>
+                    </td>
+                    <td>
+                        <input type="text" class="form-control" ng-model="filtro.nit"/>
+                    </td>
+                    <td>
+                        <input type="text" class="form-control" ng-model="filtro.correo"/>
+                    </td>
+                    <td>
+                        <input type="text" class="form-control" ng-model="filtro.telefono"/>
+                    </td>
+                    <td>&nbsp;</td>
+                </tr>
+                <tr ng-repeat="c in clientes | filter: filtro" ng-class="{info: c.selected}">
+                    <td ng-bind="c.nombres"></td>
+                    <td ng-bind="c.apellidos"></td>
+                    <td ng-bind="c.nit"></td>
+                    <td ng-bind="c.correo"></td>
+                    <td ng-bind="c.telefono"></td>
+                    <td>
+                        <button class="btn btn-primary btn-sm" ng-click="selectCliente(c)">Ver cliente</button>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" ng-show="!inList&&inCliente">
+        <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
+            <button class='btn btn-primary btn-sm' ng-click='inList=true; inCliente=false'>
+                <span class='glyphicon glyphicon-arrow-left'></span>&nbsp;Regresar a listado
+            </button>
+            <h4>Información del cliente</h4>
+            <ul class="list-group">
+                <li class="list-group-item"><span class="be-bold">Nombres:&nbsp;</span><span ng-bind="clienteActual.nombres"></span></li>
+                <li class="list-group-item"><span class="be-bold">Apellidos:&nbsp;</span><span ng-bind="clienteActual.apellidos"></span></li>
+                <li class="list-group-item"><span class="be-bold">Nit:&nbsp;</span><span ng-bind="clienteActual.nit"></span></li>
+                <li class="list-group-item"><span class="be-bold">Teléfono:&nbsp;</span><span ng-bind="clienteActual.telefono"></span></li>
+                <li class="list-group-item"><span class="be-bold">Saldo Actual:&nbsp;Q. </span><span class="be-bold" ng-bind="clienteActual.saldo_actual" ng-class="{'text-danger':clienteActual.saldo_actual>0,'text-success':clienteActual.saldo_actual<0}"></span></li>
+            </ul>
+        </div>
+        <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
+            <h4>Forma de pago</h4>
+            <form>
+                <div class="form-group">
+                    <label>Efectivo</label>
+                    <input type="text" class="not-empty form-control" ng-model="formaDePago.efectivo" id="efectivo" />
+                </div>
+                <div class="form-group">
+                    <label>Tarjeta</label>
+                    <input type="text" class="not-empty form-control" ng-model="formaDePago.tarjeta" ng-change="recargo()" />
+                </div>
+                <div class="form-group">
+                    <label>Cheque</label>
+                    <input type="text" class="not-empty form-control" ng-model="formaDePago.cheque" />
+                </div>
+                <div ng-show="formaDePago.cheque>0">
+                    <div class="form-group">
+                        <label>Número de cheque</label>
+                        <input type="text" class="not-empty form-control" ng-model="formaDePago.numero_cheque" />
+                    </div>
+                    <div class="form-group">
+                        <label>Banco del cheque</label>
+                        <select class="form-control" ng-model="formaDePago.id_banco">
+                            <option value=''>-- Selecciona uno --</option>
+                            <option value="{{b.id_banco}}" ng-repeat="b in bancos">{{b.nombre}}</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Depósito/Transferencia</label>
+                    <input type="text" class="not-empty form-control" ng-model="formaDePago.deposito" />
+                </div>
+                <div ng-show="formaDePago.deposito>0">
+                    <div class="form-group">
+                        <label>Número</label>
+                        <input type="text" class="form-control" ng-model="formaDePago.numero_deposito" />
+                    </div>
+                </div>
+                <button class="btn btn-primary " ng-show="(formaDePago.deposito+formaDePago.efectivo+formaDePago.cheque+formaDePago.tarjeta)>0" ng-click="finalizar()">Enviar pago</button>
+            </form>
+        </div>
+        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+            <h4 class="be-bold">Estado de cuenta</h4>
+                <div class="table-responsive">
+                    <table class="table table-striped table-bordered">
+                        <tr>
+                            <th>Fecha compra</th>
+                            <th>Descripción</th>
+                            <th>Venta</th>
+                            <th>Abono</th>
+                            <th>Saldo</th>
+                        </tr>
+                        <tr ng-repeat="p in clienteActual.pendientes">
+                            <td ng-bind="p.fecha"></td>
+                            <td>Compra correlativo {{p.id_venta}}</td>
+                            <td ng-bind="p.credito"></td>
+                            <td ng-bind="p.abono"></td>
+                            <td ng-bind="p.pendiente">
+                        </tr>
+                        <tr>
+                            <td colspan="2" style="text-align: right">TOTALES</td>
+                            <td ng-bind="clienteActual.totalCreditos"></td>
+                            <td ng-bind="clienteActual.totalAbonos"></td>
+                            <td ng-bind="clienteActual.totalPendientes"></td>
+                        </tr>
+                    </table>
+                </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+

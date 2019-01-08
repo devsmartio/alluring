@@ -1,0 +1,351 @@
+<div class='row' ng-controller="ModuleCtrl">
+    <div class='col-lg-12 col-md-12 col-sm-12 col-xs-12' ng-show='inList&&!inCierre'>
+        <h4 class='be-bold'>Cierres parciales en tienda</h4>
+        <button class='btn btn-success btn-sm' ng-click='realizarCierre()'>
+            <span class='glyphicon glyphicon-ok-circle'></span>&nbsp;Realizar cierre de tienda
+        </button>
+        <div class='table-responsive'>
+            <table class='table table-striped table-bordered table-hover'>
+                <tr>
+                    <th>Fecha/hora</th>
+                    <th>Empleado</th>
+                    <th>Total Efectivo</th>
+                    <th>Total Tarjeta</th>
+                    <th>Total Cheque</th>
+                    <th>Total Dep/Transf</th>
+                    <th>Total crédito</th>
+                    <th>Total por cobrar</th>
+                    <th>Opciones</th>
+                </tr>
+                <tr ng-repeat='c in cierres'>
+                    <td ng-bind='c.cierre.fecha_creacion'></td>
+                    <td ng-bind='c.cierre.nombre_empleado'></td> 
+                    <td ng-bind='c.detalle.detalle_efectivo'></td> 
+                    <td ng-bind='c.detalle.detalle_tarjeta'></td> 
+                    <td ng-bind='c.detalle.detalle_cheque'></td> 
+                    <td ng-bind='c.detalle.detalle_deposito_transf'></td>
+                    <td ng-bind="c.detalle.detalle_credito"></td>
+                    <td ng-bind="c.detalle.detalle_por_cobrar"></td> 
+                    <td>
+                        <button class='btn btn-sm btn-info' ng-click='selectCierre(c)'>
+                            <span class='glyphicon glyphicon-list-alt'></span>&nbsp;Detalles
+                        </button>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <div class='col-lg-12 col-md-12 col-sm-12 col-xs-12' ng-show='!inList&&inCierre'>
+        <div class='col-lg-12 col-md-12 col-sm-12 col-xs-12'>
+            <button class='btn btn-xs btn-primary' ng-click='inCierre=false;inList=true;'>
+                <span class='glyphicon glyphicon-arrow-left'></span>&nbsp;Regresar
+            </button>
+        </div>
+        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped table-condensed">
+                        <tr>
+                            <th style="text-align: center" colspan="2">Reporte de cierre parcial</th>
+                        </tr>
+                        <tr>
+                            <th>Fecha:</th>
+                            <td ng-bind="cierreActual.cierre.fecha_creacion"></td>
+                        </tr>
+                        <tr>
+                            <th>Sucursal:</th>
+                            <td ng-bind="cierreActual.cierre.nombre_sucursal"></td>
+                        </tr>
+                        <tr>
+                            <th>Empleado:</th>
+                            <td ng-bind="cierreActual.cierre.nombre_empleado"></td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-condensed">
+                        <tr>
+                            <th style="text-align: center" colspan="8">Detalle General</th>
+                        </tr>
+                        <tr>
+                            <th>&nbsp;</th>
+                            <th>Efectivo</th>
+                            <th>Tarjeta</th>
+                            <th>Cheque</th>
+                            <th>Deposito/TR</th>
+                            <th>Crédito</th>
+                            <th>Por cobrar</th>
+                            <th class="active">Gran total</th>
+                        </tr>
+                        <tr>
+                            <td style="font-style: italic">Venta Unidad</td>
+                            <td ng-bind="cierreActual.detalle.unidad_efectivo"></td>
+                            <td ng-bind="cierreActual.detalle.unidad_tarjeta"></td>
+                            <td ng-bind="cierreActual.detalle.unidad_cheque"></td>
+                            <td ng-bind="cierreActual.detalle.unidad_deposito_transf"></td>
+                            <td ng-bind="cierreActual.detalle.unidad_credito"></td>
+                            <td ng-bind="cierreActual.detalle.unidad_por_cobrar"></td>
+                            <td ng-bind="cierreActual.detalle.unidad_total" class="active"></td>
+                        </tr>
+                        <tr>
+                            <td style="font-style: italic">Venta Docena</td>
+                            <td ng-bind="cierreActual.detalle.docena_efectivo"></td>
+                            <td ng-bind="cierreActual.detalle.docena_tarjeta"></td>
+                            <td ng-bind="cierreActual.detalle.docena_cheque"></td>
+                            <td ng-bind="cierreActual.detalle.docena_deposito_transf"></td>
+                            <td ng-bind="cierreActual.detalle.docena_credito"></td>
+                            <td ng-bind="cierreActual.detalle.docena_por_cobrar"></td>
+                            <td ng-bind="cierreActual.detalle.docena_total" class="active"></td>
+                        </tr>
+                        <tr>
+                            <td style="font-style: italic">Venta Mayorista</td>
+                            <td ng-bind="cierreActual.detalle.mayorista_efectivo"></td>
+                            <td ng-bind="cierreActual.detalle.mayorista_tarjeta"></td>
+                            <td ng-bind="cierreActual.detalle.mayorista_cheque"></td>
+                            <td ng-bind="cierreActual.detalle.mayorista_deposito_transf"></td>
+                            <td ng-bind="cierreActual.detalle.mayorista_credito"></td>
+                            <td ng-bind="cierreActual.detalle.mayorista_por_cobrar"></td>
+                            <td ng-bind="cierreActual.detalle.mayorista_total" class="active"></td>
+                        </tr>
+                        <tr>
+                            <th class="active" style="font-style: italic">Venta total</td>
+                            <td class="active" ng-bind="cierreActual.detalle.total_efectivo"></td>
+                            <td class="active" ng-bind="cierreActual.detalle.total_tarjeta"></td>
+                            <td class="active" ng-bind="cierreActual.detalle.total_cheque"></td>
+                            <td class="active" ng-bind="cierreActual.detalle.total_deposito_transf"></td>
+                            <td class="active" ng-bind="cierreActual.detalle.total_credito"></td>
+                            <td class="active" ng-bind="cierreActual.detalle.total_por_cobrar"></td>
+                            <th ng-bind="cierreActual.detalle.gran_total" class="active"></th>
+                        </tr>
+                        <tr>
+                            <td style='font-style: italic'>Pago de clientes</td>
+                            <td ng-bind="cierreActual.detalle.cliente_efectivo"></td>
+                            <td ng-bind="cierreActual.detalle.cliente_tarjeta"></td>
+                            <td ng-bind="cierreActual.detalle.cliente_cheque"></td>
+                            <td ng-bind="cierreActual.detalle.cliente_deposito_transf"></td>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                            <td ng-bind="cierreActual.detalle.cliente_total" class="active"></td>
+                        </tr>
+                        <tr>
+                            <td style='font-style: italic'>Cambios de producto</td>
+                            <td ng-bind="cierreActual.detalle.cambio_efectivo"></td>
+                            <td ng-bind="cierreActual.detalle.cambio_tarjeta"></td>
+                            <td ng-bind="cierreActual.detalle.cambio_cheque"></td>
+                            <td ng-bind="cierreActual.detalle.cambio_deposito_transf"></td>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                            <td ng-bind="cierreActual.detalle.cambio_total" class="active"></td>
+                        </tr>
+                        <tr>
+                            <td style='font-style: italic'>Pagos colectados</td>
+                            <td ng-bind='cierreActual.detalle.pagos_colectados'></td>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                            <td ng-bind="cierreActual.detalle.pagos_colectados" class="active"></td>
+                        </tr>
+                        <tr>
+                            <th class="active" style="font-style: italic">Total</th>
+                            <th class="active" ng-bind="cierreActual.detalle.detalle_efectivo"></th>
+                            <th class="active" ng-bind="cierreActual.detalle.detalle_tarjeta"></th>
+                            <th class="active" ng-bind="cierreActual.detalle.detalle_cheque"></th>
+                            <th class="active" ng-bind="cierreActual.detalle.detalle_deposito_transf"></th>
+                            <th class="active" ng-bind="cierreActual.detalle.detalle_credito"></th>
+                            <th class="active" ng-bind="cierreActual.detalle.detalle_por_cobrar"></th>
+                            <th ng-bind="cierreActual.detalle.detalle_gran_total" class="active"></th>
+                        </tr>
+                    </table>
+                </div>
+                <div class='col-lg-6 col-md-6 col-sm-12 col-xs-12'>
+                    <div class='table-responsive'>
+                        <table class='table table-bordered table-striped table-condensed'>
+                            <tr>
+                                <th colspan='4' style='text-align: center'>RESUMEN TARJETA</th>
+                            </tr>
+                            <tr>
+                                <th>Concepto</th>
+                                <th>Sistema</th>
+                                <th>Reportado</th>
+                                <th>Cuadró</th>
+                            </tr>
+                            <tr>
+                                <td>Cantidad vouchers</td>
+                                <td ng-bind='cierreActual.resDocumentos.sistema_vouchers'></td>
+                                <td ng-bind='cierreActual.resDocumentos.reportado_vouchers'></td>
+                                <td ng-class='{"success":cierreActual.resDocumentos.sistema_vouchers==cierreActual.resDocumentos.reportado_vouchers,"danger":cierreActual.resDocumentos.sistema_vouchers!=cierreActual.resDocumentos.reportado_vouchers}'>{{cierreActual.resDocumentos.sistema_vouchers==cierreActual.resDocumentos.reportado_vouchers ? "Sí" : "No" }}</td>
+                            </tr>
+                            <tr>
+                                <td>Total vouchers</td>
+                                <td ng-bind='cierreActual.resDocumentos.sistema_valoresVoucher'></td>
+                                <td ng-bind='cierreActual.resDocumentos.reportado_valoresVoucher'></td>
+                                <td ng-class='{"success":cierreActual.resDocumentos.sistema_valoresVoucher==cierreActual.resDocumentos.reportado_valoresVoucher,"danger":cierreActual.resDocumentos.sistema_valoresVoucher!=cierreActual.resDocumentos.reportado_valoresVoucher}'>{{cierreActual.resDocumentos.sistema_valoresVoucher==cierreActual.resDocumentos.reportado_valoresVoucher ? "Sí" : "No" }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class='table-responsive'>
+                        <table class='table table-bordered table-striped table-condensed'>
+                            <tr>
+                                <th colspan='4' style='text-align: center'>RESUMEN CHEQUES</th>
+                            </tr>
+                            <tr>
+                                <th>Concepto</th>
+                                <th>Sistema</th>
+                                <th>Reportado</th>
+                                <th>Cuadró</th>
+                            </tr>
+                            <tr>
+                                <td>Cantidad cheques</td>
+                                <td ng-bind='cierreActual.resDocumentos.sistema_cheques'></td>
+                                <td ng-bind='cierreActual.resDocumentos.reportado_cheques'></td>
+                                <td ng-class='{"success":cierreActual.resDocumentos.sistema_cheques==cierreActual.resDocumentos.reportado_cheques,"danger":cierreActual.resDocumentos.sistema_cheques!=cierreActual.resDocumentos.reportado_cheques}'>{{cierreActual.resDocumentos.sistema_cheques==cierreActual.resDocumentos.reportado_cheques ? "Sí" : "No" }}</td>
+                            </tr>
+                            <tr>
+                                <td>Total cheques</td>
+                                <td ng-bind='cierreActual.resDocumentos.sistema_valoresCheques'></td>
+                                <td ng-bind='cierreActual.resDocumentos.reportado_valoresCheques'></td>
+                                <td ng-class='{"success":cierreActual.resDocumentos.sistema_valoresCheques==cierreActual.resDocumentos.reportado_valoresCheques,"danger":cierreActual.resDocumentos.sistema_valoresCheques!=cierreActual.resDocumentos.reportado_valoresCheques}'>{{cierreActual.resDocumentos.sistema_valoresCheques==cierreActual.resDocumentos.reportado_valoresCheques ? "Sí" : "No" }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class='table-responsive'>
+                        <table class='table table-bordered table-striped table-condensed'>
+                            <tr>
+                                <th colspan='4' style='text-align: center'>RESUMEN DEPOSITOS/TRANSFERENCIAS</th>
+                            </tr>
+                            <tr>
+                                <th>Concepto</th>
+                                <th>Sistema</th>
+                                <th>Reportado</th>
+                                <th>Cuadró</th>
+                            </tr>
+                            <tr>
+                                <td>Cantidad depósitos / transferencias</td>
+                                <td ng-bind='cierreActual.resDocumentos.sistema_depositos'></td>
+                                <td ng-bind='cierreActual.resDocumentos.reportado_depositos'></td>
+                                <td ng-class='{"success":cierreActual.resDocumentos.sistema_depositos==cierreActual.resDocumentos.reportado_depositos,"danger":cierreActual.resDocumentos.sistema_depositos!=cierreActual.resDocumentos.reportado_depositos}'>{{cierreActual.resDocumentos.sistema_depositos==cierreActual.resDocumentos.reportado_depositos ? "Sí" : "No" }}</td>
+                            </tr>
+                            <tr>
+                                <td>Total depósitos / transferencias</td>
+                                <td ng-bind='cierreActual.resDocumentos.sistema_valoresDepositos'></td>
+                                <td ng-bind='cierreActual.resDocumentos.reportado_valoresDepositos'></td>
+                                <td ng-class='{"success":cierreActual.resDocumentos.sistema_valoresDepositos==cierreActual.resDocumentos.reportado_valoresDepositos,"danger":cierreActual.resDocumentos.sistema_valoresDepositos!=cierreActual.resDocumentos.reportado_valoresDepositos}'>{{cierreActual.resDocumentos.sistema_valoresDepositos==cierreActual.resDocumentos.reportado_valoresDepositos ? "Sí" : "No" }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                <div class='col-lg-6 col-md-6 col-sm-12 col-xs-12'>
+                    <div class='table-responsive'>
+                        <table class='table table-bordered table-condensed'>
+                            <tr>
+                                <th colspan="4" style='text-align: center'>CUADRE CAJA</th>
+                            </tr>
+                            <tr>
+                                <td style="width: 5%">&nbsp;</td>
+                                <td>&nbsp;</td>
+                                <th style="width: 10%; font-size: 8px">SISTEMA</th>
+                                <th style="width: 10%; font-size: 8px">REPORTADO</th>
+                            <tr>
+                            <tr>
+                                <th colspan="4" style="background-color: #f1f1f1">Recibido</th>
+                            </tr>
+                            <tr>
+                                <td>&nbsp;</td>
+                                <td><i>Venta total</i></td>
+                                <td ng-bind="cierreActual.cuadre.venta_total"></td>
+                                <td ng-bind="cierreActual.cuadre.venta_total"></td>
+                            </tr>
+                            <tr>
+                                <td>&nbsp;</td>
+                                <td><i>Pago de clientes</i></td>
+                                <td ng-bind="cierreActual.cuadre.pagos_clientes"></td>
+                                <td ng-bind="cierreActual.cuadre.pagos_clientes"></td>
+                            </tr>
+                            <tr>
+                                <td>&nbsp;</td>
+                                <td><i>Cambios de producto</i></td>
+                                <td ng-bind="cierreActual.cuadre.cambios_producto"></td>
+                                <td ng-bind="cierreActual.cuadre.cambios_producto"></td>
+                            </tr>
+                            <tr>
+                                <td>&nbsp;</td>
+                                <td><i>Pagos colectados</i></td>
+                                <td ng-bind="cierreActual.cuadre.pagos_colectados"></td>
+                                <td ng-bind="cierreActual.cuadre.pagos_colectados"></td>
+                            </tr>
+                            <tr>
+                                <th style="background-color: #f1f1f1"  colspan="2">Total recibido</th>
+                                <td style="background-color: #f1f1f1" ng-bind="cierreActual.cuadre.total_recibido"></td>
+                                <td style="background-color: #f1f1f1" ng-bind="cierreActual.cuadre.total_recibido"></td>
+                            </tr>
+                            <tr>
+                                <th colspan="4" style="background-color: #f1f1f1">No efectivo/Pendiente de pago</th>
+                            </tr>
+                            <tr>
+                                <td>&nbsp;</td>
+                                <td><i>Total tarjeta</i></td>
+                                <td ng-bind="cierreActual.cuadre.sistema_total_tarjeta"></td>
+                                <td ng-bind="cierreActual.cuadre.reportado_total_tarjeta"></td>
+                            </tr>
+                            <tr>
+                                <td>&nbsp;</td>
+                                <td><i>Total cheques</i></td>
+                                <td ng-bind="cierreActual.cuadre.sistema_total_cheques"></td>
+                                <td ng-bind="cierreActual.cuadre.reportado_total_cheques"></td>
+                            </tr>
+                            <tr>
+                                <td>&nbsp;</td>
+                                <td><i>Total depositos</i></td>
+                                <td ng-bind="cierreActual.cuadre.sistema_total_depositos"></td>
+                                <td ng-bind="cierreActual.cuadre.reportado_total_depositos"></td>
+                            </tr>
+                            <tr>
+                                <td>&nbsp;</td>
+                                <td><i>Total crédito</i></td>
+                                <td ng-bind="cierreActual.cuadre.total_credito"></td>
+                                <td ng-bind="cierreActual.cuadre.total_credito"></td>
+                            </tr>
+                            <tr>
+                                <td>&nbsp;</td>
+                                <td><i>Total por cobrar</i></td>
+                                <td ng-bind="cierreActual.cuadre.total_por_cobrar"></td>
+                                <td ng-bind="cierreActual.cuadre.total_por_cobrar"></td>
+                            </tr>
+                            <tr>
+                                <th style="background-color: #f1f1f1"  colspan="2">Total No efectivo/Pendiente de pago</th>
+                                <td style="background-color: #f1f1f1" ng-bind="cierreActual.cuadre.sistema_total_no_efectivo"></td>
+                                <td style="background-color: #f1f1f1" ng-bind="cierreActual.cuadre.reportado_total_no_efectivo"></td>
+                            </tr>
+                            <tr>
+                                <td>&nbsp;</td>
+                                <td><i>Gastos</i></td>
+                                <td ng-bind="cierreActual.cuadre.total_gastos"></td>
+                                <td ng-bind="cierreActual.cuadre.total_gastos"></td>
+                            </tr>
+                            <tr>
+                                <th colspan="2" style="text-align: center; background-color: #dadada">TOTAL INGRESOS EN EFECTIVO</th>
+                                <th style="background-color: #dadada" ng-bind="cierreActual.cuadre.sistema_ingresos_efectivo"></th>
+                                <th style="background-color: #dadada" ng-bind="cierreActual.cuadre.reportado_ingresos_efectivo"></th>
+                            </tr>
+                            <tr>
+                                <td colspan="2">Efectivo reportado</td>
+                                <td ng-bind="cierreActual.cuadre.total_denominaciones"></td>
+                                <td ng-bind="cierreActual.cuadre.total_denominaciones"></td>
+                            </tr>
+                            <tr>
+                                <td colspan="2">Fondo</td>
+                                <td ng-bind="cierreActual.cuadre.fondo"></td>
+                                <td ng-bind="cierreActual.cuadre.fondo"></td>
+                            </tr>
+                            <tr>
+                                <th colspan="2" style="text-align: center; background-color: #dadada">DIFERENCIA EN CAJA</th>
+                                <th style="background-color: #dadada" ng-bind="cierreActual.cuadre.sistema_diferencia_cuadre_caja"></th>
+                                <th style="background-color: #dadada" ng-bind="cierreActual.cuadre.reportado_diferencia_cuadre_caja"></th>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+    </div>
+</div>

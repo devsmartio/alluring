@@ -1,0 +1,169 @@
+<?php 
+$fecha = new DateTime();
+?>
+<div ng-controller="ModuleCtrl" class="row">
+    <div ng-show="inList&&!inDetalle" class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+        <div class="well well-sm">
+            <form>
+                <div class="form-group form-group-sm" style="margin-bottom: 0px; display: inline-block;">
+                    <input type="text" class="dateMe" ng-model="fecha" id="fecha"/>
+                    <button class="btn btn-success btn-sm" ng-click="getVentas()">Buscar</button>
+                </div>
+                <div style='display: inline-block' id='totalCont' ng-show='ventas.length > 0'>
+                    TOTAL DIARIO: Q. <span class='be-bold' ng-bind='totalDiario'></span> 
+                </div>
+            </form>
+        </div>
+        <div class="table-responsive" style="overflow-x: auto">
+            
+            <table class="table table-striped table-bordered table-condensed">
+                <tr>
+                    <th style='witdh: 5%'>Correlativo</th>
+                    <th style="width: 15%">Fecha</th>
+                    <th style="width: 15%">Empleado</th>
+                    <th style="width: 15%">Sucursal</th>
+                    <th style="width: 15%">Cliente</th>
+                    <th style="width: 15%">Total</th>
+                    <th style="width: 5%">Productos</th>
+                    <th style="width: 5%">Genera recargo</th>
+                    <th style="width: 10%">Opciones</th>
+                </tr>
+                <tr>
+                    <td>
+                        <input type="text" class="form-control" ng-model="filtro.fecha_creacion"/>
+                    </td>
+                    <td>
+                        <input type="text" class="form-control" ng-model="filtro.nombre_empleado"/>
+                    </td>
+                    <td>
+                        <input type="text" class="form-control" ng-model="filtro.nombre_sucursal"/>
+                    </td>
+                    <td colspan="6">&nbsp;</td>
+                </tr>
+                <tr ng-show="!ventas.length">
+                    <td colspan="9"><i>No hay ventas a mostrar</i></td>
+                </tr>
+                <tr ng-class="{danger: v.por_cobrar > 0}" ng-show="ventas.length" ng-repeat="v in ventas | filter: filtro" ng-class="{info: c.selected}">
+                    <td ng-bind='v.id_venta'></td>
+                    <td ng-bind="v.fecha_creacion"></td>
+                    <td ng-bind="v.nombre_empleado"></td>
+                    <td ng-bind="v.nombre_sucursal"></td>
+                    <td ng-bind="v.nombre_cliente"></td>
+                    <td ng-bind="v.total"></td>
+                    <td ng-bind="v.venta_productos.length"></td>
+                    <td align="center">
+                        <span ng-if="v.genera_recargo==1">Si</span>
+                        <span ng-if="v.genera_recargo==0">No</span>
+                        <button class="btn btn-danger btn-xs" ng-if="v.genera_recargo==1" ng-click="marcarFacturado(v.id_venta,v.genera_recargo)">Quitar</button>
+                        <button class="btn btn-success btn-xs" ng-if="v.genera_recargo==0" ng-click="marcarFacturado(v.id_venta,v.genera_recargo)">Marcar</button>
+                    </td>
+                    <td>
+                        <button class="btn btn-danger btn-sm" ng-if="!v.id_cierre_parcial" ng-click="anular(v)">Anular</button>
+                        <button class="btn btn-primary btn-sm" ng-click="selectVenta(v)">Ver venta</button>                                                
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" ng-show="!inList&&inDetalle">
+        <div class="row">
+            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                <button class='btn btn-primary btn-xs' ng-click='regresarALista()'>
+                    <span class='glyphicon glyphicon-arrow-left'></span>&nbsp;Regresar a la lista
+                </button>  
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        Información de la venta
+                    </div>
+                    <div class="panel-body">
+                        <ul class="list-group">
+                            <li class="list-group-item"><span class="be-bold">Tipo: </span> <span ng-bind="ventaActual.nombre_venta"></span></li>
+                            <li class="list-group-item"><span class="be-bold">Cliente: </span> <span ng-bind="ventaActual.nombre_cliente"></span></li>
+                            <li class="list-group-item"><span class="be-bold">Empleado: </span> <span ng-bind="ventaActual.nombre_empleado"></span></li>
+                            <li class="list-group-item"><span class="be-bold">Sucursal: </span> <span ng-bind="ventaActual.nombre_sucursal"></span></li>
+                            <li class="list-group-item"><span class="be-bold">Total Venta: </span> <span ng-bind="ventaActual.total"></span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        Formas de pago
+                    </div>
+                    <div class="panel-body">
+                        <ul class="list-group">
+                            <li class="list-group-item"><span class="be-bold">Efectivo: </span> <span>{{'Q. ' + ventaActual.efectivo}}</span></li>
+                            <li class="list-group-item"><span class="be-bold">Cheque: </span> <span>{{'Q. ' + ventaActual.cheque + (ventaActual.cheque > 0 ? ' - ' + ventaActual.cheque_no : '')}}</span></li>
+                            <li class="list-group-item"><span class="be-bold">Tarjeta: </span> <span>{{'Q. ' + ventaActual.tarjeta}}</span></li>
+                            <li class="list-group-item"><span class="be-bold">Depósito: </span> <span>{{'Q. ' + ventaActual.deposito_transf + (ventaActual.deposito_transf > 0 ? ' - ' + ventaActual.deposito_transf_no : '')}}</span></li>
+                            <li class="list-group-item"><span class="be-bold">Crédito: </span> <span>{{'Q. ' + ventaActual.credito}}</span></li>
+                            <li class="list-group-item"><span class="be-bold">Por cobrar: </span> 
+                                <span ng-class='{"warning": ventaActual.por_cobrar>0}'>{{'Q. ' + ventaActual.por_cobrar}}</span>
+                                <button ng-show='ventaActual.por_cobrar>0' class='btn btn-primary btn-xs' ng-click='cobrarPendiente()'>Colectar</button>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class='col-lg-12 col-md-12 col-sm-12 col-xs-12'>
+                <div class='table-responsive'>
+                    <table class='table table-bordered table-striped table-condensed'>
+                        <tr>
+                            <th colspan='10'>Productos</th>
+                        </tr>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Marca</th>
+                            <th>Tipo</th>
+                            <th>Subtipo</th>
+                            <th>Precio de venta</th>
+                            <th>Tipo precio</th>
+                            <th>Unidades</th>
+                            <th>Total por producto</th>
+                            <th>Devueltos</th>
+                            <th>Diferencia</th>
+                        </tr>
+                        <tr ng-repeat='p in ventaActual.venta_productos'>
+                            <td ng-bind='p.nombre_producto'></td>
+                            <td ng-bind='p.nombre_marca'></td>
+                            <td ng-bind='p.nombre_tipo'></td>
+                            <td ng-bind='p.nombre_subtipo'></td>
+                            <td ng-bind='p.precio'></td>
+                            <td ng-bind='p.precio_tipo'></td>
+                            <td ng-bind='p.unidades'></td>
+                            <th ng-bind='p.total_producto'></th>
+                            <td ng-bind='p.devueltos'></td>
+                            <td ng-bind='p.diferencia'></td>
+                        </tr>
+                        <tr>
+                            <th colspan='10'>Total: Q. {{ventaActual.producto}}</th>
+                        </tr>
+                    </table>
+                </div>
+                <div class='table-responsive'>
+                    <table class='table table-bordered table-striped table-condensed'>
+                        <tr>
+                            <th colspan='2'>Adicionales</th>
+                        </tr>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Total</th>
+                        </tr>
+                        <tr ng-repeat='a in ventaActual.venta_adicionales'>
+                            <td ng-bind='a.nombre_adicional'></td>
+                            <td>{{'Q. ' + a.precio}}</td>
+                        </tr>
+                        <tr>
+                            <th colspan='2'>Total: Q. {{ventaActual.adicionales}}</th>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

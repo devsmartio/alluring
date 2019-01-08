@@ -1,0 +1,512 @@
+<style type="text/css">
+    .anyClass {
+        height:350px;
+        overflow-y: scroll;
+    }
+    .color-red {
+        color: red;
+    }
+    .color-green {
+        color: green;
+    }
+    .form-group.required .col-form-label:after {
+        content:"*";
+        color:red;
+    }
+</style>
+<div ng-controller="ModuleCtrl">
+    <div class="row">
+        <div class="col-lg-8 col-md-6 col-sm-12 col-xs-12 bg-light mb-3 pb-2">
+            <div class="input-group my-3">
+                <div class="input-group-prepend">
+                    <span class="input-group-text"><span class="cui-magnifying-glass"></span></span>
+                </div>
+                <input type="text" id="producto" class="form-control" ng-disabled="preventProductoChange" placeholder="Buscar Productos..." aria-label="Search" ng-model="search_codigo_origen" autocomplete="off" style="font-size:0.8rem;" />
+                <div class="input-group-append">
+                    <button ng-disabled="true" class="btn btn-outline-primary" ng-if="encontrados">Encontrados {{encontrados}}</button>
+                    <button ng-click="showBodegaCat()" ng-disabled="productos_facturar.length" class="btn btn-outline-primary">{{bodegaSel ? bodegaSel.nombre : "No ha seleccionado bodega"}}</button>
+                    <button title="pedidos" class="btn btn-info" ng-disabled="productos_facturar.length" ng-show="bodegaSel" ng-click="checkPedidos()">
+                        <i class="cui-basket-loaded"></i>
+                        <span style="z-index: 3; display: inline-block; position: absolute; top: -8px; right: -8px; height: 20px; width: 20px; background: #e94b35; border-radius: 50%; color: white;font-weight: 700; text-ident: 0">{{ventas.length}}</span>
+                    </button>
+                    <button title="devolucion" ng-click="getVentasPasadas()" style="z-index: 1" class="btn btn-warning" ng-show="bodegaSel" ng-disabled="!lastClienteSelected.id_cliente||devolucion.credito>0">
+                        <i class="cui-action-undo"></i>
+                    </button>
+                </div>
+            </div>
+            <div id="loading">
+                <img src="media/img/ajax-loader.gif" class="ajax-loader"/>
+            </div>
+            <div class="row anyClass">
+                <div ng-repeat="prod in productos" class="col-12 col-sm-6 col-md-4">
+                    <figure class="figure btn btn-ghost-light">
+                        <div class="row">
+                            <div class="col-8 pr-0">
+                                <input class="form-control form-control-sm" type="number" ng-model="prod.cant_vender" min="0" value="0" />
+                            </div>
+                            <div class="col-4 pl-0">
+                                <button class='btn btn-primary btn-sm' title="Agregar" ng-click='agregarVarios(prod)' type="button">
+                                    <span class='cui-check'></span>
+                                </button>
+                            </div>
+                        </div>
+                                <span class="d-inline-block" tabindex="0" data-toggle="tooltip" title="{{prod.total_existencias-prod.cantidad}} existencias" >
+                                    <img btn-lazy-src="media/uploads/{{prod.imagen}}" alt="{{prod.imagen}}" class="img-thumbnail" ng-click="agregarUno(prod)">
+                                    <figcaption class="figure-caption">
+                                        <b>{{prod.codigo}}</b>: {{prod.nombre}}
+                                        <span ng-if="hasDescuento(prod)" class="badge badge-warning">{{getDescuento(prod)}}</span>
+                                        <br/>
+                                        Existencia: <b><span ng-class="{'text-success':prod.total_existencias > 0, 'text-danger':prod.total_existencias <= 0}">{{prod.total_existencias}}</span></b><br/>
+                                        <b>{{prod.nombre_sucursal | uppercase}}</b>
+                                    </figcaption>
+                                </span>
+                    </figure>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-3 col-md-5 col-sm-12 col-xs-12">
+                </div>
+                <div class="col-lg-6 col-md-2 col-sm-12 col-xs-12" style="text-align: center;">
+                    <div class='btn-group' role='group'>
+                        <button type="button" class="btn btn-pill btn-danger" ng-click="cancelar()">Cancelar</button>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-5 col-sm-12 col-xs-12" style="text-align: right;">
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 col-md-6 col-sm-12 col-xs-12 text-white bg-secondary mb-3 pb-2">
+            <div class="input-group input-group-lg my-3">
+                <div class="input-group-prepend">
+                    <span class="input-group-text"><span class="cui-magnifying-glass"></span></span>
+                </div>
+                <input type="text" id="cliente" ng-model="cliente"  class="form-control" placeholder="Buscar Cliente..." aria-label="Search" autocomplete="off" style="font-size:0.8rem;" ng-disabled="devolucion.credito > 0 || preventClienteChange || productos_facturar.length" ng-click='buscar()' data-toggle="modal" data-target="#clientesModal"> 
+            </div>
+            <div class="anyClass w-100" ng-show="show_detalle" style="overflow-x: auto; max-width: 100%; overflow-y: auto">
+                <div class='table-responsive'>
+                    <table class="table table-dark table-striped table-sm table-condensed" style="font-size:0.8rem; ">
+                        <thead>
+                        <tr>
+                            <th scope="col">Cod.</th>
+                            <th scope="col">Bod.</th>
+                            <th scope="col">Cant.</th>
+                            <th scope="col">Precio</th>
+                            <th scope="col">Subtotal</th>
+                            <th scope="col">Editar</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr ng-repeat="prod in productos_facturar | filter:{mostrar:1}" >
+                            <td ng-bind="prod.codigo"></td>
+                            <td >{{prod.nombre_sucursal | uppercase}}</td>
+                            <td>
+                                <span editable-number="prod.cantidad" e-name="cantidad" e-form="rowform">
+                                  {{ prod.cantidad | number:2 }}
+                                </span>
+                            </td>
+                            <td>{{prod.precio_venta | currency : 'Q' : 2}}</td>
+                            <td ng-bind="prod.sub_total | currency: 'Q': 2"></td>
+                            <td style="white-space: nowrap">
+                                <!-- form -->
+                                <form editable-form name="rowform" onbeforesave="saveRow($data, prod.id_producto, prod.id_sucursal, rowform)" ng-show="rowform.$visible" class="form-buttons form-inline" shown="inserted == prod">
+                                    <button type="submit" ng-disabled="rowform.$waiting" class="btn btn-primary p-1">
+                                        <span class="cui-check" aria-hidden="true">
+                                    </button>
+                                    <button type="button" ng-disabled="rowform.$waiting" ng-click="rowform.$cancel()" class="btn btn-default p-1">
+                                        <span class="cui-circle-x" aria-hidden="true">
+                                    </button>
+                                </form>
+                                <div class="buttons" ng-show="!rowform.$visible">
+                                    <button type="button" class="btn btn-primary p-1" ng-click="rowform.$show()"><span class="cui-pencil" aria-hidden="true"></span></button>
+                                    <button type="button" class="btn btn-danger p-1" ng-click="removeRow($index, prod.id_producto, prod.id_sucursal)"><span class="cui-trash" aria-hidden="true"></span></button>
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                        <tfoot>
+                        <tr>
+                            <th scope="row">Total</th>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                            <th scope="row">{{total | currency:'Q': 2}}</th>
+                        </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" style="text-align: right;">
+                    <button type="button" class="btn btn-block btn-success" ng-show="hasProductos()" data-toggle="modal" data-target="#tipoPagoModal" ng-click="generar()">Vender</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal" tabindex="-1" role="dialog" id="bodegasModal" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Seleccione bodega</h5>
+                </div>
+                <div class="modal-body">
+                    <ul class="list-group">
+                        <li ng-repeat="b in bodegas" style="cursor: pointer" ng-class="{'list-group-item-success':b.id_sucursal==bodegaSel.id_sucursal}" class="list-group-item" ng-click="setBodega(b)">{{b.nombre}}</li>
+                    </ul>
+                </div>
+                <div class="modal-footer">
+                    <button data-dismiss="modal" class="btn btn-danger">Cancelar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal" tabindex="-1" role="dialog" id="clientesModal">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Clientes</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class='table-responsive anyClass' ng-show="!show_nuevo_cliente">
+                        <table class='table table-sm table-striped table-bordered table-hover'>
+                            <tr>
+                                <th>Identificacion</th>
+                                <th>Nombres</th>
+                                <th>Apellidos</th>
+                            </tr>
+                            <tr>
+                                <td><input id="identificacion" type='text' ng-model="search.identificacion"/></td>
+                                <td><input id="nombres" type='text' ng-model="search.nombres"/></td>
+                                <td><input id="apellidos" type='text' ng-model="search.apellidos"/></td>
+                            </tr>
+                            <tr ng-class="{'table-active':row.selected}" ng-click='selectClienteRow(row)' ng-repeat='row in clientes | emptylistfilter:search:10 | orderBy: sortBy'>
+                                <td ng-bind="row['identificacion']"></td>
+                                <td ng-bind="row['nombres']"></td>
+                                <td ng-bind="row['apellidos']"></td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div ng-show="show_nuevo_cliente">
+                        <form name="formClientes" data-toggle="validator" role="form">
+                            <div class="row">
+                                <div class="col-lg-5 col-md-5 col-sm-12 col-xs-12" >
+                                    <div class='form-group required'>
+                                        <b>VENDEDOR: </b> {{vendedor.nombres}}
+                                    </div>
+                                    <div class='form-group required'>
+                                        <input ng-model="lastClienteSelected.nombres" type="text" required class='form-control form-control-sm' name='nombres' placeholder='Nombres' oninvalid="this.setCustomValidity('El nombre es requerido')" oninput="setCustomValidity('')"/>
+                                    </div>
+                                    <div class='form-group required'>
+                                        <input ng-model="lastClienteSelected.apellidos" type="text" required class='form-control form-control-sm' name='apellidos' placeholder='Apellidos' oninvalid="this.setCustomValidity('El apellido es requerido')" oninput="setCustomValidity('')"/>
+                                    </div>
+                                    <div class='form-group required'>
+                                        <input ng-model="lastClienteSelected.identificacion" type="text" required class='form-control form-control-sm' name='identificacion' placeholder='Identificación' oninvalid="this.setCustomValidity('La identificación es requerida')" oninput="setCustomValidity('')"/>
+                                    </div>
+                                    <div class='form-group required'>
+                                        <input ng-model="lastClienteSelected.correo" type="email" required class='form-control form-control-sm' name='correo' placeholder='Correo' oninvalid="this.setCustomValidity('El correo es requerido')" oninput="setCustomValidity('')"/>
+                                    </div>
+                                    <div class='form-group required'>
+                                        <input ng-model="lastClienteSelected.telefono" type="number" required class='form-control form-control-sm' name='correo' placeholder='Teléfono' oninvalid="this.setCustomValidity('El correo es requerido')" oninput="setCustomValidity('')"/>
+                                    </div>
+                                    <div class='form-group required'>
+                                        <select ng-model="lastClienteSelected.tipo_cliente" type="text" required class='form-control form-control-sm' name='correo' placeholder='Correo' oninvalid="this.setCustomValidity('El Tipo de precio es requerido')" oninput="setCustomValidity('')" ng-options="t.id_tipo_precio as t.nombre for t in tipos_clientes">
+                                            <option value="">-- Seleccione tipo precio --</option>
+                                        </select>
+                                    </div>
+                                    <div class='form-group required'>
+                                        <select ng-model="lastClienteSelected.id_pais" type="text" ng-change="getDepartamentos()" class="form-control form-control-sm" ng-options="p.id_pais as p.nombre for p in paises">
+                                            <option value="">-- Seleccione pais --</option>
+                                        </select>
+                                    </div>
+                                    <div class='form-group required'>
+                                        <select ng-model="lastClienteSelected.id_departamento"  type="text" required class='form-control form-control-sm' name='correo' placeholder='Correo' oninvalid="this.setCustomValidity('El Tipo de precio es requerido')" oninput="setCustomValidity('')" ng-options="d.id_departamento as d.nombre for d in departamentos">
+                                            <option value="">-- Seleccione departamento --</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-lg-5 col-md-5 col-sm-12 col-xs-12" >
+                                    <div class='form-group required'>
+                                        <b>DATOS FACTURACION</b>
+                                    </div>
+                                    <div class='form-group required'>
+                                        <input ng-model="lastClienteSelected.factura_nit" type="text" required class='form-control form-control-sm' name='factura_nit' placeholder='Nit' oninvalid="this.setCustomValidity('El NIT es requerido')" oninput="setCustomValidity('')"/>
+                                    </div>
+                                    <div class='form-group required'>
+                                        <input ng-model="lastClienteSelected.factura_nombre" type="text" required class='form-control form-control-sm' name='factura_nombre' placeholder='Nombre de la Factura' oninvalid="this.setCustomValidity('El nombre de la factura es requerido')" oninput="setCustomValidity('')"/>
+                                    </div>
+                                    <div class='form-group required'>
+                                        <input ng-model="lastClienteSelected.factura_direccion" type="text" required class='form-control form-control-sm' name='factura_direccion' placeholder='Dirección de la Factura' oninvalid="this.setCustomValidity('La dirección de la factura es requerido')" oninput="setCustomValidity('')"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-primary" ng-show="validarCamposCliente()" ng-click="guardar_nuevo_cliente()">Guardar</button>
+                                <button type="button" class="btn btn-secondary" ng-click="cerrar_nuevo_cliente()">Cerrar</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="modal-footer" ng-show="!show_nuevo_cliente" >
+                    <button type="button" class="btn btn-primary" ng-click="nuevo_cliente()">Nuevo</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal" tabindex="-1" role="dialog" id="ventasModal" data-backdrop="false">
+        <div class="modal-dialog" role="document" style="max-width: 800px; height: 500px;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Pedidos</h5>
+                </div>
+                <div class="modal-body">
+                    <div class='table-responsive anyClass'>
+                        <table class='table table-sm'>
+                            <tr>
+                                <th>ID</th>
+                                <th>Cliente</th>
+                                <th>Total Venta</th>
+                                <th>Opciones</th>
+                            </tr>
+                            <tr>
+                                <td><input type='text' ng-model="search.id_venta"/></td>
+                                <td><input type='text' ng-model="search.total"/></td>
+                                <td><input type='text' ng-model="search.id_empleado"/></td>
+                                <td>&nbsp;</td>
+                            </tr>
+                            <tr ng-class="{'table-active':row.selected}" ng-click='selectVentaRow(row)' ng-repeat='row in ventas | filter:search | orderBy: sortBy'>
+                                <td ng-bind="row['id_venta']"></td>
+                                <td ng-bind="row['nombre_cliente']"></td>
+                                <td ng-bind="row['total']"></td>
+                                <td>
+                                    <button class="btn btn-danger" ng-click="anularVenta(row)">
+                                        <i class="cui-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" ng-click="cancelar()" data-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" data-dismiss="modal" ng-disabled="currentVentaIndex == null" ng-click="mostrar_detalle()"><span class="cui-list" aria-hidden="true"></span> Detalle</button>
+                    <button type="button" class="btn btn-warning"  ng-disabled="currentVentaIndex == null" ng-click="imprimir_detalle()"><span class="cui-print" aria-hidden="true"></span> Imprimir</button>
+                    <!--<button type="button" class="btn btn-success" data-dismiss="modal" ng-click="nueva_venta()"><span class="cui-file" aria-hidden="true"></span> Nueva</button>-->
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal" tabindex="-1" role="dialog" id="tipoPagoModal">
+        <div class="modal-dialog" role="document" style="max-width: 700px; height: 500px;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Forma de Pago</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-lg-2 col-md-4 col-sm-12 col-xs-12">
+                        </div>
+                        <div class="col-lg-8 col-md-4 col-sm-12 col-xs-12">
+                            <p>TOTAL A PAGAR: <b>{{total | currency : 'Q' : 2}}</b></p>
+                            <p ng-show="devolucion.credito > 0">CRÉDITO DEVOLUCIÓN: <b>{{devolucion.credito | currency : 'Q' : 2}}</b></p>
+                            <p ng-show="tipo_cambio_actual">TIPO CAMBIO: {{tipo_cambio_actual.factor | currency : "Q" : 2}}
+                            <div class="btn-group">
+                                <label ng-repeat="fpago in formas_pago" class="btn btn-primary" ng-class="{active: forma_pago.tipo_pago == fpago.id_forma_pago}" ng-model="forma_pago.tipo_pago" btn-radio="{{fpago.id_forma_pago}}" uncheckable>
+                                    {{fpago.nombre}}
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-lg-2 col-md-4 col-sm-12 col-xs-12">
+                        </div>
+                    </div>
+                    <div ng-show="forma_pago.tipo_pago == 1">
+                        <form name="formEfectivo" data-toggle="validator" role="form" class="row" >
+                            <div class="col-lg-2 col-md-3 col-sm-12 col-xs-12">
+                            </div>
+                            <div class="col-lg-8 col-md-6 col-sm-12 col-xs-12">
+                                <div class='form-group row required'>
+                                    <label for='id_moneda' class="col-sm-4 col-form-label">Moneda</label>
+                                    <div class="col-sm-8">
+                                        <select name="id_moneda" id="id_moneda" ng-model="forma_pago.id_moneda" type="select" class='form-control' ng-change="cambioMoneda()">
+                                            <option ng-repeat="moneda in monedas" value="{{moneda.id_moneda}}" >{{moneda.nombre}}</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class='form-group row required'>
+                                    <label for='monto' class="col-sm-4 col-form-label">Monto a Pagar</label>
+                                    <div class="col-sm-8">
+                                        <input ng-model="forma_pago.monto" type="text" class='form-control' ng-change="cambioMonto()" name='monto' required oninvalid="this.setCustomValidity('El monto es requerido')" oninput="setCustomValidity('')"/>
+                                    </div>
+                                </div>
+                                <div class='form-group row required'>
+                                    <label for='cantidad' class="col-sm-4 col-form-label">Cantidad</label>
+                                    <div class="col-sm-8">
+                                        <input ng-model="forma_pago.cantidad_efectivo" ng-readonly="true" type="text" class='form-control' name='cantidad' value="{{forma_pago.cantidad | number:2}}" required oninvalid="this.setCustomValidity('La cantidad es requerida')" oninput="setCustomValidity('')"/>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button class="btn btn-primary" type="submit" ng-click="facturar()" ng-disabled="formEfectivo.$invalid">Facturar</button>
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                                </div>
+                            </div>
+                            <div class="col-lg-2 col-md-3 col-sm-12 col-xs-12">
+                            </div>
+                        </form>
+                    </div>
+                    <div ng-show="forma_pago.tipo_pago == 2">
+                        <form name="formCheque" data-toggle="validator" role="form" class="row" >
+                            <div class="col-lg-2 col-md-3 col-sm-12 col-xs-12">
+                            </div>
+                            <div class="col-lg-8 col-md-6 col-sm-12 col-xs-12">
+                                <div class='form-group row required'>
+                                    <label for='numero_cheque' class="col-sm-4 col-form-label">Numero Cheque</label>
+                                    <div class="col-sm-8">
+                                        <input ng-model="forma_pago.numero_cheque" type="text" class='form-control' name='numero_cheque' required oninvalid="this.setCustomValidity('Número de cheque es requerido')" oninput="setCustomValidity('')"/>
+                                        <div class="help-block with-errors"></div>
+                                    </div>
+                                </div>
+                                <div class='form-group row required'>
+                                    <label for='id_banco' class="col-sm-4 col-form-label">Banco</label>
+                                    <div class="col-sm-8">
+                                        <select name="id_banco" id="id_banco" ng-model="forma_pago.id_banco" type="select" required class='form-control' ng-change=""  required oninvalid="this.setCustomValidity('Banco es requerido')" oninput="setCustomValidity('')">
+                                            <option ng-repeat="banco in bancos" value="{{banco.id_banco}}" >{{banco.nombre}}</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class='form-group row required'>
+                                    <label for='cantidad' class="col-sm-4 col-form-label">Cantidad</label>
+                                    <div class="col-sm-8">
+                                        <input ng-model="forma_pago.cantidad_cheque" type="text" required class='form-control' name='cantidad' value="{{forma_pago.cantidad | number:2}}" required oninvalid="this.setCustomValidity('La cantidad es requerida')" oninput="setCustomValidity('')"/>
+                                    </div>
+                                </div>
+                                <div class='form-group row required'>
+                                    <label for='numero_autorizacion' class="col-sm-4 col-form-label">Número Autorización</label>
+                                    <div class="col-sm-8">
+                                        <input ng-model="forma_pago.numero_autorizacion" type="text" required class='form-control' name='numero_autorizacion' required oninvalid="this.setCustomValidity('El número de autorizacion es requerido')" oninput="setCustomValidity('')"/>
+                                    </div>
+                                </div>
+                                <div class='form-group row required'>
+                                    <label for='autorizado_por' class="col-sm-4 col-form-label">Autorizado por</label>
+                                    <div class="col-sm-8">
+                                        <input ng-model="forma_pago.autorizado_por" type="text" required class='form-control' name='autorizado_por' required oninvalid="this.setCustomValidity('Autorizado por es requerido')" oninput="setCustomValidity('')"/>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button class="btn btn-primary" type="submit" ng-click="facturar()" ng-disabled="formCheque.$invalid">Facturar</button>
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                                </div>
+                            </div>
+                            <div class="col-lg-2 col-md-3 col-sm-12 col-xs-12">
+                            </div>
+                        </form>
+                    </div>
+                    <div ng-show="forma_pago.tipo_pago == 3">
+                        <form name="formTarjeta" data-toggle="validator" role="form" class="row" >
+                            <div class="col-lg-2 col-md-3 col-sm-12 col-xs-12">
+                            </div>
+                            <div class="col-lg-8 col-md-6 col-sm-12 col-xs-12">
+                                <div class='form-group row required'>
+                                    <label for='cantidad' class="col-sm-4 col-form-label">Cantidad</label>
+                                    <div class="col-sm-8">
+                                        <input ng-model="forma_pago.cantidad_voucher" type="text" class='form-control' name='cantidad' value="{{forma_pago.cantidad | number:2}}" required oninvalid="this.setCustomValidity('La cantidad es requerida')" oninput="setCustomValidity('')"/>
+                                    </div>
+                                </div>
+                                <div class='form-group row required'>
+                                    <label for='numero_voucher' class="col-sm-4 col-form-label">Número de Voucher</label>
+                                    <div class="col-sm-8">
+                                        <input ng-model="forma_pago.numero_voucher" type="text" class='form-control' name='numero_voucher' required oninvalid="this.setCustomValidity('El numero de voucher es requerido')" oninput="setCustomValidity('')"/>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button class="btn btn-primary" type="submit" ng-click="facturar()" ng-disabled="formTarjeta.$invalid">Facturar</button>
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                                </div>
+                            </div>
+                            <div class="col-lg-2 col-md-3 col-sm-12 col-xs-12">
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal" tabindex="-1" role="dialog" id="devolucionModal" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Devoluciones</h5>
+                </div>
+                <div class="modal-body">
+                    <div class='table-responsive' ng-show="selectDevolucion">
+                        <table class='table table-condensed table-striped'>
+                            <tr>
+                                <th>ID</th>
+                                <th>Cliente</th>
+                                <th>Fecha Venta</th>
+                                <th>Total Venta</th>
+                            </tr>
+                            <tr style="cursor: pointer" ng-show="ventasPasadas.length" ng-click='selectVentaPasada(row)' ng-repeat='row in ventasPasadas track by $index'>
+                                <td ng-bind="row['id_venta']"></td>
+                                <td ng-bind="row['nombre_cliente']"></td>
+                                <td ng-bind="row['fecha_creacion']"></td>
+                                <td>{{row.total | currency: 'Q' : 2}}</td>
+                            </tr>
+                            <tr ng-if="!ventasPasadas.length">
+                                <td colspan="4"><i>No hay ventas para esta bodega y cliente del último mes</i></td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div ng-show="sortDevolucion">
+                        <p>
+                            <button class="btn btn-primary btn-sm" ng-click="selectDevolucion=true;sortDevolucion=false">Regresar a seleccion</button>
+                        </p>
+                        <div class="card">
+                            <div class="card-body">
+                                <form>
+                                    <div class="form-group">
+                                        <div class="input-group">
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text"><span class="cui-magnifying-glass"></span></span>
+                                            </div>
+                                            <input id="itemDevolucion" class="form-control" ng-blur="checkItemDevolucion()" ng-model="searchDevolucion" type="text" placeholder="Ingrese o pistolee el código del producto" />
+                                        </div>
+                                    </div>
+                                </form>
+                                <div class="table-responsive" ng-show="devolucion.items.length">
+                                    <table class="table table-bordered table-striped table-condensed">
+                                        <tr ng-repeat="i in devolucion.items">
+                                            <td>{{i.codigo_producto}}</td>
+                                            <td>{{i.cantidad}}</td>
+                                            <td>{{i.precio_venta | currency : 'Q': 2}}</td>
+                                            <td>{{i.subtotal | currency : 'Q' : 2}}</td>
+                                            <td>
+                                                <button class="btn btn-danger btn-sm" ng-click="quitarItemDev(i)">
+                                                    <i class="cui-trash"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <p><b>{{devolucion.credito | currency : 'Q' : 2}}/{{devolucion.maximo | currency : 'Q' : 2}}</b><p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-dismiss="modal" ng-disabled="!devolucion.items.length"><span class="cui-list" aria-hidden="true"></span>&nbsp;Agregar crédito a venta</button>
+                    <button type="button" class="btn btn-danger" data-dismiss="modal">Cancelar</button>
+                    <!--<button type="button" class="btn btn-success" data-dismiss="modal" ng-click="nueva_venta()"><span class="cui-file" aria-hidden="true"></span> Nueva</button>-->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

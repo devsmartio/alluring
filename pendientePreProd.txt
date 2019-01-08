@@ -1,0 +1,11 @@
+**PRE PROD
+- *Correo (Mandenme el correo) ventas@alluring.com.gt. Enviar pedidos
+- *Descuentos para cliente y aplicar cambios en pantalla de ventas*
+- *Congelar pedido*
+- *Revisión de reingreso de consignacion*
+- Cambiar logo mugre del catálogo
+
+**PRODUCCION
+- Maqueta de lista de empaque
+- Menú
+- Levantar sitios lugares finales
