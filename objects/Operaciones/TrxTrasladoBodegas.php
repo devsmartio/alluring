@@ -81,23 +81,29 @@ class TrxTrasladoBodegas extends FastTransaction {
                 }
 
                 $scope.applyDiscount = () => {
-                    if($scope.clienteSelected && $scope.clienteSelected.cliente.porcentaje_descuento){
-                        let des = $scope.clienteSelected.cliente.porcentaje_descuento;
-			
-                        $scope.rows.forEach(r => {
-                            r.precio_descuento = r.precio_venta * ((100 - des)/100);
-                        })        
+                    $scope.rows.forEach(r => {
+                        if($scope.clienteSelected && $scope.clienteSelected.cliente.porcentaje_descuento){
+                            let des = $scope.clienteSelected.cliente.porcentaje_descuento;
+                            r.precio_descuento = r.precio_venta * ((100 - des)/100);            
+                        } else {
+                            r.precio_descuento = 0;
+                        }
+                    })
+                    if(!$scope.$$phase){
+                        $scope.$apply();
                     }
+                    
                 }
 
-		$scope.$watch("rows", function(){
-			$scope.total = 0;
-			$scope.piezas = 0;
-			$scope.rows.forEach(r => {
-				$scope.total+= r.cantidad * (r.precio_descuento || p.precio_venta);
-				$scope.piezas+= r.cantidad;	
-			})
-		})
+                $scope.$watch("rows", function(){
+                    console.log("ROWS CAMBIO");
+                    $scope.total = 0;
+                    $scope.piezas = 0;
+                    $scope.rows.forEach(r => {
+                        $scope.total+= r.cantidad * (r.precio_descuento || r.precio_venta);
+                        $scope.piezas+= r.cantidad;	
+                    })
+                }, true)
 
                 $scope.finalizar = function () {
                     var found = $scope.rows.filter(r => r.cantidad != 0);
@@ -178,7 +184,18 @@ class TrxTrasladoBodegas extends FastTransaction {
                                 $(this).select();
                             }
                         } else {
-                            swal("Oh oh", `Item ${val} no encontrado`, "warning");
+                            let item = $scope.filteredProd.find(i => i.codigo.toLowerCase() == val.toLowerCase());
+                            if(item){
+                                if(item.cantidad + 1 > item.total_existencias){
+                                    swal("Oh oh", `Ya tiene la existencia máxima de ${val} `, "warning");
+                                } else {
+                                    item.cantidad = Math.min(item.total_existencias, item.cantidad + 1);
+                                    $scope.$apply();
+                                    $(this).select();
+                                }
+                            } else {
+                                swal("Oh oh", `Item ${val} no encontrado`, "warning");
+                            }
                         }
                     } 
                 });
@@ -252,17 +269,31 @@ class TrxTrasladoBodegas extends FastTransaction {
 
     public function getClientes(){
         $resultSet = array();
-        $query = "
-            SELECT
-                c.id_cliente,
-                c.nombres,
-                c.apellidos,
-                t.porcentaje_descuento 
-            FROM clientes c
-            LEFT JOIN clientes_tipos_precio t ON c.id_tipo_precio=t.id_tipo_precio
-            WHERE id_usuario = '%s'
-        ";
-        $clientes = $this->db->queryToArray(sprintf($query, $this->user['ID']));
+        if($this->user['FK_PROFILE'] != 1){
+            $query = "
+                SELECT
+                    c.id_cliente,
+                    c.nombres,
+                    c.apellidos,
+                    t.porcentaje_descuento 
+                FROM clientes c
+                LEFT JOIN clientes_tipos_precio t ON c.id_tipo_precio=t.id_tipo_precio
+                WHERE id_usuario = '%s'
+            ";
+            $clientes = $this->db->queryToArray(sprintf($query, $this->user['ID']));
+        } else {
+            $query = "
+                SELECT
+                    c.id_cliente,
+                    c.nombres,
+                    c.apellidos,
+                    t.porcentaje_descuento 
+                FROM clientes c
+                LEFT JOIN clientes_tipos_precio t ON c.id_tipo_precio=t.id_tipo_precio
+            ";
+            $clientes = $this->db->queryToArray($query);
+        }
+       
         foreach($clientes as $c){
             $query = "
                 SELECT s.nombre, cb.id_sucursal
