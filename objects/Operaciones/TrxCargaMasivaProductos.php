@@ -239,7 +239,7 @@ class TrxCargaMasivaProductos extends FastTransaction {
                     TRUE,
                     FALSE);
                 //Si codigo_origen esta vacio y codigo tambien, nos saltamos esa fila
-                if((!isset($rowData[0][6]) || isEmpty($rowData[0][6])) && (!isset($rowData[0][5]) || isEmpty($rowData[0][5]))){
+                if((!isset($rowData[0][6]) || isEmpty($rowData[0][6])) /*&& (!isset($rowData[0][5]) || isEmpty($rowData[0][5]))*/){
                     continue;
                 }
                 $col = 0;
@@ -313,7 +313,7 @@ class TrxCargaMasivaProductos extends FastTransaction {
                     'costo' => sqlValue($prod['costo'], 'float'),
                     'id_tipo' => sqlValue($prod['id_tipo'], 'int'),
                     'precio_venta' => sqlValue($prod['precio_venta'], 'float'),
-                    'imagen' => sqlValue($prod['codigo'] . '.jpg', 'text'),
+                    'imagen' => sqlValue(strtolower($prod['codigo_origen']) . '.jpg', 'text'),
                     'codigo' => sqlValue('Y' . $ultimoCodigo, 'text'),
                     'codigo_origen' => sqlValue($prod['codigo_origen'], 'text'),
                     'fecha_creacion' => sqlValue($fecha->format('Y-m-d H:i:s'), 'date'),

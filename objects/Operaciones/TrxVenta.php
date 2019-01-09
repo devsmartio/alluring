@@ -314,6 +314,13 @@ class TrxVenta extends FastTransaction {
                 }
             })
 
+            $scope.$watch("productos_facturar", function(e){
+                $scope.piezas = 0;
+                angular.forEach($scope.productos_facturar.filter(i => i.mostrar == 1), function(i){
+                    $scope.piezas += i.cantidad;
+                })
+            }, true)
+
             $scope.checkItemDevolucion = _ => {
                 if($scope.searchDevolucion){
                     let detalle = $scope.ventaPasadaSelected.detalles.find(i => i.codigo_producto.toLowerCase() == $scope.searchDevolucion.toLowerCase());
