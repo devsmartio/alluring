@@ -261,13 +261,58 @@ class TrxVenta extends FastTransaction {
                     $scope.devolucion.id_venta = venta.id_venta;
                     $scope.devolucion.items = [];
                     $scope.devolucion.total = venta.total;
-                    $scope.devolucion.maximo = venta.total * 0.2;
+                    $scope.devolucion.maximo = venta.total * 0.25;
                     $scope.devolucion.credito = $scope.devolucion.items.sum("subtotal");
                 } 
                 $scope.selectDevolucion = false;
                 $scope.sortDevolucion = true;
+                $scope.searchDevolucion = "";
                 $("#itemDevolucion").select();
             }
+
+            $("#itemDevolucion").keyup(function(e){
+                let val = $(this).val();
+                if(e.which == 13 && val){
+                    let detalle = $scope.ventaPasadaSelected.detalles.find(i => i.codigo_producto.toLowerCase() == val.toLowerCase());
+                    if(detalle){
+                        let aDevolver = detalle.precio_venta;
+                        console.log("A DEVOLVER:" , aDevolver);
+                        let descuentoAplicado = 1 - (parseFloat(detalle.precio_venta) / parseFloat(detalle.precio_original));
+                        if((parseFloat($scope.devolucion.credito) + parseFloat(aDevolver)) > $scope.devolucion.maximo){
+                            swal('Cantidad máxima', `El valor del producto (${$filter('currency')(aDevolver, 'Q', 2)}) sobrepasa el máximo a devolver`, 'warning');    
+                        } else if(descuentoAplicado > 0.5)  {
+                            swal('Producto ofertado', `El producto se ha vendido con el ${descuentoAplicado * 100}% de descuento por lo que no se puede devolver`, 'warning');    
+                        } else {
+                            var detDevolucion = $scope.devolucion.items.find(i => i.codigo_producto.toLowerCase() == detalle.codigo_producto.toLowerCase());
+                            if(detDevolucion) {
+                                detDevolucion.cantidad += 1;
+                                detDevolucion.subtotal = detDevolucion.cantidad * detDevolucion.precio_venta; 
+                            } else {
+                                let itemDevolucion = {
+                                    codigo_producto: detalle.codigo_producto,
+                                    id_producto: detalle.id_producto,
+                                    id_sucursal: detalle.id_sucursal,
+                                    cantidad: 1,
+                                    precio_venta: detalle.precio_venta,
+                                    subtotal: parseFloat(detalle.precio_venta)
+                                }
+                                $scope.devolucion.items.push(itemDevolucion);
+                            } 
+                            $scope.devolucion.credito = 0;
+                            $scope.devolucion.items.forEach(i => {
+                                $scope.devolucion.credito += i.precio_venta * i.cantidad;
+                            })
+                            if(!$scope.$$phase){
+                                $scope.$apply();
+                            }
+                            $("#itemDevolucion").select();
+                        }
+                        
+                    } else {
+                        $scope.showAlert('alert-warning', 'No se encontró ese item en la venta', 2500);
+                    }
+                }
+            })
 
             $scope.checkItemDevolucion = _ => {
                 if($scope.searchDevolucion){
@@ -1193,7 +1238,7 @@ class TrxVenta extends FastTransaction {
 
     public function getVentasPasadas(){
         $date = new DateTime();
-        $monthAgo = $date->sub(new DateInterval('P1M'));
+        $monthAgo = $date->sub(new DateInterval('P45D'));
         $bod = getParam("bod");
         $cl = getParam("cl");
         $sql = "
@@ -1208,7 +1253,7 @@ class TrxVenta extends FastTransaction {
         $ventas = $this->db->queryToArray(sprintf($sql, $bod, $monthAgo->format(SQL_DT_FORMAT), $cl));
         for($i = 0; count($ventas) > $i; $i++){
             $detalleSql = "
-                SELECT vd.id_producto, vd.id_sucursal, vd.cantidad, vd.precio_venta, vd.id_producto, vd.id_sucursal, p.nombre nombre_producto, p.codigo codigo_producto, s.nombre nombre_bodega 
+                SELECT vd.id_producto, vd.id_sucursal, vd.cantidad, vd.precio_venta, vd.id_producto, vd.id_sucursal, p.nombre nombre_producto, p.codigo codigo_producto, s.nombre nombre_bodega, p.precio_venta precio_original 
                 FROM trx_venta_detalle vd
                 JOIN producto p on p.id_producto=vd.id_producto
                 JOIN sucursales s on s.id_sucursal=vd.id_sucursal
@@ -1217,7 +1262,7 @@ class TrxVenta extends FastTransaction {
             $detalles = sanitize_array_by_keys($this->db->queryToArray(sprintf($detalleSql, $ventas[$i]['id_venta'])), ['nombre_producto', 'codigo_producto', 'nombre_bodega']);
             $ventas[$i]['detalles'] = $detalles;
         }
-        echo json_encode($ventas);
+        echo json_encode(sanitize_array_by_keys($ventas, ['nombre_cliente']));
     }
 
     public function getProductos(){
