@@ -1336,7 +1336,7 @@ class TrxVenta extends FastTransaction {
                 }
         }
 
-        echo json_encode(array('data' => $productos));
+        echo json_encode(array('data' => sanitize_array_by_keys($productos, ['nombre', 'descripcion', 'nombre_categoria', 'nombre_sucursal'])));
     }
 
     public function guardarCliente()
