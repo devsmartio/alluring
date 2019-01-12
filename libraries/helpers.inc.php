@@ -147,7 +147,7 @@ function sqlValue($theValue, $theType, $forLike = false, $theDefinedValue = "", 
     switch ($theType) {
         case "text":
             $theValue = $forLike ? '%' . $theValue . '%' : $theValue;
-            $theValue = ($theValue != "") ? "'" . utf8_decode($theValue) . "'" : "NULL";
+            $theValue = ($theValue != "") ? "'" . str_replace("'", "''", utf8_decode($theValue)) . "'" : "NULL";
             break;
         case "int":
             $theValue = ($theValue != "") ? intval($theValue) : "NULL";
