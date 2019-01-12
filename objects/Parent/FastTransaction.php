@@ -36,7 +36,7 @@ abstract class FastTransaction extends FastModWrapper{
     }
 	
     public function saveTransaction(){
-        $data = inputStreamToArray();
+        $data = inputStreamToArray(false);
         $data = $data['data'];
         if($this->dataIsValid($data)){
             try {

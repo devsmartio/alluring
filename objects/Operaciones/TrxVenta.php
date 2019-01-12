@@ -902,6 +902,8 @@ class TrxVenta extends FastTransaction {
 
                             $scope.cliente = $scope.lastClienteSelected.nombres + " " + $scope.lastClienteSelected.apellidos;
                             $scope.lastClienteSelected.id_cliente = response.id_cliente;
+                            $scope.lastClienteSelected.id_tipo_precio = $scope.lastClienteSelected.tipo_cliente;
+                            console.log("TIPO PRECIO", $scope.lastClienteSelected.tipo_cliente + ":" + $scope.lastClienteSelected.id_tipo_precio);
 
                             $http.get($scope.ajaxUrl + "&act=getTipoPrecio&id=" + $scope.lastClienteSelected.id_tipo_precio).success(r => {
                                 $scope.lastClienteSelected.tipo_precio = r;
