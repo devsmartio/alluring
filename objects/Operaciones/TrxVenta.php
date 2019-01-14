@@ -1231,7 +1231,7 @@ class TrxVenta extends FastTransaction {
 
         $productos = $this->db->queryToArray($queryProductos);
 
-        echo json_encode(array('data' => $productos));
+        echo json_encode(array('data' => sanitize_array_by_keys($productos, ['nombre', 'descripcion', 'nombre_sucursal'])));
     }
 
     public function getBodegasAut(){
