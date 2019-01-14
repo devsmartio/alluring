@@ -317,7 +317,7 @@ class TrxVenta extends FastTransaction {
             $scope.$watch("productos_facturar", function(e){
                 $scope.piezas = 0;
                 angular.forEach($scope.productos_facturar.filter(i => i.mostrar == 1), function(i){
-                    $scope.piezas += i.cantidad;
+                    $scope.piezas += parseInt(i.cantidad);
                 })
             }, true)
 
