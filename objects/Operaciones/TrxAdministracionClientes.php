@@ -434,7 +434,7 @@ class TrxAdministracionClientes extends FastTransaction {
         } catch(Exception $e){
             error_log($e->getTraceAsString());
         }
-        echo json_encode(array('data' => sanitize_array_by_keys($resultSet, ['nombres', 'apellidos', 'direccion', 'factura_nombre', 'factura_direccion'])));
+        echo json_encode(array('data' => sanitize_array_by_keys($resultSet, ['nombres', 'apellidos', 'direccion', 'identificacion', 'correo', 'factura_nombre', 'factura_direccion', 'observaciones','catalogo_usuario', 'usuario_creacion'])));
     }
 
     public function getGridCols(){
