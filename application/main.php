@@ -166,7 +166,8 @@ $last_name = $user['LAST_NAME'];
     </div>
 </footer>
 <script src="node_modules/jquery/dist/jquery.min.js"></script>
-<script type="text/javascript" src="bower_components/moment/min/moment.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.23.0/moment.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.23.0/locale/es.js"></script>
 <script src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
 <script type="text/javascript" src="bower_components/eonasdan-bootstrap-datetimepicker/build/js/bootstrap-datetimepicker.min.js"></script>
 <script src="node_modules/pace-progress/pace.min.js"></script>
@@ -188,6 +189,8 @@ $last_name = $user['LAST_NAME'];
 <script src="media/js/angular/angular-file-upload.min.js" type="text/javascript"></script>
 <script src='media/js/MainWrapper.js' type='text/javascript'></script>
 <script>
+		//SETTING MOMENT
+		moment.locale('es');
         var app = angular.module('app', ['ngSanitize', 'ngRoute', 'angularFileUpload', 'ngGrid', 'ui.bootstrap', 'xeditable']);
         app.directive('compile', ['$compile', function ($compile) {
             return function (scope, element, attrs) {

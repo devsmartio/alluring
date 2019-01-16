@@ -1,5 +1,5 @@
 <?php
-$queryVenta = " SELECT 	v.id_empleado_envia usuario_venta, v.id_movimiento_sucursales id_venta, v.fecha_creacion, CONCAT(c.nombres,' ',c.apellidos) nombre_cliente, IFNULL(c.factura_nit, 'C/F') factura_nit, IFNULL(c.factura_nombre, 'C/F') factura_nombre, IFNULL(c.factura_direccion, ' ') factura_direccion, COUNT(vd.id_movimiento_sucursales_detalle) cant_productos, ifnull(ctp.porcentaje_descuento, 0) porcentaje_descuento
+$queryVenta = " SELECT 	v.id_empleado_envia usuario_venta, v.id_movimiento_sucursales id_venta, v.fecha_creacion, CONCAT(c.nombres,' ',c.apellidos) nombre_cliente, IFNULL(c.factura_nit, 'C/F') factura_nit, IFNULL(c.factura_nombre, 'C/F') factura_nombre, IFNULL(c.factura_direccion, ' ') factura_direccion, sum(vd.unidades) cant_productos, ifnull(ctp.porcentaje_descuento, 0) porcentaje_descuento
                 FROM 	trx_movimiento_sucursales v
                 LEFT JOIN 	clientes c ON c.id_cliente=v.id_cliente_recibe
                 LEFT JOIN   clientes_tipos_precio ctp on ctp.id_tipo_precio=c.id_tipo_precio
@@ -122,7 +122,7 @@ $subtotal = 0;
                 <td valign="top" style="text-align: right"><?php echo number_format($p['cantidad'],0) ?></td>
                 <td valign="top" style="text-align: right"> <?php echo number_format($venta['porcentaje_descuento'] > 0 ? $p['precio_unitario'] * (1-(floatval($venta['porcentaje_descuento'])/100)): $p['precio_unitario'], 2); ?> </td>
                 <th valign="top" style="text-align: right"> <?php echo number_format($p['precio_sugerido'], 2); ?> </th>
-                <td valign="top" style="text-align: right"> <?php echo number_format(($p['precio_unitario'] * $p['cantidad']), 2); ?> </td>
+                <td valign="top" style="text-align: right"> <?php echo number_format(($venta['porcentaje_descuento'] > 0 ? $p['precio_unitario'] * (1-(floatval($venta['porcentaje_descuento'])/100)): $p['precio_unitario']) * $p['cantidad'], 2); ?> </td>
             </tr>
                 <?php
                 $total += (($venta['porcentaje_descuento'] > 0 ? $p['precio_unitario'] * (1-($venta['porcentaje_descuento']/100)): $p['precio_unitario']) * $p['cantidad']);
