@@ -98,7 +98,7 @@ class TrxVenta extends FastTransaction {
                 return this;
             };
             //CONTROLLER
-        app.controller('ModuleCtrl', ['$scope', '$http', '$rootScope' , '$timeout', '$filter', function ($scope, $http, $rootScope, $timeout, $filter) {
+        app.controller('ModuleCtrl', ['$scope', '$http', '$rootScope' , '$timeout', '$filter', '$q', function ($scope, $http, $rootScope, $timeout, $filter, $q) {
             Array.prototype.sum = function (prop) {
                 var total = 0
                 for ( var i = 0, _len = this.length; i < _len; i++ ) {
@@ -568,6 +568,49 @@ class TrxVenta extends FastTransaction {
                 }
             };
 
+            $scope.doSearch = function(val){
+                var deffered = $q.defer();
+                var search = val.toLowerCase();
+                if (val.length >= 2 && $scope.bodegaSel) {
+                    $scope.productos = [];
+                    $('#loading').show();
+                    $http.get($scope.ajaxUrl + '&act=getProductos&key=' + search + '&bod=' + $scope.bodegaSel.id_sucursal).success(function (response) {
+                        if (response.data.length == 0) {
+                            $scope.alerts = [];
+                            $scope.alerts.push({
+                                type: 'alert-warning',
+                                msg: 'El producto con el código ' + val + ' no se encuentra o no hay existencias'
+                            });
+                            deffered.reject();
+                        } else {
+                            if(response.data.length <= 50){
+                                let productos = response.data;
+                                for(let i = 0;productos.length > i; i++){
+                                    let $r = $scope.productos_facturar.filter(f => f.id_producto == productos[i].id_producto && f.id_sucursal == productos[i].id_sucursal);
+                                    $r = $r.length ? $r.pop() : {cantidad: 0};
+                                    productos[i].total_existencias -= $r.cantidad; 
+                                }
+                                $scope.productos = productos;
+                                $scope.encontrados = productos.length;
+                                if(!$scope.$$phase){
+                                    $scope.$apply();
+                                }
+                                deffered.resolve();
+                            } else {
+                                $scope.encontrados = response.data.length;
+                                deffered.reject();
+                            }
+                            //$scope.productos.length == 1 && $scope.agregarUno($scope.productos[0], true);
+                        }
+                        $('#loading').hide();
+                    });
+                } else {
+                    deffered.reject();
+                    $scope.encontrados = 0;
+                }
+                return deffered.promise;
+            }
+            /*
             $scope.$watch('search_codigo_origen', function(val){
                 var search = val.toLowerCase();
                 if (val.length >= 2 && $scope.bodegaSel) {
@@ -605,14 +648,19 @@ class TrxVenta extends FastTransaction {
                     $scope.encontrados = 0;
                 }
             });
+            */
 
             $("#producto").keyup(function(ev) {
                 // 13 is ENTER
-                if (ev.which === 13 && $scope.productos.length == 1) {
-                    $scope.agregarUno($scope.productos[0], true);
-                    if(!$scope.$$phase){
-                        $scope.$apply();
-                    }
+                if (ev.which === 13) {
+                    $scope.doSearch($scope.search_codigo_origen).then(() => {
+                        if($scope.productos.length == 1){
+                            $scope.agregarUno($scope.productos[0], true);
+                            if(!$scope.$$phase){
+                                $scope.$apply();
+                            }
+                        }
+                    })
                 }
             });
 
