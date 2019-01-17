@@ -57,6 +57,9 @@ $subtotal = 0;
             th {
                 font-weight: bold;
             }
+            #productos > tbody > tr:last-child > td, #productos > tbody > tr:last-child > th {
+                border-bottom: 1px solid gray;
+            } 
         </style>
     </head>
     <body>
@@ -104,7 +107,7 @@ $subtotal = 0;
                 </td>
             </tr>
         </table>
-        <table cellspacing="0" style="width: 100%; margin-top: 20px; background-color: #fff; font-size: 13px; border-top: 1px gray solid" border="0">
+        <table cellspacing="0" id="productos" style="width: 100%; margin-top: 20px; background-color: #fff; font-size: 13px; border-top: 1px gray solid" border="0">
             <tr style="background-color: rgb(207,207,231)">
                 <th style='width: 10%; text-align: left'>Producto</th>
                 <th style='width: 38%; text-align: left'>Descripción</th>
