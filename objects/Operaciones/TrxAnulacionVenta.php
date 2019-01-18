@@ -142,17 +142,16 @@ class TrxAnulacionVenta extends FastTransaction {
             }
         }
         if($this->user['FK_PROFILE'] == 1){
-            $query = sprintf("SELECT v.id_venta, v.fecha_creacion, v.total, sum(vt.cantidad) piezas, c.nombres, c.apellidos, v.usuario_venta
+            $query = sprintf("SELECT v.id_venta, v.fecha_creacion, v.total, sum(vt.cantidad) piezas, c.nombres, c.apellidos, v.usuario_venta, v.es_anulado, v.estado
                 FROM trx_venta v
                 JOIN clientes c on c.id_cliente=v.id_cliente
                 JOIN trx_venta_detalle vt on vt.id_venta=v.id_venta
                 WHERE %s
-                AND es_anulado = 0
                 GROUP BY v.id_venta
                 ORDER BY v.fecha_creacion desc
             ", $where);
         } else {
-            $query = sprintf("SELECT v.id_venta, v.fecha_creacion, v.total, sum(vt.cantidad) piezas, c.nombres, c.apellidos, v.usuario_venta
+            $query = sprintf("SELECT v.id_venta, v.fecha_creacion, v.total, sum(vt.cantidad) piezas, c.nombres, c.apellidos, v.usuario_venta, v.es_anulado, v.estado
                 FROM trx_venta v
                 JOIN clientes c on c.id_cliente=v.id_cliente
                 JOIN trx_venta_detalle vt on vt.id_venta=v.id_venta 

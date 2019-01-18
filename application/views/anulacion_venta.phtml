@@ -25,10 +25,14 @@
             <div class="table-responsive">
                 <table class="table table-striped table-bordered table-condensed">
                     <tr>
+                        <td colspan="9"><b>V</b> Venta |<b>P</b> Pedido |<b>A</b> Pedido Anulado |<b>AV</b> Venta anulada |<b>D</b> Venta con devolución |</td>
+                    </tr>
+                    <tr>
                         <th>Id</th>
                         <th>Nombres</th>
                         <th>Apellidos</th>
                         <th>Vendedor</th>
+                        <th>Estado</th>
                         <th>Fecha</th>
                         <th>Total</th>
                         <th>Piezas</th>
@@ -39,11 +43,12 @@
                         <td ng-bind="v.nombres"></td>
                         <td ng-bind="v.apellidos"></td>
                         <td ng-bind="v.usuario_venta"></td>
+                        <td ng-bind="v.estado"></td>
                         <td ng-bind="v.fecha_creacion"></td>
                         <th ng-bind="v.total | currency : 'Q' : 2"></th>
                         <td ng-bind="v.piezas | number : 0"></td>
                         <td>
-                            <button class="btn btn-danger" ng-click="anularVenta(v)">
+                            <button class="btn btn-danger" ng-click="anularVenta(v)" ng-show="v.estado!='D'&&v.es_anulado!=1">
                                 <i class="cui-trash"></i>&nbsp;Anulación
                             </button>
                             <button class="btn btn-warning" ng-click="generarPdf(v.id_venta)">
