@@ -1,0 +1,58 @@
+<div ng-controller="ModuleCtrl" style="min-height: 400px">
+    <div class="row">    
+        <div class="col-lg-12 col-md-12 col-sm-8 col-xs-12">
+        <div class="well">
+            <div class="row">
+                <div class="col-12 col-md-3 form-group">
+                    Nombres: <input id="nombres" class="form-control searchEnter" type="text" ng-model="search.nombres" />
+                </div>
+                <div class="col-12 col-md-3 form-group">
+                    Apellidos: <input class="form-control searchEnter" type="text" ng-model="search.apellidos" />
+                </div>
+                <div class="col-12 col-md-2 form-group">
+                    Fecha de: <input class="form-control searchEnter" id="fechaDe" type="text" ng-change="" ng-model="search.fechaDe" />
+                </div>
+                <div class="col-12 col-md-2 form-group">
+                    Fecha a: <input class="form-control searchEnter" id="fechaA" type="text" ng-model="search.fechaA" />
+                </div>
+                <div class="col-12 col-md-2 form-group pt-3">
+                    <button class="btn btn-success" ng-click="searchVentas()">
+                        <i class="cui-refresh"></i>&nbsp;Refrescar
+                    </button>
+                </div>
+            </div>
+        </div>    
+            <div class="table-responsive">
+                <table class="table table-striped table-bordered table-condensed">
+                    <tr>
+                        <th>Id</th>
+                        <th>Nombres</th>
+                        <th>Apellidos</th>
+                        <th>Vendedor</th>
+                        <th>Fecha</th>
+                        <th>Total</th>
+                        <th>Piezas</th>
+                        <th>Opciones</th>
+                    </tr>
+                    <tr ng-repeat="v in ventas">
+                        <td ng-bind="v.id_venta"></td>
+                        <td ng-bind="v.nombres"></td>
+                        <td ng-bind="v.apellidos"></td>
+                        <td ng-bind="v.usuario_venta"></td>
+                        <td ng-bind="v.fecha_creacion"></td>
+                        <th ng-bind="v.total | currency : 'Q' : 2"></th>
+                        <td ng-bind="v.piezas | number : 0"></td>
+                        <td>
+                            <button class="btn btn-danger" ng-click="anularVenta(v)">
+                                <i class="cui-trash"></i>&nbsp;Anulación
+                            </button>
+                            <button class="btn btn-warning" ng-click="generarPdf(v.id_venta)">
+                                <i class="cui-file"></i>&nbsp;PDF
+                            </button>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div> 
+</div>

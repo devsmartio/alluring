@@ -146,6 +146,28 @@ class TrxReingresoConsignacion extends FastTransaction {
                 }
             }
 
+            $scope.anularConsignacion = con => {
+                swal({
+                    title: "Anular Consignación",
+                    text: `¿Esta seguro de anular la consignacion (${con.id_movimiento_sucursales}) de ${$scope.lastClienteSelected.nombres} ${$scope.lastClienteSelected.apellidos}? Esta acción no es reversible.`,
+                    type: "warning",
+                    confirmButtonText: "Confirmar",
+                    cancelButtonText: "Cancelar",
+                    showCancelButton: true
+                }).then(res => {
+                    if(res.value === true){
+                        $http.get($scope.ajaxUrl + '&act=anularConsignacion&id=' + con.id_movimiento_sucursales).success(function (response) {
+                            if(response.result == 1){
+                                swal("Anular", "Se ha reingresado el inventario", "success");
+                                $scope.startAgain();
+                            } else {
+                                swal("Oh oh", "Ocurrió un error al anular la consignacion. Intente más tarde", "error");
+                            }
+                        });
+                    }
+                })
+            }
+
             //GLOBALS THAT DONT RESET ON START AGAIN
             $scope.invalidSale = false;
             $scope.invalidSaleMsg = "";
@@ -277,6 +299,10 @@ class TrxReingresoConsignacion extends FastTransaction {
 
             $scope.getFechaMaximaEntrega = c => {
                 return new Date(new Date().setDate(new Date(c.fecha_recepcion).getDate() + parseInt(c.dias_consignacion))).toLocaleDateString();
+            }
+
+            $scope.getPiezas = c => {
+                return c.productos.map(p => parseInt(p.unidades)).reduce((a,b) => a + b);
             }
 
             $scope.selectClienteRow = function(row){
@@ -962,6 +988,7 @@ class TrxReingresoConsignacion extends FastTransaction {
                     SELECT id_cliente_recibe 
                     FROM trx_movimiento_sucursales
                     WHERE es_devuelto = 0
+                    AND es_anulado = 0
                 ) AND id_usuario = '%s'
             ";
             $dsClientes = $this->db->queryToArray(sprintf($query, $this->user['ID']));
@@ -971,6 +998,7 @@ class TrxReingresoConsignacion extends FastTransaction {
                 SELECT id_cliente_recibe 
                 FROM trx_movimiento_sucursales
                 WHERE es_devuelto = 0
+                AND es_anulado = 0
             )
         ";
          $dsClientes = $this->db->queryToArray($query);
@@ -1006,6 +1034,7 @@ class TrxReingresoConsignacion extends FastTransaction {
             LEFT JOIN sucursales sd on ms.id_sucursal_destino=sd.id_sucursal
             WHERE id_cliente_recibe=%s 
             AND es_devuelto = 0
+            AND es_anulado = 0
         ";
         $ventas = sanitize_array_by_keys($this->db->queryToArray(sprintf($sql,$cl)),['sucursal_origen','sucursal_destino']);
         for($i = 0; count($ventas) > $i; $i++){
@@ -1037,46 +1066,65 @@ class TrxReingresoConsignacion extends FastTransaction {
         return true;
     }
 
-    public function anularVenta(){
-        $id = getParam("id_venta");
+    public function anularConsignacion(){
+        $id = getParam("id");
+        $consignacion = Collection::get($this->db, "trx_movimiento_sucursales", sprintf("id_movimiento_sucursales=%s", $id))->single();
         $fecha = new DateTime();
         $user = AppSecurity::$UserData['data'];
-        $dsEmpleado = decode_email_address($this->user['ID']);
         $dsCuentaVenta = Collection::get($this->db, 'cuentas', 'lower(nombre) = "venta"')->single();
         $dsCuentaReingreso = Collection::get($this->db, 'cuentas', 'lower(nombre) = "reingreso"')->single();
+        $dsCuentaInventario = Collection::get($this->db, 'cuentas', 'lower(nombre) = "inventario"')->single();
         $dsMoneda = Collection::get($this->db, 'monedas', 'moneda_defecto = 1')->single();
-        $venta = $this->db->query_select("trx_venta", sprintf("id_venta=%s", $id));
-        if(count($venta) > 0){
-            $this->db->query("START TRANSACTION");
-            try {
-                $venta = $venta[0];
-                $detalles = $this->db->query_select("trx_venta_detalle", sprintf("id_venta=%s", $id));
-                foreach($detalles as $prod){
+        $productos = $this->db->query_select("trx_movimiento_sucursales_detalle", sprintf("id_movimiento_sucursales=%s", $id));
+        $this->db->query('START TRANSACTION');
+        try {
+            foreach ($productos as $prod) {
+            
+                if(isset($consignacion['id_sucursal_destino']) && !isEmpty($consignacion['id_sucursal_destino'])){
                     $transaccion = [
-                        'id_cuenta' => sqlValue($dsCuentaVenta['id_cuenta'], 'int'),
-                        'id_sucursal' => sqlValue($prod['id_sucursal'], 'int'),
-                        'descripcion' => sqlValue('Anulación pedido', 'text'),
+                        'id_cuenta' => sqlValue($dsCuentaInventario['id_cuenta'], 'int'),
+                        'id_sucursal' => sqlValue($consignacion['id_sucursal_destino'], 'int'),
+                        'descripcion' => sqlValue('Reingreso por consignacion', 'text'),
                         'id_producto' => sqlValue($prod['id_producto'], 'int'),
-                        'haber' => sqlValue($prod['cantidad'], 'float'),
-                        'debe' => sqlValue('0', 'float'),
-                        'fecha_creacion' => sqlValue($fecha->format('Y-m-d H:i:s'), 'date')
+                        'debe' => sqlValue($prod['unidades'], 'float'),
+                        'haber' => 0,
+                        'fecha_creacion' => sqlValue($fecha->format('Y-m-d H:i:s'), 'date'),
+                        'id_cliente' => sqlValue(0, 'text')
                     ];
-
+        
                     $this->db->query_insert('trx_transacciones', $transaccion);
                 }
-                $ventaUpd = [
-                    "estado" => sqlValue('A', 'text'),
-                    'es_anulado' => 1
+    
+                $transaccion = [
+                    'id_cuenta' => sqlValue($dsCuentaInventario['id_cuenta'], 'int'),
+                    'id_sucursal' => sqlValue($consignacion['id_sucursal_origen'], 'int'),
+                    'descripcion' => sqlValue('Reingreso por consignacion', 'text'),
+                    'id_producto' => sqlValue($prod['id_producto'], 'int'),
+                    'debe' => sqlValue('0', 'float'),
+                    'haber' => sqlValue($prod['unidades'], 'float'),
+                    'fecha_creacion' => sqlValue($fecha->format('Y-m-d H:i:s'), 'date'),
+                    'id_cliente' => sqlValue(0, 'text')
                 ];
-                $this->db->query_update("trx_venta", $ventaUpd, sprintf("id_venta=%s", $venta['id_venta']));
-                $this->db->query("COMMIT");
-                echo json_encode(['result' => 1]);
-                
-            }catch(Exception $e){
-                $this->db->query("ROLLBACK");
-                echo json_encode(['result' => 0]);
+    
+                $this->db->query_insert('trx_transacciones', $transaccion);    
+
+                $upd = [
+                    "es_anulado" => 1
+                ];
+                $this->db->query_update('trx_movimiento_sucursales', $upd,sprintf("id_movimiento_sucursales=%s", $id));
+
+                $this->db->query('COMMIT');
+                $this->r = 1;
+                $this->msg = 'Reingreso realizado  con éxito';
+                $this->returnData = array('id_movimiento_sucursales' => $id);
             }
+        } catch(Exception $e){
+            $this->db->query('ROLLBACK');
+            $this->r = 0;
+            $this->msg = "Error al reingresar la consignacion";
+            echo $e->getTraceAsString();
         }
+        echo json_encode(["result" => $this->r, "msg" => $this->msg]);
     }
 
     public function doSave($data)

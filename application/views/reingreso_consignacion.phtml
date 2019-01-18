@@ -63,7 +63,7 @@
                     Total Consignación: {{totalConsignacion || 0 | currency : 'Q' : 2}}
                 </div>
                 <div class="col-lg-6 col-md-2 col-sm-12 col-xs-12" style="text-align: center;">
-                    <div class='btn-group' role='group'>
+                    <div class='btn-group' role='group' ng-show="selectedConsignacion">
                         <button type="button" class="btn btn-pill btn-danger" ng-click="cancelar()">Cancelar</button>
                         <button type="button" class="btn btn-pill btn-success" ng-click="generarVenta()">Generar Venta</button>
                         <button type="button" class="btn btn-pill btn-warning" ng-click="resetConsignacion()">Limpiar consignacion</button>
@@ -152,16 +152,17 @@
                         <table class="table table-sm table-striped table-bordered table-hover">
                             <tr>
                                 <th>Opciones</th>
-                                <th>Fecha</th>
-                                <th>Productos</th>
+                                <th style="width: 20%">Fecha</th>
+                                <th>Piezas</th>
                                 <th>Origen</th>
                                 <th>Destino</th>
                                 <th>Días consignar</th>
                                 <th>Mínimo compra</th>
-                                <th>Fecha máxima entrega</th>
+                                <th>Fecha máxima</th>
                                 <th>Estado actual</th>
                             </tr>
                             <tr>
+                                <td>&nbsp;</td>
                                 <td><input ng-model="searchCon.fecha_recepcion" class="form-control" /></td>
                                 <td>&nbsp;</td>
                                 <td><input ng-model="searchCon.sucursal_origen" class="form-control" /></td>
@@ -172,13 +173,16 @@
                             </tr>
                             <tr ng-class="{'bg-danger':!getConsignacionState(c),'bg-success':getConsignacionState(c)}" ng-repeat="c in consignacionesPendientes | filter : searchCon" >
                                 <td>
-                                    <button class="btn btn-warning btn-sm" ng-click="generarDet(c)">
-                                        <i class="cui-file"></i>
-                                    </button>
-                                    <button class="btn btn-primary btn-sm" ng-click="selectConsignacion(c)"><i class="cui-check"></i></button>
+                                    <div class="btn-group">
+                                        <button class="btn btn-warning btn-sm" ng-click="generarDet(c)">
+                                            <i class="cui-file"></i>
+                                        </button>
+                                        <button class="btn btn-primary btn-sm" ng-click="selectConsignacion(c)"><i class="cui-check"></i></button>
+                                        <button class="btn btn-danger btn-sm" ng-click="anularConsignacion(c)"><i class="cui-trash"></i></button>
+                                    </div>
                                 </td>
                                 <td ng-bind="c.fecha_recepcion"></td>
-                                <td ng-bind="c.productos.length"></td>
+                                <td ng-bind="getPiezas(c)"></td>
                                 <td ng-bind="c.sucursal_origen"></td>
                                 <td ng-bind="c.sucursal_destino"></td>
                                 <td ng-bind="c.dias_consignacion"></td>
@@ -192,6 +196,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-danger" ng-click="resetCliente()" ng-show="lastClienteSelected.id_cliente">Cancelar</button>
+                    <button type="button" class="btn btn-danger" data-dismiss="modal" ng-show="!lastClienteSelected.id_cliente">Cerrar</button>
                 </div>
             </div>
         </div>
