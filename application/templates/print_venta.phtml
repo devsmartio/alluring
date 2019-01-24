@@ -1,5 +1,5 @@
 <?php
-$queryVenta = " SELECT 	v.usuario_venta, v.id_venta, v.total, v.fecha_creacion, CONCAT(c.nombres,' ',c.apellidos) nombre_cliente, IFNULL(c.factura_nit, 'C/F') factura_nit, IFNULL(c.factura_nombre, 'C/F') factura_nombre, IFNULL(c.factura_direccion, ' ') factura_direccion, sum(vd.cantidad) cant_productos
+$queryVenta = " SELECT 	v.usuario_venta, v.id_venta, v.total, v.fecha_creacion, CONCAT(c.nombres,' ',c.apellidos) nombre_cliente, IFNULL(c.factura_nit, 'C/F') factura_nit, IFNULL(c.factura_nombre, 'C/F') factura_nombre, IFNULL(c.factura_direccion, ' ') factura_direccion, sum(vd.cantidad) cant_productos, ifnull(v.credito_devolucion, 0) credito_devolucion
                 FROM 	trx_venta v
                 LEFT JOIN 	clientes c ON c.id_cliente=v.id_cliente
                 LEFT JOIN	trx_venta_detalle vd ON vd.id_venta = v.id_venta
@@ -129,11 +129,21 @@ $subtotal = 0;
             </tr>
                 <?php
                 $total += ($p['precio_unitario'] * $p['cantidad']);
-                $subtotal += ($p['precio_sugerido'] * $p['cantidad']);
+                $subtotal = $total;
+                $descuento = floatval($venta['credito_devolucion']);
+                $total-= $descuento;
             }
             ?>
         </table>
         <table style="width: 100%; margin:20px auto 0px auto;background-color: #fff" border="0">
+            <tr>
+                <th style='text-align: right'>Subtotal</th>
+                <th style='width: 18%; text-align: right'><?php echo number_format($subtotal, 2) ?></th>
+            </tr>
+            <tr>
+                <td style='text-align: right'>Crédito por devolución (-)</td>
+                <td style='width: 18%; text-align: right'><?php echo number_format($descuento, 2) ?></td>
+            </tr>
             <tr>
                 <th style='text-align: right'>TOTAL VENTA</th>
                 <th style='width: 18%; text-align: right'><?php echo number_format($total, 2) ?></th>

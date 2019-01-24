@@ -1,14 +1,14 @@
 <?php
 
 if ($tipoGeneracion == 0) {
-    $queryTransacciones = "  SELECT	p.codigo, p.descripcion, ge.cantidad as total_existencias
-                             FROM	generacion_etiquetas ge
-                             JOIN producto p ON lower(ge.codigo_origen) = lower(p.codigo) ";
+    $queryTransacciones = "  SELECT	p.codigo, p.descripcion, ge.cantidad as haber
+                             FROM	producto p
+                             INNER JOIN generacion_etiquetas ge ON ge.codigo_origen = p.codigo_origen ";
 
     $transacciones = $this->db->queryToArray($queryTransacciones);
 } else {
 
-    $queryTransacciones ="  SELECT	i.codigo, p.descripcion, i.total_existencias
+    $queryTransacciones ="  SELECT	i.codigo codigo_origen, p.descripcion, i.total_existencias
                                 FROM	reporte_inventario i
                                 INNER JOIN producto p ON p.id_producto = i.id_producto ";
 
@@ -62,32 +62,31 @@ html,body { margin: 0px; }
             font-size: 10px;margin: 0px">
 <table border="0" style="margin: 0px" cellspacing="0" cellpadding="0">
     <?php
-    //reset($transacciones);
-    //$p = current($transacciones);
-    $conteo = 1;
-    //$cantidad = (int)$p['haber'];
-    $i = 1;
+    reset($transacciones);
+    $p = current($transacciones);
+    $conteo = 0;
+    $cantidad = (int)$p['haber'];
     ?>
-    <?php for($i = 0; $i < count($transacciones); $i++){ 
-        $p = $transacciones[$i];
+    <?php for($i = 1; $i <= $total; $i++){
+        if($conteo == $cantidad){
+            $p = next($transacciones);
+            $cantidad = (int)$p['haber'];
+            $conteo = 0;
+        }else
+            $conteo++;
         ?>
-        <?php for($i2 = 0; $p['total_existencias'] > $i2; $i2++){
-            ?>
-            <?php if ($conteo%3 == 1) echo "<tr>" ?>
-            <?php 
-            $margen = 20 - strlen($p['codigo']);
-            ?> 
-            <td style=" width: 6.9cm">
+        <?php if ($i%3 == 1) echo "<tr>" ?>
+        <?php 
+        $margen = 20 - strlen($p['codigo']);
+        ?> 
+        <td style=" width: 6.9cm">
                 <div style="height: 2.10cm;text-align: center;/* border: 1px solid black;*/ margin-right: 0.3cm;padding-top: 0.4cm">
                     <span style="display: block; word-wrap: break-word"><?php echo self_escape_string($p['descripcion']) ?></span>
                     <div style="margin-left: <?php echo $margen ?>%; display: block"><?php echo $generator->getBarcode($p['codigo'], $generator::TYPE_CODE_128); ?></div>
                     <span style="display: block;word-wrap: break-word"><?php echo $p['codigo'] ?></span>
                 </div>
             </td>
-            <?php if ($conteo%3 == 0 || $conteo == $total) echo "</tr>" ?>
-            <?php
-            $conteo++;
-        }?>    
+        <?php if ($i%3 == 0) echo "</tr>" ?>
     <?php } ?>
 </table>
 </body>

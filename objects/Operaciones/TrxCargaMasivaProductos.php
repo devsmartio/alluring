@@ -131,7 +131,7 @@ class TrxCargaMasivaProductos extends FastTransaction {
 
                     if ((response != undefined) && (response.result == 1)) {
 
-                        window.open("./?action=pdf&tmp=TRX");
+                        //window.open("./?action=pdf&tmp=TRX");
                     }
 
                     $scope.startAgain();

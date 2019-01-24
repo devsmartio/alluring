@@ -30,8 +30,8 @@ class TrxGeneracionEtiquetas extends FastTransaction {
 
         $this->gridCols = array(
             'Codigo' => 'codigo_origen',
-            'Nombre' => 'nombre',
             'Descripción' => 'descripcion',
+            'Existencia' => 'total_existencias',
             'Categoria' => 'nombre_tipo',
             'Bodega' => 'nombre_bodega'
         );
@@ -200,23 +200,20 @@ class TrxGeneracionEtiquetas extends FastTransaction {
         $idSucursal = getParam("idSucursal");
         $idTipo = getParam("idTipo");
 
-        $queryTransacciones ="  SELECT	p.codigo codigo_origen, p.nombre, p.descripcion, t.haber, t.id_sucursal, p.id_tipo, ti.nombre as nombre_tipo, s.nombre as nombre_bodega
-                                FROM	trx_transacciones t
-                                        INNER JOIN producto p ON p.id_producto = t.id_producto
-                                        INNER JOIN tipo ti ON ti.id_tipo = p.id_tipo
-                                        INNER JOIN sucursales s ON s.id_sucursal = t.id_sucursal ";
+        $queryTransacciones ="  SELECT	i.codigo codigo_origen, i.nombre_producto, p.descripcion, i.total_existencias, i.id_sucursal, i.id_tipo, i.nombre_categoria as nombre_tipo, i.nombre_sucursal as nombre_bodega
+                                FROM	reporte_inventario i
+                                INNER JOIN producto p ON p.id_producto = i.id_producto ";
 
         $where = 'WHERE 1 = 1';
-
         if($idSucursal != "")
-            $where .=  " AND t.id_sucursal = " . $idSucursal;
+            $where .=  " AND i.id_sucursal = " . $idSucursal;
 
         if($idTipo != "")
-            $where .= " AND ti.id_tipo = " . $idTipo;
+            $where .= " AND i.id_tipo = " . $idTipo;
 
         $transacciones = $this->db->queryToArray($queryTransacciones . $where);
 
-        echo json_encode(array('data' => sanitize_array_by_keys($transacciones, ['codigo_origen', 'nombre', 'descripcion', 'nombre_tipo', 'nombre_bodega'])));
+        echo json_encode(array('data' => sanitize_array_by_keys($transacciones, ['codigo_origen', 'nombre_producto', 'descripcion', 'nombre_tipo', 'nombre_bodega'])));
     }
 
     public function dataIsValid($data)
