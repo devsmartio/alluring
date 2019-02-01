@@ -119,15 +119,23 @@
         $(this).toggleClass('is-active');
         $('.wrap-side-menu').slideToggle();
     });
-
+/*
     var arrowMainMenu = $('.arrow-main-menu');
 
     for(var i=0; i<arrowMainMenu.length; i++){
         $(arrowMainMenu[i]).on('click', function(){
+            console.log("CLICK MENU");
             $(this).parent().find('.sub-menu').slideToggle();
             $(this).toggleClass('turn-arrow');
         })
     }
+    */
+
+    $(document).on('click', '.arrow-main-menu', function(){
+        console.log("CLICK MENU");
+        $(this).parent().find('.sub-menu').slideToggle();
+        $(this).toggleClass('turn-arrow');
+    })
 
     $(window).resize(function(){
         if($(window).width() >= 992){
