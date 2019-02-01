@@ -81,6 +81,10 @@ document.oncontextmenu=new Function("alert(message);return false")
 	.active1 {
 		font-weight: bolder;
 	}
+
+	.item-menu-mobile {
+		background-color: #8a867b;
+	}
 </style>
 </head>
 <body ng-cloak ng-controller="ProductosCtrl">
@@ -862,7 +866,13 @@ document.oncontextmenu=new Function("alert(message);return false")
 	    filterBar.noUiSlider.on('change', function( values, handle ) {
 			console.log(values);
 	        skipValues[handle].innerHTML = Math.round(values[handle]) ;
-	    });
+		});
+		
+		$(document).on('click', '.arrow-main-menu', function(){
+			console.log("CLICK MENU");
+			$(this).parent().find('.sub-menu').slideToggle();
+			$(this).toggleClass('turn-arrow');
+		})
 	</script>
 	<script src="js/angular.min.js"></script>
 	<script>
@@ -1559,7 +1569,7 @@ document.oncontextmenu=new Function("alert(message);return false")
 				localStorage.setItem("alluring-cart", JSON.stringify($scope.cart));
 			}, true)
 			
-
+			
 			$scope.getProductos = (isInit) => {
 				$(".se-pre-con").show();
 				$http.get(`${apiUrl}/products`).success(productos => {
