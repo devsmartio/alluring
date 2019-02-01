@@ -56,21 +56,11 @@ $last_name = $user['LAST_NAME'];
     </ul>
     <ul class="nav navbar-nav ml-auto">
         <!--<li class="nav-item d-md-down-none"><a class="nav-link" href="#"><i class="icon-bell"></i><span class="badge badge-pill badge-danger">5</span></a></li>-->
-        <li class="nav-item d-md-down-none">
-            <a class="nav-link" href="#">
-                <i class="icon-list"></i>
-            </a>
-        </li>
-        <li class="nav-item d-md-down-none">
-            <a class="nav-link" href="#">
-                <i class="icon-location-pin"></i>
-            </a>
-        </li>
         <li class="nav-item dropdown">
             <a class="nav-link" data-toggle="dropdown" href="#" role="button" aria-haspopup="true"
                aria-expanded="false">
                 Bienvenido <?php echo self_escape_string($first_name) . " " . self_escape_string($last_name) ?>
-                <img class="img-avatar" src="media/img/avatars/6.jpg" alt="admin@bootstrapmaster.com">
+                <img class="img-avatar" src="media/img/avatars/no-image.png" alt="admin@bootstrapmaster.com">
             </a>
             <div class="dropdown-menu dropdown-menu-right">
                 <div class="dropdown-header text-center">
@@ -93,9 +83,7 @@ $last_name = $user['LAST_NAME'];
             <ul class="nav">
                 <li class="nav-item">
                     <a class="nav-link" href="./">
-                        <i class="nav-icon icon-speedometer"></i>
                         Inicio
-                        <span class="badge badge-primary">NEW</span>
                     </a>
                 </li>
                 <?php
@@ -103,16 +91,16 @@ $last_name = $user['LAST_NAME'];
                         foreach ($cats as $cat) {
                             if (count($cat['MODULES']) > 0) {
                 ?>
-                                <li class="nav-title">
-                                    <span class="glyphicon <?php echo self_escape_string($cat['ICON']) ?>"></span>
+                                <li class="nav-title" style="font-size: 15px; background-color: #bababa; color: black; padding: .35rem 1rem">
+                                    <!--<span class="glyphicon <?php echo self_escape_string($cat['ICON']) ?>"></span>-->
                                     <?php echo self_escape_string($cat['NAME']) ?>
                                 </li>
                                 <?php
                                     foreach ($cat['MODULES'] as $mod) {
                                 ?>
-                                        <li class="nav-item">
-                                            <a class="nav-link" href='./?mod=<?php echo $mod['PATH'] ?> '>
-                                                <i class="nav-icon icon-drop"></i> <?php echo self_escape_string($mod['NAME']) ?>
+                                        <li class="nav-item" >
+                                            <a class="nav-link" style="font-size: 13px; padding: .5rem 1rem" href='./?mod=<?php echo $mod['PATH'] ?> '>
+                                                <!--<i class="nav-icon icon-drop"></i>--> <?php echo self_escape_string($mod['NAME']) ?>
                                             </a>
                                         </li>
                                 <?php
