@@ -366,7 +366,19 @@ document.oncontextmenu=new Function("alert(message);return false")
 
 
 	<!-- Content page -->
-	<section class="bgwhite p-b-5  p-t-0-lg p-t-100-xs">
+	<section id="banners">
+		<div class="container">
+			<div class="row">
+				<div class="col-12 col-md-6">
+					<img ng-src="{{host}}/{{bannerLoc}}/central_superior1.png?rand={{rand}}" style="width: 100%" alt="Banner Superior 1" />
+				</div>
+				<div class="col-12 col-md-6" >
+					<img ng-src="{{host}}/{{bannerLoc}}/central_superior2.png?rand={{rand}}" style="width: 100%" alt="Banner Superior 2" />
+				</div>
+			</div>
+		</div>
+	</section>
+	<section class="bgwhite p-b-5  p-t-4-lg p-t-100-xs" style="padding-top: 15px">
 		<div class="container">
 			<div class="row">
 				<div class="col-sm-6 col-md-4 col-lg-3 p-b-50" id="categoriasCont">
@@ -383,7 +395,12 @@ document.oncontextmenu=new Function("alert(message);return false")
 								</a>
 							</li>
 						</ul>
-
+						<div class="w-100  mb-4" >
+							<img ng-src="{{host}}/{{bannerLoc}}/central_izq1.png?rand={{rand}}" style="width: 100%" alt="Banner Izquierda 1" />
+						</div>
+						<div class="w-100" >
+							<img ng-src="{{host}}/{{bannerLoc}}/central_izq2.png?rand={{rand}}" style="width: 100%" alt="Banner Izquierda 2" />
+						</div>
 						<!-- 
 						<h4 class="m-text14 p-b-32">
 							Filtros
@@ -881,7 +898,10 @@ document.oncontextmenu=new Function("alert(message);return false")
 			};
 
 		var app = angular.module("catalogoApp", []);
-		const apiUrl = "http://45.79.16.122:3003";
+		const host = "http://45.79.16.122";
+		const apiPort = "3003";
+		const apiUrl = `${host}:${apiPort}`;
+		const bannerLoc = "sistema/media/uploads";
 		app.controller("ProductosCtrl", function($scope, $http, $filter){
 			//DEFAULTS
 			$scope.rand = Math.random();
@@ -889,6 +909,8 @@ document.oncontextmenu=new Function("alert(message);return false")
 				productos: [],
 				total: 0
 			}
+			$scope.host = host;
+			$scope.bannerLoc = bannerLoc;
 			$scope.itemsPerPage = 3 * 7;
 			$scope.page = {};
 			$scope.sort = "none";
