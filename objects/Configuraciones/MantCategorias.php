@@ -17,15 +17,19 @@ class MantCategorias extends FastMaintenance{
         $this->instanceName = 'MantCategorias';
         $this->table = 'categorias';
         $this->setTitle('Mantenimiento de categorias de productos');
+
+        $agrupaciones = Collection::get($this->db, 'tipos_agrupaciones')->toSelectList('id_tipo_agrupacion', 'nombre');
         
         $this->fields = array(
             new FastField(null, 'id_categoria', 'hidden', 'int', TRUE, null, array(), false, null, true),
             new FastField('Nombre', 'nombre', 'text', 'text', true),
-            new FastField('Prefijo', 'prefijo', 'text', 'text', true)
+            new FastField('Prefijo', 'prefijo', 'text', 'text', true),
+            new FastField('Agrupación', 'id_tipo_agrupacion', 'select', 'int', true, null, $agrupaciones)
         );
         $this->gridCols = array(
             'ID' => 'id_categoria',
             'Nombre' => 'nombre',
+            'Agrupación' => 'nombre_agrupacion',
             'Creado' => 'fecha_creacion',
             'Creado por' => 'usuario_creacion'
         );
@@ -40,6 +44,16 @@ class MantCategorias extends FastMaintenance{
     }
     
     protected function specialProcessBeforeShow($rows){
+        $agrupaciones = Collection::get($this->db, 'tipos_agrupaciones')->select(['id_tipo_agrupacion', 'nombre'], true);
+        foreach($rows as &$row){
+            $ag = $agrupaciones->where(['id_tipo_agrupacion' => $row['id_tipo_agrupacion']]);
+            if(count($ag) > 0){
+                $ag = $ag->single();
+                $row['nombre_agrupacion'] = self_escape_string($ag['nombre']);
+            } else {
+                $row['nombre_agrupacion'] = 'N/A';
+            }
+        }
         return sanitize_array_by_keys($rows, ['nombre','usuario_creacion']);
     }
 }
