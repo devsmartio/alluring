@@ -340,7 +340,7 @@ class TrxCargaMasivaProductos extends FastTransaction {
                     'id_moneda' => sqlValue($dsMoneda['id_moneda'], 'int'),
                     'id_producto' => sqlValue($dsProducto['id_producto'], 'int'),
                     'debe' => sqlValue('0', 'float'),
-                    'haber' => sqlValue($bodega['cantidad'], 'float'),
+                    'haber' => $bodega['cantidad'],
                     'fecha_creacion' => sqlValue($fecha->format('Y-m-d H:i:s'), 'date'),
                     'id_cliente' => sqlValue(0, 'text')
                 ];
