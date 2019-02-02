@@ -350,7 +350,7 @@ class TrxCargaMasivaProductos extends FastTransaction {
                 $etiqueta = [
                     'codigo' => sqlValue($bodega['codigo'], 'text'),
                     'codigo_origen' => sqlValue($bodega['codigo_origen'], 'text'),
-                    'cantidad' => sqlValue($bodega['cantidad'], 'int'),
+                    'cantidad' => $bodega['cantidad'],
                     'id_sucursal' => sqlValue($dsBodega['id_sucursal'], 'int'),
                 ];
 
