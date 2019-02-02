@@ -333,7 +333,7 @@ abstract class FastMaintenance extends FastModWrapper{
                     $scope.noMode = true;
                 };
                 $scope.cancel = function(){
-                    $scope.goNoMode();
+                    $scope.startAgain();
                 };
                 $scope.refresh = function(){
                     $scope.startAgain();
@@ -352,6 +352,21 @@ abstract class FastMaintenance extends FastModWrapper{
                     }
                     type = $scope.editMode ? 'upd' : 'new';
                     $scope.save($scope.ajaxUrl + '&act=doSave&type=' + type, $('#mantForm').serialize());
+                };
+                $scope.doSaveNoChange = function(){
+                    isOnlyNew = <?php echo $this->onlyNew ? 'true' : 'false' ?>;
+                    if(isOnlyNew && $scope.editMode){
+                        $scope.alerts = new Array();
+                            $scope.alerts.push({
+                                type: "alert-danger",
+                                msg: 'Este elemento solo puede ser eliminado.'
+                            });
+                            $timeout(function(){
+                                $scope.alerts = new Array();
+                            }, 3500);
+                    }
+                    type = $scope.editMode ? 'upd' : 'new';
+                    $scope.saveNoCb($scope.ajaxUrl + '&act=doSave&type=' + type, $('#mantForm').serialize());
                 };
                 $scope.doDelete = function(){
                     if($scope.editMode){
@@ -409,6 +424,35 @@ abstract class FastMaintenance extends FastModWrapper{
                             });
                             $scope.doneLoading();
                             $rootScope.doCallbacks();
+                        } else if((response.result == 0)){
+                            $scope.doneLoading();
+                            $scope.alerts = new Array();
+                            $scope.alerts.push({
+                                type: "alert-danger",
+                                msg: response.msg
+                            });
+                        }
+                        $timeout(function(){
+                            $scope.alerts = new Array();
+                        }, 5000);
+                    });
+                };
+
+                $scope.saveNoCb = function(url, data){
+                    $scope.loading(); 
+                    $http.post(url, data, {
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        }
+                    }).success(function(response) {
+                        if(response.result == 1){
+                            $scope.alerts = new Array();
+                            $scope.alerts.push({
+                                type: "alert-success",
+                                msg: response.msg
+                            });
+                            $scope.doneLoading();
+                            //$rootScope.doCallbacks();
                         } else if((response.result == 0)){
                             $scope.doneLoading();
                             $scope.alerts = new Array();
