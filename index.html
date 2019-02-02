@@ -3,6 +3,9 @@
 <head>
 	<title>Alluring Concept</title>
 	<meta charset="UTF-8">
+	<meta name="description" content="Alluring Concept, 14 años creciendo contigo. Contáctanos si deseas iniciar tu propio negocio y obtener hasta el 100% de ganancias. Nosotros te daremos las herramientas que necesitas. Teléfonos: 2441-9150 / WhatsApp: 4188-4089 / website: www.alluring.com.gt / Catálogo:www.catalogodejoyeria.com">
+	<meta name="keywords" content="Joyería de Guatemala,Joyería en Guatemala,Mayoristas,Joyería,Acero Inoxidable,Joyas al por Mayor,Stainless Steel,Stainless Steel Guatemala,Alluring,Alluring Concept,Bolsas de Mujer,Bolsas,Juguetes Guatemala,Juguetes de Niño,Maquillaje,Guatemala,Guate,Acero 316,316 steel,anillos de compromiso,argollas de matrimonio,anillos de boda,anillos para boda,diamantes,circonias,monzanite,moizanita,mayoreo departamental,joyeria departamental">
+	<meta name="author" content="SmartIO">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 <!--===============================================================================================-->
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
@@ -148,10 +151,6 @@ document.oncontextmenu=new Function("alert(message);return false")
 								<!--</ul>-->
 							</li>
 
-							<li>
-								<a href="product.html">Catálogo</a>
-							</li>
-
 							<!--<li class="sale-noti">-->
 								<!--<a href="product.html">Sale</a>-->
 							<!--</li>-->
@@ -177,6 +176,8 @@ document.oncontextmenu=new Function("alert(message);return false")
 
 				<!-- Header Icon -->
 				<div class="header-icons">
+						<a href="#" style="font-weight: bold" ng-click="help()">¿Cómo comprar?</a>
+						<span class="linedivide1"></span>
 						<a href="#" class="header-wrapicon1 dis-block" ng-click="login()" ng-show="!user">
 							<img src="images/icons/icon-header-01.png" class="header-icon1" alt="ICON">&nbsp;Mayoristas
 						</a>
@@ -357,9 +358,11 @@ document.oncontextmenu=new Function("alert(message);return false")
 		<div class="wrap-side-menu p-t-100-xs">
 				<nav class="side-menu">
 					<ul class="main-menu">
-						
-						<li class="item-menu-mobile">
-							<a href="">Categorías</a>
+						<li class="item-menu-mobile" >
+							<a href="" style="font-weight: bolder" ng-click="help()">¿Cómo comprar?</a>
+						</li>
+						<li class="item-menu-mobile" style="background-color: #fbdbcb">
+							<a href="" style="font-weight: bold; color: black">Categorías</a>
 						</li>
 						<!-- 
 							<li ng-repeat="c in categorias" ng-click="setCategoria(c)" class="item-menu-mobile">
@@ -959,6 +962,14 @@ document.oncontextmenu=new Function("alert(message);return false")
 		const apiUrl = `${host}:${apiPort}`;
 		const bannerLoc = "sistema/media/uploads";
 		app.controller("ProductosCtrl", function($scope, $http, $filter){
+
+			$scope.help = function(){
+				$('#ads').modal();
+				if($(".btn-show-menu-mobile").hasClass("is-active")){
+					$(".btn-show-menu-mobile").trigger("click");
+				}
+			}
+
 			//DEFAULTS
 			$scope.rand = Math.random();
 			$scope.cart = {
@@ -1627,7 +1638,7 @@ document.oncontextmenu=new Function("alert(message);return false")
 								)
 								$scope.first = false;
 								*/
-								$("#ads").modal();
+								//$("#ads").modal();
 							}
 						});
 					}, err => {
@@ -1643,7 +1654,7 @@ document.oncontextmenu=new Function("alert(message);return false")
 		})
 	</script>
 <!--===============================================================================================-->
-	<script src="js/main.js?rand=123456"></script>
+	<script src="js/main.js?rand=123kjnk"></script>
 
 </body>
 </html>

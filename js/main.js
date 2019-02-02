@@ -129,12 +129,18 @@
             $(this).toggleClass('turn-arrow');
         })
     }
-    */
+
 
     $(document).on('click', '.arrow-main-menu', function(){
         console.log("CLICK MENU");
         $(this).parent().find('.sub-menu').slideToggle();
         $(this).toggleClass('turn-arrow');
+    })
+*/
+    $(document).on('click', '.item-menu-mobile', function(){
+        console.log("CLICK MENU");
+        $(this).find('.sub-menu').slideToggle();
+        $(this).find('.arrow-main-menu').toggleClass('turn-arrow');
     })
 
     $(window).resize(function(){
