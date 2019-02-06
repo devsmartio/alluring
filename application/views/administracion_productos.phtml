@@ -97,6 +97,9 @@
                         <button class='btn btn-success' title="Guardar" ng-click='finalizarEditado()' type="button" ng-if="editMode">
                             <span class='glyphicon glyphicon-floppy-saved'></span>&nbsp;Guardar
                         </button>
+                        <button class='btn btn-success' title="Guardar" ng-click='finalizarEditadoYCont()' type="button" ng-if="editMode">
+                            <span class='glyphicon glyphicon-floppy-saved'></span>&nbsp;Guardar y continuar
+                        </button>
                         <?php
                         if(!$this->onlyEdit){
                             ?>

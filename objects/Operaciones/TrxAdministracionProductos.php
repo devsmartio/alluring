@@ -589,6 +589,23 @@ class TrxAdministracionProductos  extends FastTransaction {
                     $scope.doSave();
                 };
 
+                $scope.finalizarEditadoYCont = function () {
+                    $rootScope.modData = {
+                        id_producto: $scope.lastSelected.id_producto,
+                        nombre: $scope.lastSelected.nombre,
+                        descripcion: $scope.lastSelected.descripcion,
+                        costo: $scope.lastSelected.costo,
+                        id_tipo: $scope.lastSelected.id_tipo,
+                        precio_venta: $scope.lastSelected.precio_venta,
+                        codigo: $scope.lastSelected.codigo,
+                        imagen: $scope.lastSelected.imagen,
+                        codigo_origen: !$scope.lastSelected.codigo_origen ? '' : $scope.lastSelected.codigo_origen,
+                        mod: 2
+                    };
+                    console.log($rootScope.modData);
+                    $scope.doSaveNoCb();
+                };
+
                 $scope.finalizar = function () {
                     $rootScope.modData = {
                         id_producto: $scope.lastSelected.id_producto,

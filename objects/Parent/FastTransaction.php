@@ -96,6 +96,13 @@ abstract class FastTransaction extends FastModWrapper{
                 $scope.doSave = function(){
                     $scope.save($scope.ajaxUrl + '&act=saveTransaction', {data: $rootScope.modData});
                 };
+
+                $scope.doSaveNoCb = function(){
+                    $scope.postData($scope.ajaxUrl + '&act=saveTransaction', {data: $rootScope.modData}, function(response) {
+                        $scope.alerts = [];
+                        console.log("REPONSE SAVE: ", response);
+                    });
+                };
                 $scope.send = function(url, data, $cb){
                     $scope.loading();
                     $http.post(url, {data: data}, {
@@ -113,6 +120,38 @@ abstract class FastTransaction extends FastModWrapper{
                             $timeout(function(){
                                 $cb();
                             }, 5000);
+                        } else if((response.result == 0)){
+                            $scope.doneLoading();
+                            $scope.alerts = new Array();
+                            $scope.alerts.push({
+                                type: "alert-danger",
+                                msg: response.msg
+                            });
+                            $timeout(function(){
+                                $scope.alerts = new Array();
+                            }, 3500);
+                        }                       
+                    });
+                     $scope.doneLoading();
+                };
+
+                $scope.postData = function(url, data, $cb){
+                    $scope.loading();
+                    $http.post(url, data, {
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        }
+                    }).success(function(response) {
+                        if(response.result == 1){
+                            $scope.alerts = new Array();
+                            $scope.alerts.push({
+                                type: "alert-success",
+                                msg: response.msg
+                            });
+                            $scope.doneLoading();
+                            $timeout(function(){
+                                $cb();
+                            }, 1500);
                         } else if((response.result == 0)){
                             $scope.doneLoading();
                             $scope.alerts = new Array();
