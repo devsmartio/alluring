@@ -5,17 +5,18 @@ module.exports = {
     },
     toMailData: {
         from: "notificaciones@alluring.com.gt",
-        to: "bryan.cruz@getsmartio.com;ventas@alluringconcept.com",
+        to: "bryan.cruz@getsmartio.com",
         subject: "PEDIDO REALIZADO CATALOGO",
         html: ""
     },
     mysqlConnectionData: {
         connectionLimit : 10,
-        socketPath: '/var/run/mysqld/mysqld.sock',
-        host            : 'localhost',
+        //socketPath: '/var/run/mysqld/mysqld.sock',
+        host            : '127.0.0.1',
         user            : 'root',
-        password        : 'rootio',
-        database        : 'alluring',
-	charset: 'utf8mb4'
-    }
+        password        : '',
+        database        : 'alluring_prod',
+	    charset: 'utf8mb4'
+    },
+    bodega: "josecarlos"
 }

@@ -53,7 +53,7 @@ app.use(function(err, req, res, next) {
 /***
  * LOCALS
  */
-app.locals.img_url = "sistema/media/uploads";
+app.locals.img_url = "http://45.79.16.122/sistema/media/uploads";
 
 
 module.exports = app;

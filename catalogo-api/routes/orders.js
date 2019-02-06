@@ -3,6 +3,7 @@ var router = express.Router();
 var mysql = require('mysql');
 const nodemailer = require('nodemailer');
 const config = require('../config');
+const bodega = config.bodega;
 const transport = nodemailer.createTransport({
     service: 'gmail',
     auth: config.mailAuth
@@ -104,9 +105,9 @@ router.post('/', function(req, res, next) {
         FROM reporte_inventario ri
         WHERE ri.total_existencias > 0
         AND ri.id_sucursal IN (
-            SELECT valor 
-            FROM variables_sistema 
-            WHERE nombre = 'BODEGA_CAT'
+            SELECT id_sucursal 
+            FROM sucursales 
+            WHERE lower(identificador_excel) = '${bodega}'
         )
         AND id_producto in (${productos.map(p => p.id_producto).join(",")})
         `;
