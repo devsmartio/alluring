@@ -653,8 +653,10 @@ class TrxVenta extends FastTransaction {
             $("#producto").keyup(function(ev) {
                 // 13 is ENTER
                 if (ev.which === 13) {
+console.log("BUSCAR: ", $scope.search_codigo_origen);
                     $scope.doSearch($scope.search_codigo_origen).then(() => {
-                        if($scope.productos.length == 1){
+                        if($scope.productos.length == 1 && $scope.productos[0].codigo.toLowerCase().trim() == $scope.search_codigo_origen.trim()){
+console.log("ENCONTRADO", $scope.productos[0]);
                             $scope.agregarUno($scope.productos[0], true);
                             if(!$scope.$$phase){
                                 $scope.$apply();
@@ -790,13 +792,14 @@ class TrxVenta extends FastTransaction {
 
 
             $scope.agregarUno = function(prod, resetAfter) {
+console.log("PROD AGREGAR: ", prod);
                 if(!$scope.preventProductoSearch){
                     if($scope.lastClienteSelected.id_cliente){
                         var restoExistencias = prod.total_existencias - prod.cantidad;
                         if (restoExistencias > 0) {
 
-                            $productos = $filter('filter')($scope.productos_facturar, {id_producto: prod.id_producto, id_sucursal: prod.id_sucursal});
-
+                            $productos = $scope.productos_facturar.filter(p => p.id_producto == prod.id_producto && p.id_sucursal == prod.id_sucursal);
+				console.log("PROD FILTRADO: ", $productos);
                             if ($productos.length > 0) {
                                 $productos[0].total_existencias -= 1;
                                 $productos[0].cantidad = parseFloat($productos[0].cantidad) + 1;
