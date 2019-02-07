@@ -484,9 +484,11 @@ class TrxAdministracionProductos  extends FastTransaction {
 			}
 		);
             app.controller('ModuleCtrl', function ($scope, $http, $rootScope, $timeout) {
+
                 $scope.startAgain = function () {
                     $scope.goNoMode();
                     $scope.currentIndex = null;
+                    $scope.filteredRows = [];
                     $scope.lastSelected = {
                         id_producto: 0,
                         nombre: '',
@@ -514,6 +516,18 @@ class TrxAdministracionProductos  extends FastTransaction {
 
                     $scope.inList = true;
                 };
+
+                $scope.$watch(function () {
+                    let list = $scope.$eval("rows | orderBy: sortBy | filter:search");
+                    if(list){
+                        $scope.filteredRows = list.map((i, $i) => {
+                            i.index = $i;
+                            return i;
+                        });
+                    }
+                    
+                });
+
                 $scope.goNew = function () {
                     $scope.lastSelected = new Array();
                     $scope.editMode = false;
@@ -673,13 +687,13 @@ class TrxAdministracionProductos  extends FastTransaction {
                     $scope.goEdit();
                 };
                 $scope.next = function(){
-                    if($scope.currentIndex == ($scope.rows.length - 1)){
+                    if($scope.currentIndex == ($scope.filteredRows.length - 1)){
                         $scope.alerts.push({
                             type: 'alert-info',
                             msg: 'Ha llegado al último registro'
                         });
                     } else {
-                        $scope.selectRow($scope.rows[parseInt($scope.currentIndex + 1)]);
+                        $scope.selectRow($scope.filteredRows[parseInt($scope.currentIndex + 1)]);
                     }
                     $timeout(function(){
                         $scope.alerts = new Array();
@@ -692,7 +706,7 @@ class TrxAdministracionProductos  extends FastTransaction {
                             msg: 'Ha llegado al primer registro'
                         });
                     } else {
-                        $scope.selectRow($scope.rows[parseInt($scope.currentIndex - 1)]);
+                        $scope.selectRow($scope.filteredRows[parseInt($scope.currentIndex - 1)]);
                     }
                     $timeout(function(){
                         $scope.alerts = new Array();

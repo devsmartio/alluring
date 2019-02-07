@@ -385,7 +385,7 @@ class TrxReingresoConsignacion extends FastTransaction {
                     swal("Cantidad incorrecta", "La cantidad no puede ser menor a 1", "warning");
                     return false;
                 } else {
-                    $productos = $filter('filter')($scope.productos_facturar, {id_producto: id, id_sucursal: idSuc});
+                    $productos = $scope.productos_facturar.filter(p=>p.id_producto==id && p.id_sucursal==idSuc);
                     if(!$scope.lastVentaSelected){
                         if ($productos.length > 0) {
                             if(parseFloat(data.cantidad) <= parseFloat($productos[0].total_existencias + $productos[0].cantidad)) {

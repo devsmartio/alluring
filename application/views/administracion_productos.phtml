@@ -25,7 +25,7 @@
                 ?>
                 <td>&nbsp;</td>
             </tr>
-            <tr ng-class="{info:row.selected}" ng-click='selectRow(row)' ng-repeat='row in rows | filter:search | orderBy: sortBy'>
+            <tr ng-class="{info:row.selected}" ng-click='selectRow(row)' ng-repeat='row in filteredRows'>
                 <td ng-repeat='col in gridCols' ng-bind='row[col.VALOR]'></td>
                 <td>
                     <img bn-lazy-src="media/uploads/{{row.imagen}}?rand={{rand}}" alt="{{lastSelected.codigo}}" class="img-thumbnail w-75">
