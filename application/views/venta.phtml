@@ -83,7 +83,7 @@
                 <input type="text" id="cliente" ng-model="cliente"  class="form-control" placeholder="Buscar Cliente..." aria-label="Search" autocomplete="off" style="font-size:0.8rem;" ng-disabled="devolucion.credito > 0 || preventClienteChange || productos_facturar.length" ng-click='buscar()' data-toggle="modal" data-target="#clientesModal"> 
             </div>
             <div class="col-12" style="padding: 5px 0 5px 0">
-                <span style="font-size: 15px; color: black">Piezas a vender: <b>{{piezas || 0}}</b></span>
+                <span style="font-size: 15px; color: black">Piezas a vender: <b>{{piezas || 0}}</b> | Total: <b>{{total | currency:'Q': 2}}</b></span>
             </div>
             <div class="anyClass w-100" ng-show="show_detalle" style="overflow-x: auto; max-width: 100%; overflow-y: auto">
                 <div class='table-responsive'>
@@ -99,7 +99,7 @@
                         </tr>
                         </thead>
                         <tbody>
-                        <tr ng-repeat="prod in productos_facturar | filter:{mostrar:1}" >
+                        <tr ng-repeat="prod in productos_facturar | filter:{mostrar:1} | orderBy: '$index' : true" >
                             <td ng-bind="prod.codigo"></td>
                             <td >{{prod.nombre_sucursal | uppercase}}</td>
                             <td>
@@ -126,7 +126,7 @@
                             </td>
                         </tr>
                         </tbody>
-                        <tfoot>
+                        <!--<tfoot>
                         <tr>
                             <th scope="row">Total</th>
                             <td>&nbsp;</td>
@@ -135,7 +135,7 @@
                             <td>&nbsp;</td>
                             <th scope="row">{{total | currency:'Q': 2}}</th>
                         </tr>
-                        </tfoot>
+                        </tfoot>-->
                     </table>
                 </div>
             </div>

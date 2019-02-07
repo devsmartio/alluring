@@ -596,7 +596,7 @@ class TrxAdministracionClientes extends FastTransaction {
                     $identificacion = str_replace("'", "", trim($data['identificacion']));
                     $id_pais = str_replace("'", "", trim($data['id_pais']));
 
-                    $result = $this->db->queryToArray(sprintf("SELECT id_cliente FROM clientes WHERE identificacion = %s and id_pais = %s;", $identificacion, $id_pais));
+                    $result = $this->db->queryToArray(sprintf("SELECT id_cliente FROM clientes WHERE identificacion = '%s' and id_pais = %s;", $identificacion, $id_pais));
                     if (count($result) > 0) {
                         $this->r = 0;
                         $this->msg = 'La identificacion ya existe, favor de corregir y volver a intentar';
