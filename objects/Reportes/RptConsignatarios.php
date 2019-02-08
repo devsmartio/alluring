@@ -40,7 +40,7 @@ class RptConsignatarios extends FastReport {
     }
 
     protected function getResultSet() {
-        $query = 'select * from reporte_consignatarios_pendientes';
+        $query = 'select * from reporte_consignatarios_pendientes order by fecha_maxima';
 
         return $this->db->queryToArray($query);
     }
