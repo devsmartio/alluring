@@ -5,7 +5,9 @@
             <div class="row">
                 
                 <div class="col-12 col-md-2 form-group">
-                    Bodega: <select id="bodega" class="form-control searchEnter" ng-model="search.id_sucursal" ng-options="s.id_sucursal as s.nombre for s in sucursales"></select>
+                    Bodega: <select id="bodega" class="form-control searchEnter" ng-model="search.id_sucursal" ng-options="s.id_sucursal as s.nombre for s in sucursales">
+                        <option value="">-- Seleccione bodega --</option>
+                    </select>
                 </div>
 
                 <div class="col-12 col-md-2 form-group">
@@ -21,10 +23,10 @@
                     Fecha a: <input class="form-control searchEnter" id="fechaA" type="text" ng-model="search.fechaA" />
                 </div>
                 <div class="col-12 col-md-2 form-group pt-3">
-                    <button class="btn btn-success" ng-disabled="!search.id_sucursal" ng-click="searchVentas()">
+                    <button class="btn btn-success" ng-disabled="!isAdmin&&!search.id_sucursal" ng-click="searchVentas()">
                         <i class="cui-refresh"></i>&nbsp;Refrescar
                     </button>
-                    <button class="btn btn-info" ng-click="generaExcel()" ng-hide="!search.id_sucursal||!sucursales.length||!ventas.length">
+                    <button class="btn btn-info" ng-click="generaExcel()" ng-hide="(!isAdmin&&!search.id_sucursal)||!sucursales.length||!ventas.length">
                         <i class="cui-file"></i>
                     </button>
                 </div>
@@ -36,6 +38,7 @@
                         <th>Fecha</th>
                         <th>Nombres</th>
                         <th>Apellidos</th>
+                        <th>Bodega</th>
                         <th>Vendedor</th>
                         <th>Total</th>
                         <th>Piezas</th>
@@ -45,6 +48,7 @@
                         <td ng-bind="v.fecha_creacion"></td>
                         <td ng-bind="v.nombres"></td>
                         <td ng-bind="v.apellidos"></td>
+                        <td ng-bind="v.nombre_bodega"></td>
                         <td ng-bind="v.usuario_venta"></td>
                         <th ng-bind="v.total_real | currency : 'Q' : 2"></th>
                         <td ng-bind="v.piezas | number : 0"></td>

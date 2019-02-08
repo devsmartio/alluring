@@ -22,6 +22,7 @@ class RptVentas extends FastTransaction {
             new FastReportColumn("Nombre Cliente", "nombres", "sanitize"),
             new FastReportColumn("Apellido Cliente", "apellidos", "sanitize"),
             new FastReportColumn("Vendedor", "usuario_venta", "sanitize"),
+            new FastReportColumn("Bodega", "nombre_bodega", "sanitize"),
             new FastReportColumn("Total", "total_real", "number_format"),
             new FastReportColumn("Piezas", "piezas", "number_format_inverse"),
             new FastReportColumn("Tipo", "tipo_venta", "sanitize")
@@ -44,7 +45,7 @@ class RptVentas extends FastTransaction {
         app.controller('ModuleCtrl', function($scope, $http, $rootScope, $timeout){
             $scope.sucursales = [];
             $scope.searchVentas = function(){
-                if($scope.search.id_sucursal){
+                if($scope.isAdmin || $scope.search.id_sucursal){
                     let list = ['nombres', 'apellidos'];
                     let query = "";
                     for(let i = 0; list.length > i; i++){
@@ -58,7 +59,7 @@ class RptVentas extends FastTransaction {
                         query = query ? `&${query}` : query;
                         query+='&fechaDe=' + fechaDe;
                         query+='&fechaA=' + fechaA;
-                        query+='&sucursal=' + $scope.search.id_sucursal;
+                        query+='&sucursal=' + ((!$scope.search.id_sucursal || $scope.search.id_sucursal == null) ? "" : $scope.search.id_sucursal);
                         $http.get(`${$scope.ajaxUrl}&act=getVentasFiltradas${query}`).success(res => {
                             $scope.ventas = res;
                         })
@@ -73,12 +74,13 @@ class RptVentas extends FastTransaction {
             
             $scope.startAgain = function(){
                 let date = moment();  
+                $scope.isAdmin = <?php echo ($this->user['FK_PROFILE'] == 1 ? 'true' : 'false'); ?>;
                 $scope.search = {
                     fechaDe: date.format('DD/MM/YYYY'),
                     fechaA: date.format('DD/MM/YYYY'),
                     nombres: "",
                     apellidos: "",
-                    sucursal: ""
+                    id_sucursal: ""
                 } 
                 $scope.ventas = [];
                 $scope.getSucursales();
@@ -88,14 +90,16 @@ class RptVentas extends FastTransaction {
                 $http.get(`${$scope.ajaxUrl}&act=getSucursales`).success(response => {
                     $scope.sucursales = response;
                     if($scope.sucursales.length){
-                        $scope.search.id_sucursal = $scope.sucursales[0].id_sucursal;
+                        if(!$scope.isAdmin){
+                            $scope.search.id_sucursal = $scope.sucursales[0].id_sucursal;
+                        }
                         $scope.searchVentas();
                     }
                 })
             }
 
             $scope.generaExcel = function() {
-                if($scope.search.id_sucursal){
+                if($scope.isAdmin || $scope.search.id_sucursal){
                     let list = ['nombres', 'apellidos'];
                     let query = "";
                     for(let i = 0; list.length > i; i++){
@@ -109,7 +113,7 @@ class RptVentas extends FastTransaction {
                         query = query ? `&${query}` : query;
                         query+='&fechaDe=' + fechaDe;
                         query+='&fechaA=' + fechaA;
-                        query+='&sucursal=' + $scope.search.id_sucursal;
+                        query+='&sucursal=' + ((!$scope.search.id_sucursal || $scope.search.id_sucursal == null) ? "" : $scope.search.id_sucursal);
                         window.open(`${$scope.ajaxUrl}&act=generarExcel${query}`, "_blank");
                     } else {
                         swal("Campo requerido", "El campo \"fecha de\" es requerido", "warning");
@@ -211,14 +215,16 @@ class RptVentas extends FastTransaction {
                     v.usuario_venta, 
                     v.total, 
                     sum(vt.cantidad) piezas, 
-                    v.total - ifnull(fp.cantidad, 0) total_real,
+                    v.total - ifnull(max(fp.cantidad), 0) total_real,
                     CASE
                         WHEN v.estado ='D' THEN 'Venta con devolución'
                         WHEN v.estado = 'VC' THEN 'Venta consignación'
-                    ELSE 'Venta' END as tipo_venta
+                    ELSE 'Venta' END as tipo_venta,
+                    max(s.nombre) nombre_bodega
                 FROM trx_venta v
                 JOIN clientes c on c.id_cliente=v.id_cliente
                 JOIN trx_venta_detalle vt on vt.id_venta=v.id_venta
+                JOIN sucursales s on s.id_sucursal=vt.id_sucursal
                 LEFT JOIN   trx_venta_formas_pago fp on fp.id_venta=v.id_venta AND fp.id_forma_pago = 4
                 WHERE %s
                 AND v.estado in ('D', 'V', 'VC')
@@ -234,23 +240,25 @@ class RptVentas extends FastTransaction {
                     v.usuario_venta, 
                     v.total, 
                     sum(vt.cantidad) piezas, 
-                    v.total - ifnull(fp.cantidad, 0) total_real,
+                    v.total - ifnull(max(fp.cantidad), 0) total_real,
                     CASE
                         WHEN v.estado ='D' THEN 'Venta con devolución'
                         WHEN v.estado = 'VC' THEN 'Venta consignación'
-                    ELSE 'Venta' END as tipo_venta
+                    ELSE 'Venta' END as tipo_venta,
+                    max(s.nombre) nombre_bodega
                 FROM trx_venta v
                 JOIN clientes c on c.id_cliente=v.id_cliente
                 JOIN trx_venta_detalle vt on vt.id_venta=v.id_venta 
+                JOIN sucursales s on s.id_sucursal=vt.id_sucursal
                 LEFT JOIN   trx_venta_formas_pago fp on fp.id_venta=v.id_venta AND fp.id_forma_pago = 4
                 WHERE %s
                 AND v.usuario_venta='%s'
-                AND v.estado in ('D', 'V', 'VC')
+                AND v.estado in ('D','V','VC')
                 GROUP BY v.id_venta
                 ORDER by v.fecha_creacion desc
             ", $where, $user);
         }
-        return sanitize_array_by_keys($this->db->queryToArray($query), ['nombres', 'apellidos', 'usuario_venta', 'tipo_venta']);
+        return sanitize_array_by_keys($this->db->queryToArray($query), ['nombres', 'apellidos', 'usuario_venta', 'tipo_venta', 'nombre_bodega']);
     }
 
     public function generarExcel(){
