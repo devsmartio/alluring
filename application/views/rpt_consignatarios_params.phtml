@@ -1,0 +1,9 @@
+<div>
+    <?php 
+    foreach($this->params as $p){
+        if($p instanceof FastField){
+            $p->build();
+        }
+    }
+    ?>
+</div>

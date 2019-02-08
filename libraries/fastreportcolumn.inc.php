@@ -17,10 +17,11 @@ class FastReportColumn {
     public $function;
     public $renderer;
     
-    function __construct($name, $field, $function = null, $renderer = null) {
+    function __construct($name, $field, $function = null, $currencySym = '', $renderer = null) {
         $this->name = $name;
         $this->field = $field;
         $this->function = $function;
+        $this->currencySym = $currencySym;
         $this->renderer = $renderer;
     }
     
@@ -35,6 +36,9 @@ class FastReportColumn {
                 break;
             case 'number_format_inverse':
                 $return = number_format($row[$this->field], 0);
+                break;
+            case 'currency':
+                $return = $this->currencySym . " " . number_format($row[$this->field], 2);
                 break;
             case 'format_datetime':
                 $return = DateTime::createFromFormat(SQL_DT_FORMAT, $row[$this->field])->format('d/m/Y H:i:s');
