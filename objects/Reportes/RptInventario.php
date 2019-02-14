@@ -19,10 +19,23 @@ class RptInventario extends FastReport {
         $this->setPrefix('rpt_inventario');
         $this->setTitle('Inventario');
 
-        $sucursales = $this->db->query_select('sucursales');
-        $sucs = [];
-        foreach($sucursales as $s){
-            $sucs[self_escape_string($s['nombre'])] = $s['id_sucursal'];
+
+        $bods = [];
+        if($this->user['FK_PROFILE'] == 1 /* SUPER ADMIN */){
+            $bods = Collection::get($this->db, "sucursales")->toSelectList("id_sucursal", "nombre");
+        } else {
+            $accessBods = 
+            join(
+                array_map(function($bod) {
+                    return $bod['id_bodega'];
+                }, $this->db->query_select("usuarios_bodegas", sprintf("id_usuario='%s'", $this->user['ID']))
+                ), 
+            ",");
+            if(empty($accessBods)){
+                die("<b>NO TIENE CONFIGURADA NINGUNA BODEGA</b>");
+            } else {
+                $bods = (new Collection($this->db->query_select("sucursales", sprintf("id_sucursal in ('%s')", $accessBods))))->toSelectList("id_sucursal", "nombre");
+            }
         }
         
         $categoria = $this->db->query_select('tipo');
@@ -32,7 +45,7 @@ class RptInventario extends FastReport {
         }
         
         $params = [
-            new FastField('Bodega', 'id_sucursal', 'select', 'int', true, null, $sucs, false),
+            new FastField('Bodega', 'id_sucursal', 'select', 'int', true, null, $bods, false),
             new FastField('Categoria', 'id_tipo', 'select', 'int', true, null, $provs, false)
         ];
         
