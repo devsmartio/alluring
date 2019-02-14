@@ -75,12 +75,12 @@ html,body { margin: 0px; }
             ?>
             <?php if ($conteo%3 == 1) echo "<tr>" ?>
             <?php 
-            $margen = 20 - strlen($p['codigo']);
+            $margen = 25 - strlen($p['codigo']);
             ?> 
             <td style=" width: 6.9cm">
                 <div style="height: 2.10cm;text-align: center;/* border: 1px solid black;*/ margin-right: 0.3cm;padding-top: 0.4cm">
                     <span style="display: block; word-wrap: break-word"><?php echo self_escape_string($p['descripcion']) ?></span>
-                    <div style="margin-left: <?php echo $margen ?>%; display: block"><?php echo $generator->getBarcode($p['codigo'], $generator::TYPE_CODE_128); ?></div>
+                    <div style="max-width: 20px;height: auto;margin-left: <?php echo $margen ?>%; display: block"><?php echo $generator->getBarcode($p['codigo'], $generator::TYPE_CODE_128,1.5); ?></div>
                     <span style="display: block;word-wrap: break-word"><?php echo $p['codigo'] ?></span>
                 </div>
             </td>
