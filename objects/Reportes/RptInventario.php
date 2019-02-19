@@ -34,7 +34,8 @@ class RptInventario extends FastReport {
             if(empty($accessBods)){
                 die("<b>NO TIENE CONFIGURADA NINGUNA BODEGA</b>");
             } else {
-                $bods = (new Collection($this->db->query_select("sucursales", sprintf("id_sucursal in ('%s')", $accessBods))))->toSelectList("id_sucursal", "nombre");
+                $access = sprintf("id_sucursal in (%s)", $accessBods);
+                $bods = (new Collection($this->db->query_select("sucursales", $access)))->toSelectList("id_sucursal", "nombre");
             }
         }
         

@@ -161,7 +161,7 @@ class RptVentas extends FastTransaction {
             if(empty($accessBods)){
                 $bods = []; 
             } else {
-                $bods = $this->db->query_select("sucursales", sprintf("id_sucursal in ('%s')", $accessBods));
+                $bods = $this->db->query_select("sucursales", sprintf("id_sucursal in (%s)", $accessBods));
             }
         }
         echo json_encode(sanitize_array_by_keys($bods, ['nombre', 'usuario_creacion']));
