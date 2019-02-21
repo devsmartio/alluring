@@ -270,7 +270,7 @@ class TrxTrasladoBodegas extends FastTransaction {
             $resultSet[] = array('id_sucursal' => $p['id_sucursal'], 'nombre' => $p['nombre']);
         }
 
-        echo json_encode(array('data' => $resultSet));
+        echo json_encode(array('data' => sanitize_array_by_keys($resultSet, ['nombre'])));
     }
 
     public function getClientes(){
