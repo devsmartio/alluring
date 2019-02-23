@@ -856,8 +856,9 @@ class TrxReingresoConsignacion extends FastTransaction {
                         return false;
                     }
                 }
-/*
+
                 $scope.forma_pago.cantidad = $scope.total;
+            /*
                 var productos = JSON.stringify($scope.productos_facturar);
                 productos = productos.replace(/\\/g, "\\\\");
 
@@ -880,7 +881,7 @@ class TrxReingresoConsignacion extends FastTransaction {
                 }
                 swal(facturarAlert);
                 //console.log($rootScope.modData);
-                //$scope.doSave();
+                $scope.doSave();
             };
 
             $scope.startAgain();
