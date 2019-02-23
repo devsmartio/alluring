@@ -1165,10 +1165,11 @@ class TrxReingresoConsignacion extends FastTransaction {
         $venta = [
             'total' => sqlValue($data['forma_pago']['cantidad'], 'float'),
             'id_cliente' => sqlValue($data['id_cliente'], 'int'),
-            'usuario_venta' => sqlValue($this->user['FIRST_NAME'] . " " . $this->user['LAST_NAME'], 'int'),
+            'usuario_venta' => sqlValue($this->user['FIRST_NAME'] . " " . $this->user['LAST_NAME'], 'text'),
             'estado' => sqlValue('VC', 'text'),
             'fecha_creacion' => sqlValue($fecha->format('Y-m-d H:i:s'), 'date'),
-            'usuario_creacion' => sqlValue(self_escape_string($user['FIRST_NAME']), 'text')
+            'usuario_creacion' => sqlValue(self_escape_string($user['FIRST_NAME']), 'text'),
+            'id_movimiento_sucursales' => sqlValue($data['consignacion']['id_movimiento_sucursales'], 'int')
         ];
 
         $this->db->query_insert('trx_venta', $venta);
