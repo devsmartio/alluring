@@ -856,19 +856,19 @@ class TrxReingresoConsignacion extends FastTransaction {
                         return false;
                     }
                 }
-
+/*
                 $scope.forma_pago.cantidad = $scope.total;
                 var productos = JSON.stringify($scope.productos_facturar);
                 productos = productos.replace(/\\/g, "\\\\");
 
                 var forma_pago = JSON.stringify($scope.forma_pago);
                 forma_pago = forma_pago.replace(/\\/g, "\\\\");
-
+*/
                 console.log("FORMA PAGO: ", $scope.forma_pago);
                 $rootScope.modData = {
-                    productos: JSON.parse(productos),
+                    productos: $scope.productos_facturar,
                     id_cliente: $scope.lastClienteSelected.id_cliente,
-                    forma_pago: JSON.parse(forma_pago),
+                    forma_pago: $scope.forma_pago,
                     consignacion: $scope.selectedConsignacion
                 };
                 let facturarAlert = {
@@ -880,7 +880,7 @@ class TrxReingresoConsignacion extends FastTransaction {
                 }
                 swal(facturarAlert);
                 //console.log($rootScope.modData);
-                $scope.doSave();
+                //$scope.doSave();
             };
 
             $scope.startAgain();

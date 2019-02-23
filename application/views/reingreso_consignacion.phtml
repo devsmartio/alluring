@@ -48,7 +48,7 @@
                         </span>
                         -->
                         <span class="d-inline-block" tabindex="0" data-toggle="tooltip" >
-                            <img ng-src="media/uploads/{{prod.imagen}}" alt="{{prod.imagen}}" class="img-thumbnail">
+                            <img style="width: 100%" ng-src="media/uploads/{{prod.imagen}}" alt="{{prod.imagen}}" class="img-thumbnail">
                             <figcaption class="figure-caption">
                                 <b>{{prod.codigo}}</b>: {{prod.descripcion}}<br/>
                                 <b ng-class="{success: (prod.devuelto || 0) < prod.unidades, danger: prod.devuelto >= prod.unidades}">{{prod.devuelto || 0}}/{{prod.unidades}}</b><br/>
