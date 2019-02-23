@@ -453,24 +453,47 @@ class TrxReingresoConsignacion extends FastTransaction {
 
             $("#producto").keyup(function(ev) {
                 // 13 is ENTER
-                if (ev.which === 13 && $scope.filtered.length == 1) {
-                    let toAdd = $scope.filtered[0];
-                    toAdd.devuelto = (toAdd.devuelto || 0);
-                    console.log(toAdd);
-                    if(toAdd.devuelto < toAdd.unidades){
-                        let nuevoTotalDevuelto = $scope.totalDevuelto + parseFloat(toAdd.precio_venta);
-                        if(nuevoTotalDevuelto <= $scope.maxDevolucion){
-                            $scope.totalDevuelto = nuevoTotalDevuelto;
-                            toAdd.devuelto += 1;
-                            $scope.$apply();
+                if (ev.which === 13) {
+                    if($scope.filtered.length == 1){
+                        let toAdd = $scope.filtered[0];
+                        toAdd.devuelto = (toAdd.devuelto || 0);
+                        console.log(toAdd);
+                        if(toAdd.devuelto < toAdd.unidades){
+                            let nuevoTotalDevuelto = $scope.totalDevuelto + parseFloat(toAdd.precio_venta);
+                            if(nuevoTotalDevuelto <= $scope.maxDevolucion){
+                                $scope.totalDevuelto = nuevoTotalDevuelto;
+                                toAdd.devuelto += 1;
+                                $scope.$apply();
+                            } else {
+                                swal("Máximo alcanzado", `Ha alcanzado el máximo para devolver`, "warning");    
+                            }
                         } else {
-                            swal("Máximo alcanzado", `Ha alcanzado el máximo para devolver`, "warning");    
+                            swal("Producto devuelto", `Ha alcanzado el máximo de ${toAdd.codigo} para devolver`, "warning");
+                            return false;
                         }
-                    } else {
-                        swal("Producto devuelto", `Ha alcanzado el máximo de ${toAdd.codigo} para devolver`, "warning");
-                        return false;
+                        $(this).select();
+                    } else if($scope.filtered.length > 0) {
+                        console.log($(this).val());
+;                        let toAdd = $scope.filtered.find(p => p.codigo.toLowerCase() == $(this).val().toLowerCase());
+                        if(toAdd){
+                            toAdd.devuelto = (toAdd.devuelto || 0);
+                            console.log(toAdd);
+                            if(toAdd.devuelto < toAdd.unidades){
+                                let nuevoTotalDevuelto = $scope.totalDevuelto + parseFloat(toAdd.precio_venta);
+                                if(nuevoTotalDevuelto <= $scope.maxDevolucion){
+                                    $scope.totalDevuelto = nuevoTotalDevuelto;
+                                    toAdd.devuelto += 1;
+                                    $scope.$apply();
+                                } else {
+                                    swal("Máximo alcanzado", `Ha alcanzado el máximo para devolver`, "warning");    
+                                }
+                            } else {
+                                swal("Producto devuelto", `Ha alcanzado el máximo de ${toAdd.codigo} para devolver`, "warning");
+                                return false;
+                            }
+                            $(this).select();
+                        }
                     }
-                    $(this).select();
                 }
             });
 
