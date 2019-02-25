@@ -190,7 +190,7 @@ class TrxGeneracionEtiquetas extends FastTransaction {
         $dsSucursales = $this->db->query_select('sucursales');
         $resultSet[] = array('id_sucursal' =>'', 'nombre' => '-- Seleccione uno --');
         foreach($dsSucursales as $p){
-            $resultSet[] = array('id_sucursal' => $p['id_sucursal'], 'nombre' => $p['nombre']);
+            $resultSet[] = array('id_sucursal' => $p['id_sucursal'], 'nombre' => self_escape_string($p['nombre']));
         }
 
         echo json_encode(array('data' => $resultSet));
