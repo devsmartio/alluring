@@ -1067,8 +1067,9 @@ console.log("PROD AGREGAR: ", prod);
 
                 var cantidad_pagada = parseFloat($scope.forma_pago.cantidad_cheque || 0) + parseFloat($scope.forma_pago.cantidad_efectivo || 0) + parseFloat($scope.forma_pago.cantidad_voucher || 0) + parseFloat($scope.devolucion.credito || 0);
                 console.log("pAGADO", cantidad_pagada);
-                console.log(cantidad_pagada);
-                if(cantidad_pagada < $scope.total){
+                console.log("Total", $scope.total);
+                $scope.total = Math.floor($scope.total * 100)/100;
+                if(cantidad_pagada < parseFloat($scope.total)){
                     $scope.showAlert('alert-warning', 'Hay ' + $filter('currency')(parseFloat($scope.total - cantidad_pagada),'Q', 2) + ' pendientes de pago', 2500);
                     return false;
                 }
