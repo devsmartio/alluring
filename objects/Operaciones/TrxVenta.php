@@ -582,6 +582,7 @@ class TrxVenta extends FastTransaction {
                                 msg: 'El producto con el código ' + val + ' no se encuentra o no hay existencias'
                             });
                             deffered.reject();
+                            $scope.encontrados = 0;
                         } else {
                             if(response.data.length <= 50){
                                 let productos = response.data;
@@ -655,7 +656,10 @@ class TrxVenta extends FastTransaction {
                 if (ev.which === 13) {
 console.log("BUSCAR: ", $scope.search_codigo_origen);
                     $scope.doSearch($scope.search_codigo_origen).then(() => {
-                        if($scope.productos.length == 1 && $scope.productos[0].codigo.toLowerCase().trim() == $scope.search_codigo_origen.trim()){
+                        console.log("RESULTADO: ", $scope.productos);
+                        $scope.productos.length == 1 && console.log("RESULTADO UNICO: ", $scope.productos[0].codigo.toLowerCase().trim());
+                        console.log("SEARCH: ", $scope.search_codigo_origen.trim());
+                        if($scope.productos.length == 1 && $scope.productos[0].codigo.toLowerCase().trim() == $scope.search_codigo_origen.toLowerCase().trim()){
 console.log("ENCONTRADO", $scope.productos[0]);
                             $scope.agregarUno($scope.productos[0], true);
                             if(!$scope.$$phase){
