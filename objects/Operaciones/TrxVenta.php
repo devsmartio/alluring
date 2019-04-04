@@ -665,6 +665,14 @@ console.log("ENCONTRADO", $scope.productos[0]);
                             if(!$scope.$$phase){
                                 $scope.$apply();
                             }
+                        } else {
+                            let prod = $scope.productos.find(p => p.codigo.toLowerCase().trim() == $scope.search_codigo_origen.toLowerCase().trim())
+                            if(prod){
+                                $scope.agregarUno(prod, true);
+                                if(!$scope.$$phase){
+                                    $scope.$apply();
+                                }    
+                            }
                         }
                     })
                 }
