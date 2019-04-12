@@ -207,8 +207,10 @@ class TrxReingresoConsignacion extends FastTransaction {
                 $scope.departamentos = [];
                 $scope.selectedConsignacion = null;
                 $scope.totalConsignacion = 0;
+                $scope.cantidadConsignacion = 0;
                 $scope.maxDevolucion = 0;
                 $scope.totalDevuelto = 0;
+                $scope.cantidadDevuelto = 0;
                 $scope.resetCliente();
                 $('#loading').hide();
 
@@ -335,14 +337,18 @@ class TrxReingresoConsignacion extends FastTransaction {
             $scope.selectConsignacion = c => {
                 $scope.selectedConsignacion = c;
                 let total = 0;
+                let piezas = 0;
                 $scope.selectedConsignacion.productos.forEach(p => {
                     p = $scope.applyDiscountProducto(p);
                     p.devuelto = 0;
                     total+=parseFloat(p.precio_venta * p.unidades);
+                    piezas+=parseInt(p.unidades);
                 })
                 console.log($scope.selectedConsignacion.productos);
                 $scope.totalConsignacion = total;
+                $scope.cantidadConsignacion = piezas;
                 $scope.totalDevuelto = 0;
+                $scope.cantidadDevuelto = 0;
                 $scope.productos_facturar = [];
                 $scope.maxDevolucion = total * (1 - (parseFloat(c.porcentaje_compra)/100));
                 $scope.productos = c.productos;
@@ -462,6 +468,7 @@ class TrxReingresoConsignacion extends FastTransaction {
                             let nuevoTotalDevuelto = $scope.totalDevuelto + parseFloat(toAdd.precio_venta);
                             if(nuevoTotalDevuelto <= $scope.maxDevolucion){
                                 $scope.totalDevuelto = nuevoTotalDevuelto;
+                                $scope.cantidadDevuelto += 1;
                                 toAdd.devuelto += 1;
                                 $scope.$apply();
                             } else {
@@ -482,6 +489,7 @@ class TrxReingresoConsignacion extends FastTransaction {
                                 let nuevoTotalDevuelto = $scope.totalDevuelto + parseFloat(toAdd.precio_venta);
                                 if(nuevoTotalDevuelto <= $scope.maxDevolucion){
                                     $scope.totalDevuelto = nuevoTotalDevuelto;
+                                    $scope.cantidadDevuelto += 1;
                                     toAdd.devuelto += 1;
                                     $scope.$apply();
                                 } else {
