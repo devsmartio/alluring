@@ -174,7 +174,7 @@ class TrxTrasladoBodegas extends FastTransaction {
                 $("#pistolearItem").keyup(function(ev) {
                     let val = $(this).val();
                     if (ev.which === 13 && val) {
-                        if($scope.filteredProd.length == 1){
+                        if($scope.filteredProd.length === 1 && $scope.filteredProd[0].codigo.toUpperCase() === val.toUpperCase()){
                             let item = $scope.filteredProd[0];
                             if(item.cantidad + 1 > item.total_existencias){
                                 swal("Oh oh", `Ya tiene la existencia máxima de ${val} `, "warning");
