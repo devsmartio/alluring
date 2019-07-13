@@ -46,6 +46,7 @@ router.get('/', function(req, res, next) {
         AND dg.id_producto is null 
         AND dg.id_tipo is null 
         AND dg.id_tipo_precio is null
+    ORDER BY p.fecha_creacion DESC
         `, function (error, results, fields) {
         if (error) throw error;
         conn.destroy();
