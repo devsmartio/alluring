@@ -70,7 +70,7 @@
     "chart.js": "^2.7.2",
     "flag-icon-css": "3.0.0",
     "font-awesome": "4.7.0",
-    "jquery": "3.3.1",
+    "jquery": "3.5.0",
     "pace-progress": "1.0.2",
     "perfect-scrollbar": "1.4.0",
     "popper.js": "1.14.3",
