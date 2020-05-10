@@ -562,11 +562,11 @@
 					</div>
 					<!-- Product -->
 					<div class="row d-md-none" ng-show="productosFilter.length">
-						<div class="col-4 px-2 mb-4" ng-repeat="p in productosShow">
+						<div class="col-6 px-2 mb-4" ng-repeat="p in productosShow">
 								<img class="w-100" style="cursor: zoom-in" ng-click="showBigImage(p)" ng-src="{{p.imageUrl}}?rand={{rand}}" alt="{{p.codigo}} - {{p.descripcion}}" onerror="this.src = 'images/no-image.jpg'">
 								<div class="block2-txt">
 										<a href="#" class="w-50 block2-name s-text3 p-b-5">
-											{{p.codigo}}
+											{{p.codigo}} - {{p.descripcion}}
 										</a>
 										<span class="p-r-5" ng-class="{'block2-oldprice m-text7': p.precio_descuento, 'block2-price m-text6': !p.precio_descuento}">
 												<span class="badge" ng-class="{'badge-success':p.total_existencias >= 10,'badge-warning':p.total_existencias >= 5 && p.total_existencias < 10, 'badge-danger': p.total_existencias < 5}">Hay {{p.total_existencias}}{{p.total_existencias < 5 ? '!' : ''}}</span>
