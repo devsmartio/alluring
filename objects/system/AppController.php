@@ -82,11 +82,7 @@ class AppController{
                     }
                 }
             }
-            $isActive = $this->db->queryToArray('select valor  from variables_sistema where nombre="FECHA_EXP" && cast(now() as date) >= cast(valor as date)');
-            if(count($isActive) > 0){
-                $this->setMod('GeoAdmin');
-                $this->init();
-            } else if(isset($_GET[AJAX])){
+             if(isset($_GET[AJAX])){
                 if(isset($_GET['act']) && isset($_GET['mod'])){
                     $module = $_GET['mod'];
                     $method = $_GET['act'];
